@@ -146,6 +146,7 @@ class IsDistanceEarned(Behaviour):
 
 
 class IsSonarOn(Behaviour):
+# 障害物が近くにある場合に次の行動を制御できる
     def __init__(self, name: str, alert_dist: int):
         super(IsSonarOn, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -236,6 +237,7 @@ class IsJunction(Behaviour):
 
 
 class RunAsInstructed(Behaviour):
+# ロボットの左右のモーターに固定のPWM（出力）を与えて動かす「行動ノード」
     def __init__(self, name: str, pwm_l: int, pwm_r: int) -> None:
         super(RunAsInstructed, self).__init__(name)
         self.pwm_l = g_course * pwm_l
