@@ -366,7 +366,7 @@ class VideoThread(threading.Thread):
 
 class IsObstacleNear(Behaviour):
 # 20250625_add_kubota_ソナーで障害物検知する
-    def __init__(self, name: str, threshold: int = 80):
+    def __init__(self, name: str, threshold: int = 200):
         super().__init__(name)
         self.threshold = threshold
 
@@ -418,56 +418,43 @@ def build_behaviour_tree() -> BehaviourTree:
     root = Sequence(name="loop by camera", memory=True)
     calibration = Sequence(name="calibration", memory=True)
     start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne())
-    # loop_01 = Parallel(name="loop 01", policy=ParallelPolicy.SuccessOnOne())
-    calibration.add_children(
-        [
-            ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
-            ArmUpDownFull(name="arm down", direction=ArmDirection.DOWN),
-            ResetDevice(name="device reset"),
-        ]
-    )
-    start.add_children(
-        [
-            IsSonarOn(name="soner start", alert_dist=90),
-            IsTouchOn(name="touch start"),
-        ]
-    )
-    loop_01.add_children(
-        [
-            obstacle_handler = Selector(name="obstacle_or_trace")
-            obstacle_handler.add_children([
-            Sequence(name="avoid_seq", children=[
-            IsObstacleNear(name="obstacle?"),
-            AvoidObstacleArcFull(name="arc avoid")
-            ]),
-            TraceLineCam(name="camera trace normal edge", power=45,
-                         pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-                         gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL)
-            ])
 
-            loop_01 = Sequence(name="loop_01_with_obstacle")
-            loop_01.add_children([
-                obstacle_handler,
-                IsDistanceEarned(name="check distance", delta_dist=4000)
-            ])
-        ]
+    # 各ノードを定義
+    obstacle_handler = Selector(name="obstacle_or_trace")
+    avoid_seq = Sequence(name="avoid_seq", children=[
+        IsObstacleNear(name="obstacle?"),
+        AvoidObstacleArcFull(name="arc avoid")
+    ])
+    trace_line = TraceLineCam(
+        name="camera trace normal edge",
+        power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,
+        trace_side=TraceSide.NORMAL
     )
-    #     [
-    #         TraceLineCam(name="camera trace normal edge", power=45,
-    #                      pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-    #                      gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL),
-    #         IsDistanceEarned(name="check distance", delta_dist = 4000),
-    #     ]
-    # )
-    root.add_children(
-        [
-            calibration,
-            start,
-            loop_01,
-            StopNow(name="stop"),
-            TheEnd(name="end"),
-        ]
-    )
+    obstacle_handler.add_children([avoid_seq, trace_line])
+
+    loop_01 = Sequence(name="loop_01_with_obstacle")
+    loop_01.add_children([
+        obstacle_handler,
+        IsDistanceEarned(name="check distance", delta_dist=40000)
+    ])
+
+    calibration.add_children([
+        ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
+        ArmUpDownFull(name="arm down", direction=ArmDirection.DOWN),
+        ResetDevice(name="device reset"),
+    ])
+    start.add_children([
+        IsSonarOn(name="soner start", alert_dist=90),
+        IsTouchOn(name="touch start"),
+    ])
+    root.add_children([
+        calibration,
+        start,
+        loop_01,
+        StopNow(name="stop"),
+        TheEnd(name="end"),
+    ])
     return root
 
 def initialize_etrobo(backend: str) -> ETRobo:
