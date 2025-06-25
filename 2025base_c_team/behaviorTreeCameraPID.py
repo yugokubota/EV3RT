@@ -195,6 +195,7 @@ class StopNow(Behaviour):
 
 class IsJunction(Behaviour):
 # 交差点に近づいているかをチェックする。ダブルループで使うビヘイビアツリー
+    def __init__(self, name: str, target_state: JState) -> None:
         super(IsJunction, self).__init__(name)
         self.target_state = target_state
         self.reached = False
