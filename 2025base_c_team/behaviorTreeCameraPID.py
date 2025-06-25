@@ -194,7 +194,7 @@ class StopNow(Behaviour):
 
 
 class IsJunction(Behaviour):
-# 交差点に近づいているかをチェックする。ダブルループで使うビヘイビアツリー？
+# 交差点に近づいているかをチェックする。ダブルループで使うビヘイビアツリー
         super(IsJunction, self).__init__(name)
         self.target_state = target_state
         self.reached = False
@@ -364,12 +364,61 @@ class VideoThread(threading.Thread):
             g_video.process(g_plotter, g_hub, g_arm_motor, g_right_motor, g_left_motor, g_color_sensor, g_sonar_sensor)
             time.sleep(VIDEO_INTERVAL)
 
+class IsObstacleNear(Behaviour):
+# 20250625_add_kubota_ソナーで障害物検知する
+    def __init__(self, name: str, threshold: int = 80):
+        super().__init__(name)
+        self.threshold = threshold
+
+    def update(self) -> Status:
+        dist = g_sonar_sensor.get_distance()
+        if 0 < dist < self.threshold:
+            return Status.SUCCESS
+        return Status.FAILURE
+
+class AvoidObstacleArcFull(Behaviour):
+# 20250625_add_kubota_オブジェクト回避
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.step = 0
+
+    def update(self) -> Status:
+        dist = g_sonar_sensor.get_distance()
+        if dist <= 0:
+            dist = 100  # フォールバック
+
+        arc_length = math.pi * dist / 2  # 1/2円（半円）回避
+        tire_circ = math.pi * TIRE_DIAMETER
+        angle = (arc_length / tire_circ) * 360
+
+        if self.step == 0:
+            # 右へ90度（1/4周）
+            g_left_motor.run_angle(30, angle / 2)
+            g_right_motor.run_angle(10, angle / 2)
+            self.step += 1
+            return Status.RUNNING
+
+        elif self.step == 1:
+            # 前へ直進
+            g_left_motor.run_angle(30, angle / 2)
+            g_right_motor.run_angle(30, angle / 2)
+            self.step += 1
+            return Status.RUNNING
+
+        elif self.step == 2:
+            # 左へ90度戻して、ラインに復帰する
+            g_left_motor.run_angle(10, angle / 2)
+            g_right_motor.run_angle(30, angle / 2)
+            self.step += 1
+            return Status.SUCCESS
+
+        return Status.RUNNING
 
 def build_behaviour_tree() -> BehaviourTree:
     root = Sequence(name="loop by camera", memory=True)
     calibration = Sequence(name="calibration", memory=True)
     start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne())
-    loop_01 = Parallel(name="loop 01", policy=ParallelPolicy.SuccessOnOne())
+    # loop_01 = Parallel(name="loop 01", policy=ParallelPolicy.SuccessOnOne())
     calibration.add_children(
         [
             ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
@@ -385,12 +434,31 @@ def build_behaviour_tree() -> BehaviourTree:
     )
     loop_01.add_children(
         [
+            obstacle_handler = Selector(name="obstacle_or_trace")
+            obstacle_handler.add_children([
+            Sequence(name="avoid_seq", children=[
+            IsObstacleNear(name="obstacle?"),
+            AvoidObstacleArcFull(name="arc avoid")
+            ]),
             TraceLineCam(name="camera trace normal edge", power=45,
                          pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-                         gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL),
-            IsDistanceEarned(name="check distance", delta_dist = 4000),
+                         gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL)
+            ])
+
+            loop_01 = Sequence(name="loop_01_with_obstacle")
+            loop_01.add_children([
+                obstacle_handler,
+                IsDistanceEarned(name="check distance", delta_dist=4000)
+            ])
         ]
     )
+    #     [
+    #         TraceLineCam(name="camera trace normal edge", power=45,
+    #                      pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+    #                      gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL),
+    #         IsDistanceEarned(name="check distance", delta_dist = 4000),
+    #     ]
+    # )
     root.add_children(
         [
             calibration,
