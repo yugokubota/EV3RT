@@ -10,8 +10,7 @@ import py_trees.common
 from py_trees.trees import BehaviourTree
 from py_trees.behaviour import Behaviour
 from py_trees.common import Status
-from py_trees.composites import Sequence
-from py_trees.composites import Parallel
+from py_trees.composites import Sequence, Parallel, Selector
 from py_trees.common import ParallelPolicy
 from py_trees import (
     display as display_tree,
