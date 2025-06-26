@@ -17,6 +17,7 @@ from py_trees import (
     logging as log_tree
 )
 from py_etrobo_util import Video, TraceSide, Plotter
+from plotter import TIRE_DIAMETER
 
 EXEC_INTERVAL: float = 0.04
 VIDEO_INTERVAL: float = 0.02
