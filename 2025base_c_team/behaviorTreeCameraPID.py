@@ -364,8 +364,7 @@ class VideoThread(threading.Thread):
             g_video.process(g_plotter, g_hub, g_arm_motor, g_right_motor, g_left_motor, g_color_sensor, g_sonar_sensor)
             time.sleep(VIDEO_INTERVAL)
 
-class IsObstacleNear(Behaviour):
-# 20250625_add_kubota_ソナーで障害物検知する
+class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検知するクラス追加
     def __init__(self, name: str, threshold: int = 200):
         super().__init__(name)
         self.threshold = threshold
@@ -376,8 +375,7 @@ class IsObstacleNear(Behaviour):
             return Status.SUCCESS
         return Status.FAILURE
 
-class AvoidObstacleArcFull(Behaviour):
-# 20250625_add_kubota_オブジェクト回避
+class AvoidObstacleArcFull(Behaviour):# 20250625_add_kubota_オブジェクト回避するクラス追加
     def __init__(self, name: str):
         super().__init__(name)
         self.step = 0
@@ -415,27 +413,28 @@ class AvoidObstacleArcFull(Behaviour):
         return Status.RUNNING
 
 def build_behaviour_tree() -> BehaviourTree:
+    # 各ノードを定義
     root = Sequence(name="loop by camera", memory=True)
     calibration = Sequence(name="calibration", memory=True)
     start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne())
-
-    # 各ノードを定義
-    obstacle_handler = Selector(name="obstacle_or_trace")
+    obstacle_handler = Selector(name="obstacle_or_trace",memory=True)
     avoid_seq = Sequence(name="avoid_seq", children=[
         IsObstacleNear(name="obstacle?"),
         AvoidObstacleArcFull(name="arc avoid")
     ])
+
     trace_line = TraceLineCam(
         name="camera trace normal edge",
         power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
-    obstacle_handler.add_children([avoid_seq, trace_line])
+
+    obstacle_handler.add_children([avoid_seq, trace_line])# 20250625_add_kubota_オブジェクト回避のノード追加
 
     loop_01 = Sequence(name="loop_01_with_obstacle")
     loop_01.add_children([
-        obstacle_handler,
+        obstacle_handler,# 20250625_add_kubota_オブジェクト回避のノード追加
         IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
 
@@ -444,10 +443,13 @@ def build_behaviour_tree() -> BehaviourTree:
         ArmUpDownFull(name="arm down", direction=ArmDirection.DOWN),
         ResetDevice(name="device reset"),
     ])
+
     start.add_children([
         IsSonarOn(name="soner start", alert_dist=90),
         IsTouchOn(name="touch start"),
     ])
+    # 各ノードの定義終了
+
     root.add_children([
         calibration,
         start,
