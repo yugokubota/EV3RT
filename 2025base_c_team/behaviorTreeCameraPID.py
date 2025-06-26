@@ -416,7 +416,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
     root = Sequence(name="loop by camera", memory=True)
     calibration = Sequence(name="calibration", memory=True)
-    start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne(), memory=True)
+    start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne())
     obstacle_handler = Selector(name="obstacle_or_trace", memory=True)
     avoid_seq = Sequence(name="avoid_seq", memory=True, children=[
         IsObstacleNear(name="obstacle?"),
