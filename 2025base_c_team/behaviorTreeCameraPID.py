@@ -416,9 +416,9 @@ def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
     root = Sequence(name="loop by camera", memory=True)
     calibration = Sequence(name="calibration", memory=True)
-    start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne())
-    obstacle_handler = Selector(name="obstacle_or_trace",memory=True)
-    avoid_seq = Sequence(name="avoid_seq", children=[
+    start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne(), memory=True)
+    obstacle_handler = Selector(name="obstacle_or_trace", memory=True)
+    avoid_seq = Sequence(name="avoid_seq", memory=True, children=[
         IsObstacleNear(name="obstacle?"),
         AvoidObstacleArcFull(name="arc avoid")
     ])
@@ -432,7 +432,7 @@ def build_behaviour_tree() -> BehaviourTree:
 
     obstacle_handler.add_children([avoid_seq, trace_line])# 20250625_add_kubota_オブジェクト回避のノード追加
 
-    loop_01 = Sequence(name="loop_01_with_obstacle")
+    loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
         obstacle_handler,# 20250625_add_kubota_オブジェクト回避のノード追加
         IsDistanceEarned(name="check distance", delta_dist=40000)
