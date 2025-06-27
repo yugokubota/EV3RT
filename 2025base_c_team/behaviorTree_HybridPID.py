@@ -195,7 +195,7 @@ class StopNow(Behaviour):
 
 
 class IsJunction(Behaviour):
-# 交差点に近づいているかをチェックする。ダブルループで使うビヘイビアツリー
+# 分岐チェックを知らせるだけのクラス
     def __init__(self, name: str, target_state: JState) -> None:
         super(IsJunction, self).__init__(name)
         self.target_state = target_state
@@ -414,6 +414,33 @@ class AvoidObstacleArcFull(Behaviour):# 20250625_add_kubota_オブジェクト�
 
         return Status.RUNNING
 
+class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
+    def __init__(self, name, direction, degree=90, power=30, radius=200):
+        super().__init__(name)
+        self.direction = direction  # "left" or "right"
+        self.degree = degree
+        self.power = power
+        self.radius = radius
+        self.running = False
+
+    def update(self) -> Status:
+        if not self.running:
+            self.running = True
+            # degree→タイヤ回転数変換は省略例
+            base_angle = self.degree
+            if self.direction == "right":
+                g_left_motor.set_power(self.power)
+                g_right_motor.set_power(int(self.power * 0.5))
+            else:
+                g_left_motor.set_power(int(self.power * 0.5))
+                g_right_motor.set_power(self.power)
+            # time.sleepで簡易的にカーブの長さを調整する例
+            time.sleep(base_angle / 90 * 0.7)  # 調整要
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+            return Status.SUCCESS
+        return Status.RUNNING
+
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
     root = Sequence(name="loop by camera", memory=True)
@@ -423,6 +450,8 @@ def build_behaviour_tree() -> BehaviourTree:
     avoid_seq = Sequence(name="avoid_seq", memory=True, children=[
         IsObstacleNear(name="obstacle?"),
         AvoidObstacleArcFull(name="arc avoid")
+    junction_seq = Sequence(name="junction_seq", memory=True)
+    
     ])
 
     traceline_cam = TraceLineCam(
@@ -438,11 +467,12 @@ def build_behaviour_tree() -> BehaviourTree:
         target=45, trace_side=TraceSide.NORMAL
     )
 
-    obstacle_handler.add_children([avoid_seq, traceline_cam])# 20250625_add_kubota_オブジェクト回避のノード追加
+    obstacle_handler.add_children([avoid_seq, traceline_sensor])# 20250625_add_kubota_オブジェクト回避のノード追加
 
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
         obstacle_handler,# 20250625_add_kubota_オブジェクト回避のノード追加
+        junction_seq,#20250627_add_kubota_ダブルループ分岐の検出
         IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
 
