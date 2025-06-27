@@ -255,7 +255,7 @@ class RunAsInstructed(Behaviour):
         return Status.RUNNING
 
 
-class TraceLine(Behaviour):
+class TraceLine_sensor(Behaviour):
     def __init__(self, name: str, target: int, power: int, pid_p: float, pid_i: float, pid_d: float,
                  trace_side: TraceSide) -> None:
         super(TraceLine, self).__init__(name)
@@ -425,14 +425,20 @@ def build_behaviour_tree() -> BehaviourTree:
         AvoidObstacleArcFull(name="arc avoid")
     ])
 
-    trace_line = TraceLineCam(
+    traceline_cam = TraceLineCam(
         name="camera trace normal edge",
         power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
 
-    obstacle_handler.add_children([avoid_seq, trace_line])# 20250625_add_kubota_オブジェクト回避のノード追加
+    traceline_sensor = TraceLine_sensor(#20250627_kubota_センサーでのライントレース追加
+        name="sensor trace normal edge",
+        power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        target=45, trace_side=TraceSide.NORMAL
+    )
+
+    obstacle_handler.add_children([avoid_seq, traceline_cam])# 20250625_add_kubota_オブジェクト回避のノード追加
 
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
