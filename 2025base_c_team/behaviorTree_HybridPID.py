@@ -467,17 +467,19 @@ def build_behaviour_tree() -> BehaviourTree:
         trace_side=TraceSide.NORMAL),
         IsJunction(name="cross_junction1", target_state=JState.JOINING),
         ArcTurn(name="arc_to_small", direction="left", degree=90, power=30, radius=80),
-        TraceLine_sensor(name="trace_inner"),
+        TraceLine_sensor(name="trace_outer",target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        trace_side=TraceSide.NORMAL),
         IsJunction(name="cross_junction2", target_state=JState.FORKING),
         ArcTurn(name="arc_to_big", direction="right", degree=90, power=30, radius=200)
     ])
     mid_selector = Selector(name="mid_selector", memory=True)
     mid_selector.add_children([
         Sequence(name="loop_seq", memory=True, children=[
-            enter_circle,
-            double_loop,
+        enter_circle,
+        double_loop,
         ]),
-        TraceLine_sensor(name="normal_trace")
+        TraceLine_sensor(name="trace_outer",target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        trace_side=TraceSide.NORMAL),
     ])
 
     traceline_cam = TraceLineCam(
