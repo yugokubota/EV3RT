@@ -451,6 +451,11 @@ def build_behaviour_tree() -> BehaviourTree:
         IsObstacleNear(name="obstacle?"),
         AvoidObstacleArcFull(name="arc avoid")
     ])
+    traceline_sensor = TraceLine_sensor(#20250627_kubota_センサーでのライントレース追加
+        name="sensor trace normal edge",
+        target=45,power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        trace_side=TraceSide.NORMAL
+    )
     enter_circle = Sequence(name="enter_circle", memory=True)
     enter_circle.add_children([
         IsJunction(name="enter_junction", target_state=JState.FORKING),
@@ -478,12 +483,6 @@ def build_behaviour_tree() -> BehaviourTree:
         name="camera trace normal edge",
         power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
-        trace_side=TraceSide.NORMAL
-    )
-
-    traceline_sensor = TraceLine_sensor(#20250627_kubota_センサーでのライントレース追加
-        name="sensor trace normal edge",
-        target=45,power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL
     )
 
