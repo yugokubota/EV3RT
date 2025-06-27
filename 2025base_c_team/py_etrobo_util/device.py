@@ -159,8 +159,6 @@ class _Motor(etrobo_python.Motor):
     def get_log(self) -> bytes:
         self.log[:] = int.to_bytes(self.get_count() & 0xffffffff, 4, 'big')
         return self.log
-    class _Motor(etrobo_python.Motor):
-    # ...既存のメソッド...
 
     def run_degrees(self, power: int, degrees: float, blocking: bool = True):#20250627_kubota_run_degreesの実装
         self.setup_device()
