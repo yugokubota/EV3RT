@@ -483,8 +483,8 @@ def build_behaviour_tree() -> BehaviourTree:
 
     traceline_sensor = TraceLine_sensor(#20250627_kubota_センサーでのライントレース追加
         name="sensor trace normal edge",
-        power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
-        target=45, trace_side=TraceSide.NORMAL
+        target=45,power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        trace_side=TraceSide.NORMAL
     )
 
     obstacle_handler.add_children([avoid_seq, traceline_sensor])# 20250625_add_kubota_オブジェクト回避のノード追加
