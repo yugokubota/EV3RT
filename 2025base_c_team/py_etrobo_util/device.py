@@ -163,12 +163,6 @@ class _Motor(etrobo_python.Motor):
     # ...既存のメソッド...
 
     def run_degrees(self, power: int, degrees: float, blocking: bool = True):#20250627_kubota_run_degreesの実装
-        """
-        指定したパワーで指定した角度(degrees)だけ回す。
-        :param power: 回転させるパワー（正負で方向指定）
-        :param degrees: 回転させる角度（正負で方向指定）
-        :param blocking: Trueで目標に到達するまで待つ
-        """
         self.setup_device()
         initial_count = self.get_count()
         target_count = initial_count + int(degrees)
@@ -186,7 +180,6 @@ class _Motor(etrobo_python.Motor):
                 time.sleep(0.01)  # 10ms待つ
             self.set_power(0)  # 停止
         # blocking=Falseの場合、呼び出し側でstop管理
-
 
 class Motor(_Motor):
     def __init__(self, port: int) -> None:
