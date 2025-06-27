@@ -258,7 +258,7 @@ class RunAsInstructed(Behaviour):
 class TraceLine_sensor(Behaviour):
     def __init__(self, name: str, target: int, power: int, pid_p: float, pid_i: float, pid_d: float,
                  trace_side: TraceSide) -> None:
-        super(TraceLine, self).__init__(name)
+        super(TraceLine_sensor, self).__init__(name)
         self.power = power
         self.pid = PID(pid_p, pid_i, pid_d, setpoint=target, sample_time=EXEC_INTERVAL, output_limits=(-power, power))
         self.trace_side = trace_side
