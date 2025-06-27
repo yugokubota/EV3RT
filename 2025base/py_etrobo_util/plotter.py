@@ -1,7 +1,7 @@
 import math
 from etrobo_python import ETRobo, Hub, Motor, TouchSensor, ColorSensor, SonarSensor
 
-TIRE_DIAMETER: float = 100.0
+TIRE_DIAMETER: float = 54.0
 WHEEL_TREAD: float = 120.0
 
 class Plotter(object):
