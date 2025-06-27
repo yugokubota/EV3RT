@@ -463,7 +463,8 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
     double_loop = Sequence(name="eight_loop", memory=True)
     double_loop.add_children([
-        TraceLine_sensor(name="trace_outer"),
+        TraceLine_sensor(name="trace_outer",target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        trace_side=TraceSide.NORMAL),
         IsJunction(name="cross_junction1", target_state=JState.JOINING),
         ArcTurn(name="arc_to_small", direction="left", degree=90, power=30, radius=80),
         TraceLine_sensor(name="trace_inner"),
