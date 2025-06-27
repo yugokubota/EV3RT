@@ -358,12 +358,69 @@ class VideoThread(threading.Thread):
             g_video.process(g_plotter, g_hub, g_arm_motor, g_right_motor, g_left_motor, g_color_sensor, g_sonar_sensor)
             time.sleep(VIDEO_INTERVAL)
 
+class AvoidKShape(Behaviour):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.state = 0  # 動作ステート（0〜3）
+        self.count = 0  # ステート内のカウンター
+
+    def update(self) -> Status:
+        if self.state == 0:
+            # 左45度回転（右モータ前進、左モータ後退）
+            g_right_motor.set_power(20)
+            g_left_motor.set_power(-20)
+            self.count += 1
+            if self.count > 5:  # 回転時間の調整ポイント
+                self.count = 0
+                self.state = 1
+
+        elif self.state == 1:
+            # 前進（左斜め方向へ）
+            g_right_motor.set_power(30)
+            g_left_motor.set_power(30)
+            self.count += 1
+            if self.count > 10:  # 前進距離の調整ポイント
+                self.count = 0
+                self.state = 2
+
+        elif self.state == 2:
+            # 右45度回転（元の方向に戻す）
+            g_right_motor.set_power(-20)
+            g_left_motor.set_power(20)
+            self.count += 1
+            if self.count > 5:
+                self.count = 0
+                self.state = 3
+
+        elif self.state == 3:
+            # 直進（元の直線方向）
+            g_right_motor.set_power(30)
+            g_left_motor.set_power(30)
+            self.count += 1
+            if self.count > 10:
+                # 動作終了 → モータ停止＆ブレーキ
+                g_right_motor.set_power(0)
+                g_left_motor.set_power(0)
+                g_right_motor.set_brake(True)
+                g_left_motor.set_brake(True)
+                return Status.SUCCESS
+
+        return Status.RUNNING
+
 
 def build_behaviour_tree() -> BehaviourTree:
     root = Sequence(name="loop by camera", memory=True)
     calibration = Sequence(name="calibration", memory=True)
     start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne())
     loop_01 = Parallel(name="loop 01", policy=ParallelPolicy.SuccessOnOne())
+
+    obstacle_sequence = Sequence(name="obstacle sequence", memory=True)
+    obstacle_sequence.add_children(
+        [
+            IsSonarOn(name="check obstacle", alert_dist=90),
+            AvoidKShape(name="avoid K-shape path")
+        ]
+    )
     calibration.add_children(
         [
             ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
@@ -390,6 +447,7 @@ def build_behaviour_tree() -> BehaviourTree:
             calibration,
             start,
             loop_01,
+            obstacle_sequence,       # ←追加（障害物回避）
             StopNow(name="stop"),
             TheEnd(name="end"),
         ]
