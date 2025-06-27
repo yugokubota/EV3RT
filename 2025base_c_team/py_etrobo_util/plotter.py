@@ -1,5 +1,6 @@
 import math
-from etrobo_python import ETRobo, Hub, Motor, TouchSensor, ColorSensor, SonarSensor
+from etrobo_python import ETRobo, Hub, TouchSensor, ColorSensor, SonarSensor#20250627_kubota_Motorの削除
+from py_etrobo_util.device import Motor#20250627_kubota_Motorの追加
 
 TIRE_DIAMETER: float = 56.0
 WHEEL_TREAD: float = 120.0

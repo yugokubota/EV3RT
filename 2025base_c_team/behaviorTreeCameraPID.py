@@ -4,7 +4,7 @@ import math
 import threading
 import signal
 from enum import Enum, IntEnum, auto
-from etrobo_python import ETRobo, Hub, Motor, TouchSensor, ColorSensor, SonarSensor
+from etrobo_python import ETRobo, Hub, TouchSensor, ColorSensor, SonarSensor#20250627_kubota_Motorの削除
 from simple_pid import PID
 import py_trees.common
 from py_trees.trees import BehaviourTree
@@ -18,6 +18,7 @@ from py_trees import (
 )
 from py_etrobo_util import Video, TraceSide, Plotter
 from py_etrobo_util.plotter import TIRE_DIAMETER
+from py_etrobo_util.device import Motor#20250627_kubota_Motorの追加
 
 EXEC_INTERVAL: float = 0.04
 VIDEO_INTERVAL: float = 0.02
@@ -388,26 +389,26 @@ class AvoidObstacleArcFull(Behaviour):# 20250625_add_kubota_オブジェクト�
 
         arc_length = math.pi * dist / 2  # 1/2円（半円）回避
         tire_circ = math.pi * TIRE_DIAMETER
-        angle = (arc_length / tire_circ) * 360
+        degrees = (arc_length / tire_circ) * 360
 
         if self.step == 0:
             # 右へ90度（1/4周）
-            g_left_motor.run_angle(30, angle / 2)
-            g_right_motor.run_angle(10, angle / 2)
+            g_left_motor.run_degrees(30, degrees / 2)
+            g_right_motor.run_degrees(10, degrees / 2)
             self.step += 1
             return Status.RUNNING
 
         elif self.step == 1:
             # 前へ直進
-            g_left_motor.run_angle(30, angle / 2)
-            g_right_motor.run_angle(30, angle / 2)
+            g_left_motor.run_degrees(30, degrees / 2)
+            g_right_motor.run_degrees(30, degrees / 2)
             self.step += 1
             return Status.RUNNING
 
         elif self.step == 2:
             # 左へ90度戻して、ラインに復帰する
-            g_left_motor.run_angle(10, angle / 2)
-            g_right_motor.run_angle(30, angle / 2)
+            g_left_motor.run_degrees(10, degrees / 2)
+            g_right_motor.run_degrees(30, degrees / 2)
             self.step += 1
             return Status.SUCCESS
 

@@ -9,7 +9,8 @@ import math
 import numpy as np
 from enum import Enum
 from .plotter import Plotter
-from etrobo_python import Hub, Motor, ColorSensor, SonarSensor
+from etrobo_python import Hub, ColorSensor, SonarSensor#20250627_kubota_Motorの削除
+from py_etrobo_util.device import Motor#20250627_kubota_Motorの追加
 
 def round_up_to_odd(f) -> int:
     return int(np.ceil(f / 2.) * 2 + 1)
