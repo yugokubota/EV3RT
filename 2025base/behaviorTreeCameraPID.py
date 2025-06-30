@@ -169,6 +169,7 @@ class IsTouchOn(Behaviour):
     def update(self) -> Status:
         if g_touch_sensor.is_pressed():
             self.logger.info("%+06d %s.pressed" % (g_plotter.get_distance(), self.__class__.__name__))
+            print("--障害物発見！！")
             return Status.SUCCESS
         else:
             return Status.RUNNING
@@ -368,6 +369,7 @@ class AvoidKShape(Behaviour):
     def update(self) -> Status:
         if self.state == 0:
             # 左45度回転（右モータ前進、左モータ後退）
+            print(" -- AvoidKShapeで避けます！")
             g_right_motor.set_power(20)
             g_left_motor.set_power(-20)
             self.count += 1
