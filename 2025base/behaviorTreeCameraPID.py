@@ -441,7 +441,7 @@ def build_behaviour_tree() -> BehaviourTree:
             IsTouchOn(name="touch start"),
         ]
     )
-    loop_01 = Parallel(name="loop 01",policy=ParallelPolicy.SuccessOnOne{})
+    loop_01 = Parallel(name="loop 01",policy=ParallelPolicy.SuccessOnOne())
     loop_01.add_children(
         [
             TraceLineCam(name="camera trace normal edge", power=45,
