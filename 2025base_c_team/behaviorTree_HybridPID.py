@@ -499,13 +499,6 @@ def build_behaviour_tree() -> BehaviourTree:
         traceline_sensor_for_loop
     ])
 
-    traceline_cam = TraceLineCam(
-        name="camera trace normal edge",
-        power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,
-        trace_side=TraceSide.NORMAL
-    )
-
     obstacle_selector.add_children([# 20250625_add_kubota_オブジェクト回避のノード追加
         print("avoid_seq:", avoid_seq),
         print("traceline_sensor_for_obstacle:", traceline_sensor_for_obstacle),
