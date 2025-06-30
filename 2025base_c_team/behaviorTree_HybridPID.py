@@ -376,10 +376,11 @@ class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検�
             return Status.SUCCESS
         return Status.FAILURE
 
-class AvoidObstacleArcFull(Behaviour):# 20250625_add_kubota_オブジェクト回避するクラス追加
+class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト回避するクラスの修正
     def __init__(self, name: str):
         super().__init__(name)
         self.step = 0
+        self.running = False
 
     def update(self) -> Status:
         dist = g_sonar_sensor.get_distance()
@@ -390,24 +391,36 @@ class AvoidObstacleArcFull(Behaviour):# 20250625_add_kubota_オブジェクト�
         tire_circ = math.pi * TIRE_DIAMETER
         degrees = (arc_length / tire_circ) * 360
 
+        # 角度degrees分を秒数に変換（要調整）
+        sec = degrees / 180  # 例：180度で1秒くらい（実機テスト必須）
+
         if self.step == 0:
-            # 右へ90度（1/4周）
-            g_left_motor.run_degrees(30, degrees / 2)
-            g_right_motor.run_degrees(10, degrees / 2)
+            # 右へ90度（1/4周）分のカーブ
+            g_left_motor.set_power(30)
+            g_right_motor.set_power(10)
+            time.sleep(sec / 2)  # degrees/2相当
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
             self.step += 1
             return Status.RUNNING
 
         elif self.step == 1:
             # 前へ直進
-            g_left_motor.run_degrees(30, degrees / 2)
-            g_right_motor.run_degrees(30, degrees / 2)
+            g_left_motor.set_power(30)
+            g_right_motor.set_power(30)
+            time.sleep(sec / 2)
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
             self.step += 1
             return Status.RUNNING
 
         elif self.step == 2:
             # 左へ90度戻して、ラインに復帰する
-            g_left_motor.run_degrees(10, degrees / 2)
-            g_right_motor.run_degrees(30, degrees / 2)
+            g_left_motor.set_power(10)
+            g_right_motor.set_power(30)
+            time.sleep(sec / 2)
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
             self.step += 1
             return Status.SUCCESS
 
