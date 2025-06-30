@@ -415,7 +415,7 @@ def build_behaviour_tree() -> BehaviourTree:
     start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne())
     loop_01 = Parallel(name="loop 01", policy=ParallelPolicy.SuccessOnOne())
 
-　　# くの字用
+    # くの字用
     obstacle_sequence = Sequence(name="obstacle sequence", memory=True)
     obstacle_sequence.add_children(
         [
