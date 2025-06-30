@@ -516,15 +516,15 @@ def build_behaviour_tree() -> BehaviourTree:
         obstacle_selector,# 20250625_add_kubota_オブジェクト回避のノード追加
         print("オブジェクト回避おわり"),
         mid_selector,#20250627_add_kubota_ダブルループの制御
-        print("ダブルループおわり")
+        print("ダブルループおわり"),
         IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
 
     calibration.add_children([
         ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
-        print("上がるよ")
+        print("上がるよ"),
         ArmUpDownFull(name="arm down", direction=ArmDirection.DOWN),
-        print("下がるよ")
+        print("下がるよ"),
         ResetDevice(name="device reset"),
         print("リセットするよ")
     ])
