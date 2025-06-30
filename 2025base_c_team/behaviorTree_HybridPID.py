@@ -271,8 +271,11 @@ class TraceLine_sensor(Behaviour):
             turn = (-1) * g_course * int(self.pid(g_color_sensor.get_brightness()))
         else: # TraceSide.OPPOSITE
             turn = g_course * int(self.pid(g_color_sensor.get_brightness()))
-        g_right_motor.set_power(self.power - turn)
-        g_left_motor.set_power(self.power + turn)
+        right_power = self.power - turn
+        left_power = self.power + turn
+        g_right_motor.set_power(right_power)
+        g_left_motor.set_power(left_power)
+        print(f"right_motor power: {right_power}, left_motor power: {left_power}")
         return Status.RUNNING
 
 
