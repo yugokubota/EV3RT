@@ -422,7 +422,7 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_sequence = Sequence(name="obstacle sequence", memory=True)
     obstacle_sequence.add_children(
         [
-            print("--くの字用")
+            print("--くの字用"),
             IsSonarOn(name="check obstacle", alert_dist=300),
             AvoidKShape(name="avoid K-shape path")
         ]
