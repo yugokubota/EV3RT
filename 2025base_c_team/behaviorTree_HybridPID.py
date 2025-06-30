@@ -494,39 +494,27 @@ def build_behaviour_tree() -> BehaviourTree:
     mid_selector.add_children([
         Sequence(name="loop_seq", memory=True, children=[
         enter_circle,
-        print("サークルに入るよ"),
         double_loop,
-        print("ダブルループ処理だよ"),
         ]),
-        traceline_sensor_for_loop,
-        print("traceline_sensor_for_loopで走ってるよ")
+        traceline_sensor_for_loop
     ])
 
     obstacle_selector.add_children([# 20250625_add_kubota_オブジェクト回避のノード追加
-        print("avoid_seqだよ", avoid_seq),
-        print("traceline_sensor_for_obstacleだよ", traceline_sensor_for_obstacle),
         avoid_seq, 
-        traceline_sensor_for_obstacle,
-        print("traceline_sensor_for_obstacleで走ってるよ")
+        traceline_sensor_for_obstacle
         ])
 
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
-        print("メインに入るよ"),
         obstacle_selector,# 20250625_add_kubota_オブジェクト回避のノード追加
-        print("オブジェクト回避おわり"),
         mid_selector,#20250627_add_kubota_ダブルループの制御
-        print("ダブルループおわり"),
         IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
 
     calibration.add_children([
         ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
-        print("上がるよ"),
         ArmUpDownFull(name="arm down", direction=ArmDirection.DOWN),
-        print("下がるよ"),
-        ResetDevice(name="device reset"),
-        print("リセットするよ")
+        ResetDevice(name="device reset")
     ])
 
     start.add_children([
