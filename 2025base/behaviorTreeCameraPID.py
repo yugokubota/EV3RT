@@ -154,6 +154,7 @@ class IsSonarOn(Behaviour):
             self.logger.info("%+06d %s.detection started for dist=%d" % (g_plotter.get_distance(), self.__class__.__name__, self.alert_dist))
         
         dist = g_sonar_sensor.get_distance()
+        print(dist)
         if (dist <= self.alert_dist and dist > 0):
             self.logger.info("%+06d %s.alerted at dist=%d" % (g_plotter.get_distance(), self.__class__.__name__, dist))
             return Status.SUCCESS
@@ -421,6 +422,7 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_sequence = Sequence(name="obstacle sequence", memory=True)
     obstacle_sequence.add_children(
         [
+            print("--くの字用")
             IsSonarOn(name="check obstacle", alert_dist=300),
             AvoidKShape(name="avoid K-shape path")
         ]
@@ -439,11 +441,13 @@ def build_behaviour_tree() -> BehaviourTree:
             IsTouchOn(name="touch start"),
         ]
     )
+    loop_01 = Parallel(name="loop 01",policy=ParallelPolicy.SuccessOnOne{})
     loop_01.add_children(
         [
             TraceLineCam(name="camera trace normal edge", power=45,
                          pid_p=2.0, pid_i=0.0012, pid_d=0.18,
                          gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL),
+            obstacle_sequence,       # ←追加（障害物回避）
             IsDistanceEarned(name="check distance", delta_dist = 4000),
         ]
     )
@@ -452,7 +456,6 @@ def build_behaviour_tree() -> BehaviourTree:
             calibration,
             start,
             loop_01,
-            obstacle_sequence,       # ←追加（障害物回避）
             StopNow(name="stop"),
             TheEnd(name="end"),
         ]
