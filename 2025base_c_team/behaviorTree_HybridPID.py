@@ -4,7 +4,7 @@ import math
 import threading
 import signal
 from enum import Enum, IntEnum, auto
-from etrobo_python import ETRobo, Hub, TouchSensor, ColorSensor, SonarSensor#20250627_kubota_Motorの削除
+from etrobo_python import ETRobo, Hub, Motor, TouchSensor, ColorSensor, SonarSensor
 from simple_pid import PID
 import py_trees.common
 from py_trees.trees import BehaviourTree
@@ -18,7 +18,6 @@ from py_trees import (
 )
 from py_etrobo_util import Video, TraceSide, Plotter
 from py_etrobo_util.plotter import TIRE_DIAMETER
-from py_etrobo_util.device import Motor#20250627_kubota_Motorの追加
 
 EXEC_INTERVAL: float = 0.04
 VIDEO_INTERVAL: float = 0.02
