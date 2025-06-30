@@ -273,7 +273,6 @@ class TraceLine_sensor(Behaviour):
             turn = g_course * int(self.pid(g_color_sensor.get_brightness()))
         g_right_motor.set_power(self.power - turn)
         g_left_motor.set_power(self.power + turn)
-        print(f"[MOTOR] L={g_left_motor.set_power} R={g_right_motor.set_power}")
         return Status.RUNNING
 
 
@@ -460,9 +459,10 @@ def build_behaviour_tree() -> BehaviourTree:
     calibration = Sequence(name="calibration", memory=True)
     start = Sequence(name="start", memory=True)
     obstacle_selector = Selector(name="obstacle_or_trace", memory=True)
-    avoid_seq = Sequence(name="avoid_seq", memory=True, children=[
-        IsObstacleNear(name="obstacle?"),
-        AvoidObstacleArcFull(name="arc avoid")
+    avoid_seq = Sequence(name="avoid_seq", memory=True)
+    avoid_seq.add_children([
+    IsObstacleNear(name="obstacle?"),
+    AvoidObstacleArcFull(name="arc avoid")
     ])
     traceline_sensor_for_obstacle = TraceLine_sensor(
         name="sensor trace normal edge (for obstacle)",
