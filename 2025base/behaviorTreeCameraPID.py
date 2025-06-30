@@ -427,7 +427,7 @@ def build_behaviour_tree() -> BehaviourTree:
     print("--くの字用")
     obstacle_sequence.add_children(
         [
-            IsSonarOn(name="check obstacle", alert_dist=150),
+            IsSonarOn(name="check obstacle", alert_dist=400),
             AvoidKShape(name="avoid K-shape path")
         ]
     )
