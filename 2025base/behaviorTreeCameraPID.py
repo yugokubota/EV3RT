@@ -366,20 +366,22 @@ class AvoidKShape(Behaviour):
         super().__init__(name)
         self.state = 0  # 動作ステート（0〜3）
         self.count = 0  # ステート内のカウンター
+        print(" -- AvoidKShapeで避けます！")
 
     def update(self) -> Status:
         if self.state == 0:
             # 左45度回転（右モータ前進、左モータ後退）
-            print(" -- AvoidKShapeで避けます！")
+            print(" -- AvoidKShapeで左に向きます！")
             g_right_motor.set_power(20)
-            g_left_motor.set_power(-20)
+            g_left_motor.set_power(-30)
             self.count += 1
-            if self.count > 5:  # 回転時間の調整ポイント
+            if self.count > 25:  # 回転時間の調整ポイント
                 self.count = 0
                 self.state = 1
 
         elif self.state == 1:
             # 前進（左斜め方向へ）
+            print(" -- AvoidKShapeで進みます！")
             g_right_motor.set_power(30)
             g_left_motor.set_power(30)
             self.count += 1
@@ -389,6 +391,7 @@ class AvoidKShape(Behaviour):
 
         elif self.state == 2:
             # 右45度回転（元の方向に戻す）
+            print(" -- AvoidKShapeで右に向きます！")
             g_right_motor.set_power(-20)
             g_left_motor.set_power(20)
             self.count += 1
@@ -398,6 +401,7 @@ class AvoidKShape(Behaviour):
 
         elif self.state == 3:
             # 直進（元の直線方向）
+            print(" -- AvoidKShapeで進みます2！")
             g_right_motor.set_power(30)
             g_left_motor.set_power(30)
             self.count += 1
@@ -441,7 +445,6 @@ def build_behaviour_tree() -> BehaviourTree:
             IsTouchOn(name="touch start"),
         ]
     )
-    loop_01 = Parallel(name="loop 01",policy=ParallelPolicy.SuccessOnOne())
     loop_01.add_children(
         [
             TraceLineCam(name="camera trace normal edge", power=45,
