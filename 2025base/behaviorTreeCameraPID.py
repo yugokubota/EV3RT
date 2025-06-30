@@ -371,47 +371,47 @@ class AvoidKShape(Behaviour):
     def update(self) -> Status:
         if self.state == 0:
             # 左45度回転（右モータ前進、左モータ後退）
-            print(" -- AvoidKShapeで左に向きます！")
             g_right_motor.set_power(20)
             g_left_motor.set_power(-30)
             self.count += 1
-            if self.count > 25:  # 回転時間の調整ポイント
+            if self.count > 200:  # 回転時間の調整ポイント
                 self.count = 0
                 self.state = 1
+                print(" -- AvoidKShapeで左に向きます！")
 
         elif self.state == 1:
             # 前進（左斜め方向へ）
-            print(" -- AvoidKShapeで進みます！")
             g_right_motor.set_power(30)
             g_left_motor.set_power(30)
             self.count += 1
-            if self.count > 10:  # 前進距離の調整ポイント
+            if self.count > 200:  # 前進距離の調整ポイント
                 self.count = 0
                 self.state = 2
+                print(" -- AvoidKShapeで進みます！")
 
         elif self.state == 2:
             # 右45度回転（元の方向に戻す）
-            print(" -- AvoidKShapeで右に向きます！")
             g_right_motor.set_power(-20)
             g_left_motor.set_power(20)
             self.count += 1
-            if self.count > 5:
+            if self.count > 200:
                 self.count = 0
                 self.state = 3
+                print(" -- AvoidKShapeで右に向きます！")
 
         elif self.state == 3:
             # 直進（元の直線方向）
-            print(" -- AvoidKShapeで進みます2！")
             g_right_motor.set_power(30)
             g_left_motor.set_power(30)
             self.count += 1
-            if self.count > 10:
+            if self.count > 200:
                 # 動作終了 → モータ停止＆ブレーキ
                 g_right_motor.set_power(0)
                 g_left_motor.set_power(0)
                 g_right_motor.set_brake(True)
                 g_left_motor.set_brake(True)
                 return Status.SUCCESS
+                print(" -- AvoidKShapeで進みます2！")
 
         return Status.RUNNING
 # くの字ここまで
@@ -427,7 +427,7 @@ def build_behaviour_tree() -> BehaviourTree:
     print("--くの字用")
     obstacle_sequence.add_children(
         [
-            IsSonarOn(name="check obstacle", alert_dist=400),
+            IsSonarOn(name="check obstacle", alert_dist=200),
             AvoidKShape(name="avoid K-shape path")
         ]
     )
@@ -441,7 +441,7 @@ def build_behaviour_tree() -> BehaviourTree:
     )
     start.add_children(
         [
-            IsSonarOn(name="soner start", alert_dist=90),
+            #IsSonarOn(name="soner start", alert_dist=90),
             IsTouchOn(name="touch start"),
         ]
     )
