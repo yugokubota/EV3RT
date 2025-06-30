@@ -243,7 +243,7 @@ class RunAsInstructed(Behaviour):
             self.running = True
             self.logger.info("%+06d %s.started with pwm=(%s, %s)" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
         g_right_motor.set_power(self.pwm_r)
-        g_left_motor.set_power(self.pwm_l)
+        g_left_motor.set_power(self.pwm_l + 10) #もっくん
         return Status.RUNNING
 
 
