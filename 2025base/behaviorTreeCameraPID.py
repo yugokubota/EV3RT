@@ -358,6 +358,7 @@ class VideoThread(threading.Thread):
             g_video.process(g_plotter, g_hub, g_arm_motor, g_right_motor, g_left_motor, g_color_sensor, g_sonar_sensor)
             time.sleep(VIDEO_INTERVAL)
 
+# くの字用
 class AvoidKShape(Behaviour):
     def __init__(self, name: str):
         super().__init__(name)
@@ -406,7 +407,7 @@ class AvoidKShape(Behaviour):
                 return Status.SUCCESS
 
         return Status.RUNNING
-
+# くの字ここまで
 
 def build_behaviour_tree() -> BehaviourTree:
     root = Sequence(name="loop by camera", memory=True)
@@ -414,6 +415,7 @@ def build_behaviour_tree() -> BehaviourTree:
     start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne())
     loop_01 = Parallel(name="loop 01", policy=ParallelPolicy.SuccessOnOne())
 
+　　# くの字用
     obstacle_sequence = Sequence(name="obstacle sequence", memory=True)
     obstacle_sequence.add_children(
         [
@@ -421,6 +423,7 @@ def build_behaviour_tree() -> BehaviourTree:
             AvoidKShape(name="avoid K-shape path")
         ]
     )
+    # くの字ここまで
     calibration.add_children(
         [
             ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
