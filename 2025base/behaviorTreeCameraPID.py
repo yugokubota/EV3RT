@@ -157,6 +157,7 @@ class IsSonarOn(Behaviour):
         if (dist <= self.alert_dist and dist > 0):
             self.logger.info("%+06d %s.alerted at dist=%d" % (g_plotter.get_distance(), self.__class__.__name__, dist))
             return Status.SUCCESS
+            print("--障害物発見！！")
         else:
             return Status.RUNNING
 
@@ -169,7 +170,6 @@ class IsTouchOn(Behaviour):
     def update(self) -> Status:
         if g_touch_sensor.is_pressed():
             self.logger.info("%+06d %s.pressed" % (g_plotter.get_distance(), self.__class__.__name__))
-            print("--障害物発見！！")
             return Status.SUCCESS
         else:
             return Status.RUNNING
