@@ -464,9 +464,14 @@ def build_behaviour_tree() -> BehaviourTree:
         IsObstacleNear(name="obstacle?"),
         AvoidObstacleArcFull(name="arc avoid")
     ])
-    traceline_sensor = TraceLine_sensor(#20250627_kubota_センサーでのライントレース追加
-        name="sensor trace normal edge",
-        target=45,power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+    traceline_sensor_for_obstacle = TraceLine_sensor(
+        name="sensor trace normal edge (for obstacle)",
+        target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        trace_side=TraceSide.NORMAL
+    )
+    traceline_sensor_for_loop = TraceLine_sensor(
+        name="sensor trace normal edge (for loop)",
+        target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL
     )
     enter_circle = Sequence(name="enter_circle", memory=True)
@@ -491,7 +496,7 @@ def build_behaviour_tree() -> BehaviourTree:
         enter_circle,
         double_loop,
         ]),
-        traceline_sensor
+        traceline_sensor_for_loop
     ])
 
     traceline_cam = TraceLineCam(
@@ -503,7 +508,7 @@ def build_behaviour_tree() -> BehaviourTree:
 
     obstacle_selector.add_children([# 20250625_add_kubota_オブジェクト回避のノード追加
         avoid_seq, 
-        traceline_sensor,
+        traceline_sensor_for_obstacle,
         print("obstacle_selector_traceline_sensor")
         ])
 
