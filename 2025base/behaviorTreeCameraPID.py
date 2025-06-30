@@ -421,7 +421,7 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_sequence = Sequence(name="obstacle sequence", memory=True)
     obstacle_sequence.add_children(
         [
-            IsSonarOn(name="check obstacle", alert_dist=90),
+            IsSonarOn(name="check obstacle", alert_dist=300),
             AvoidKShape(name="avoid K-shape path")
         ]
     )
