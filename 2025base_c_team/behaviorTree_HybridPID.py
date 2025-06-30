@@ -273,7 +273,7 @@ class TraceLine_sensor(Behaviour):
             turn = g_course * int(self.pid(g_color_sensor.get_brightness()))
         g_right_motor.set_power(self.power - turn)
         g_left_motor.set_power(self.power + turn)
-        print(f"[MOTOR] L={left_power} R={right_power}")
+        print(f"[MOTOR] L={g_left_motor.set_power} R={g_right_motor.set_power}")
         return Status.RUNNING
 
 
@@ -458,8 +458,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
     root = Sequence(name="loop by camera", memory=True)
     calibration = Sequence(name="calibration", memory=True)
-    start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne())
-    obstacle_handler = Selector(name="obstacle_or_trace", memory=True)
+    start = Sequence(name="start", memory=True)
+    obstacle_selector = Selector(name="obstacle_or_trace", memory=True)
     avoid_seq = Sequence(name="avoid_seq", memory=True, children=[
         IsObstacleNear(name="obstacle?"),
         AvoidObstacleArcFull(name="arc avoid")
@@ -491,8 +491,7 @@ def build_behaviour_tree() -> BehaviourTree:
         enter_circle,
         double_loop,
         ]),
-        TraceLine_sensor(name="trace_outer",target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
-        trace_side=TraceSide.NORMAL),
+        traceline_sensor
     ])
 
     traceline_cam = TraceLineCam(
@@ -502,11 +501,15 @@ def build_behaviour_tree() -> BehaviourTree:
         trace_side=TraceSide.NORMAL
     )
 
-    obstacle_handler.add_children([avoid_seq, traceline_sensor])# 20250625_add_kubota_オブジェクト回避のノード追加
+    obstacle_selector.add_children([# 20250625_add_kubota_オブジェクト回避のノード追加
+        avoid_seq, 
+        traceline_sensor,
+        print("obstacle_selector_traceline_sensor")
+        ])
 
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
-        obstacle_handler,# 20250625_add_kubota_オブジェクト回避のノード追加
+        obstacle_selector,# 20250625_add_kubota_オブジェクト回避のノード追加
         mid_selector,#20250627_add_kubota_ダブルループの制御
         IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
