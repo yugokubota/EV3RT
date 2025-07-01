@@ -521,7 +521,7 @@ def build_behaviour_tree() -> BehaviourTree:
         ]),
         traceline_cam_for_loop
     ])
-    obstacle_loop = Parallel(name="obstacle_loop", policy=ParallelPolicy.SUCCESS_ON_ONE)
+    obstacle_loop = Parallel(name="obstacle_loop", policy=ParallelPolicy.SuccessOnOne)
     obstacle_loop.add_children([
     obstacle_selector,
     IsDistanceEarned(name="check distance", delta_dist=40000)
