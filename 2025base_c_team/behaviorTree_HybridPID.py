@@ -474,15 +474,17 @@ def build_behaviour_tree() -> BehaviourTree:
         AvoidObstacleArcFull(name="arc avoid")
     ])
     # オブジェクト回避したあとのライントレース
-    traceline_sensor_for_obstacle = TraceLine_sensor(
-        name="sensor trace normal edge (for obstacle)",
-        target=10, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+    traceline_cam_for_obstacle = TraceLine_sensor(
+        name="camera trace normal edge",
+        power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループのライントレース
-    traceline_sensor_for_loop = TraceLine_sensor(
-        name="sensor trace normal edge (for loop)",
-        target=45, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+    traceline_cam_for_loop = TraceLine_sensor(
+        name="camera trace normal edge",
+        power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループ侵入
@@ -495,15 +497,15 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_selector = Selector(name="obstacle_or_trace", memory=True)
     obstacle_selector.add_children([# 20250625_add_kubota_オブジェクト回避のノード追加
         avoid_seq, 
-        traceline_sensor_for_obstacle
+        traceline_cam_for_obstacle
     ])
     double_loop = Sequence(name="eight_loop", memory=True)
     double_loop.add_children([
-        TraceLine_sensor(name="trace_outer",target=45, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        TraceLine_cam(name="trace_outer",target=45, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL),
         IsJunction(name="cross_junction1", target_state=JState.JOINING),
         ArcTurn(name="arc_to_small", direction="left", degree=45, power=30, radius=80),
-        TraceLine_sensor(name="trace_outer",target=45, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        TraceLine_cam(name="trace_outer",target=45, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL),
         IsJunction(name="cross_junction2", target_state=JState.FORKING),
         ArcTurn(name="arc_to_big", direction="right", degree=45, power=30, radius=200)
@@ -515,7 +517,7 @@ def build_behaviour_tree() -> BehaviourTree:
         enter_circle,
         double_loop,
         ]),
-        traceline_sensor_for_loop
+        traceline_cam_for_loop
     ])
 
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
@@ -536,7 +538,7 @@ def build_behaviour_tree() -> BehaviourTree:
         IsTouchOn(name="touch start"),
     ])
     # 各ノードの定義終了
-    root = Sequence(name="loop by sensor", memory=True)
+    root = Sequence(name="loop by cam", memory=True)
     root.add_children([
         calibration,
         start,
