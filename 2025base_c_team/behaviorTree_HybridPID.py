@@ -431,7 +431,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
             self.step += 1
             return Status.SUCCESS
 
-        return Status.RUNNING
+        return Status.SUCCESS
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
     def __init__(self, name, direction, degree=45, power=30, radius=200):
