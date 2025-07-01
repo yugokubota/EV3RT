@@ -311,7 +311,7 @@ class TraceLineCam(Behaviour):
         turn = (-1) * int(self.pid(g_video.get_theta()))
         g_right_motor.set_power(self.power - turn)
         g_left_motor.set_power(self.power + turn)
-        return Status.SUCCESS
+        return Status.RUNNING
 
 
 class TraverseBehaviourTree(object):
