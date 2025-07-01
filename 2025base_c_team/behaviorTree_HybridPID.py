@@ -386,6 +386,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
         self.running = False
 
     def update(self) -> Status:
+        print("AvoidObstacleArcFull_start")
         dist = g_sonar_sensor.get_distance()
         if dist <= 0:
             dist = 100  # フォールバック
@@ -439,16 +440,23 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
         self.running = False
 
     def update(self) -> Status:
+        print("カーブします")
         if not self.running:
             self.running = True
             # degree→タイヤ回転数変換は省略例
             base_angle = self.degree
             if self.direction == "right":
-                g_left_motor.set_power(self.power)
-                g_right_motor.set_power(int(self.power * 0.5))
+                left_curve_power = self.power
+                right_curve_power = int(self.power * 0.5)
+                g_left_motor.set_power(left_curve_power)
+                g_right_motor.set_power(right_curve_power)
+                print(f"right_motor power: {right_curve_power}, left_motor power: {left_curve_power}")
             else:
-                g_left_motor.set_power(int(self.power * 0.5))
-                g_right_motor.set_power(self.power)
+                left_curve_power = int(self.power * 0.5)
+                right_curve_power = self.power
+                g_left_motor.set_power(left_curve_power)
+                g_right_motor.set_power(right_curve_power)
+                print(f"right_motor power: {right_curve_power}, left_motor power: {left_curve_power}")
             # time.sleepで簡易的にカーブの長さを調整する例
             time.sleep(base_angle / 90 * 0.7)  # 調整要
             g_left_motor.set_power(0)
@@ -458,29 +466,35 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
 
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
-    root = Sequence(name="loop by camera", memory=True)
-    calibration = Sequence(name="calibration", memory=True)
-    start = Sequence(name="start", memory=True)
-    obstacle_selector = Selector(name="obstacle_or_trace", memory=True)
+    # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
-    IsObstacleNear(name="obstacle?"),
-    AvoidObstacleArcFull(name="arc avoid")
+        IsObstacleNear(name="obstacle?"),
+        AvoidObstacleArcFull(name="arc avoid")
     ])
+    # オブジェクト回避したあとのライントレース
     traceline_sensor_for_obstacle = TraceLine_sensor(
         name="sensor trace normal edge (for obstacle)",
         target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL
     )
+    # ダブルループのライントレース
     traceline_sensor_for_loop = TraceLine_sensor(
         name="sensor trace normal edge (for loop)",
         target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL
     )
+    # ダブルループ侵入
     enter_circle = Sequence(name="enter_circle", memory=True)
     enter_circle.add_children([
         IsJunction(name="enter_junction", target_state=JState.FORKING),
         ArcTurn(name="arc_into_circle", direction="right", degree=90, power=30, radius=200)
+    ])
+    # オブジェクト回避とライントレース
+    obstacle_selector = Selector(name="obstacle_or_trace", memory=True)
+    obstacle_selector.add_children([# 20250625_add_kubota_オブジェクト回避のノード追加
+        avoid_seq, 
+        traceline_sensor_for_obstacle
     ])
     double_loop = Sequence(name="eight_loop", memory=True)
     double_loop.add_children([
@@ -493,6 +507,7 @@ def build_behaviour_tree() -> BehaviourTree:
         IsJunction(name="cross_junction2", target_state=JState.FORKING),
         ArcTurn(name="arc_to_big", direction="right", degree=90, power=30, radius=200)
     ])
+    # ダブルループ侵入とダブルループ処理とライントレース
     mid_selector = Selector(name="mid_selector", memory=True)
     mid_selector.add_children([
         Sequence(name="loop_seq", memory=True, children=[
@@ -502,29 +517,25 @@ def build_behaviour_tree() -> BehaviourTree:
         traceline_sensor_for_loop
     ])
 
-    obstacle_selector.add_children([# 20250625_add_kubota_オブジェクト回避のノード追加
-        avoid_seq, 
-        traceline_sensor_for_obstacle
-        ])
-
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
         obstacle_selector,# 20250625_add_kubota_オブジェクト回避のノード追加
-        mid_selector,#20250627_add_kubota_ダブルループの制御
+        # mid_selector,#20250627_add_kubota_ダブルループの制御
         IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
 
+    calibration = Sequence(name="calibration", memory=True)
     calibration.add_children([
         ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
         ArmUpDownFull(name="arm down", direction=ArmDirection.DOWN),
         ResetDevice(name="device reset")
     ])
-
+    start = Sequence(name="start", memory=True)
     start.add_children([
         IsTouchOn(name="touch start"),
     ])
     # 各ノードの定義終了
-
+    root = Sequence(name="loop by sensor", memory=True)
     root.add_children([
         calibration,
         start,
