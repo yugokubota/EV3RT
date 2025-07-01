@@ -271,6 +271,7 @@ class TraceLine_sensor(Behaviour):
             turn = (-1) * g_course * int(self.pid(g_color_sensor.get_brightness()))
         else: # TraceSide.OPPOSITE
             turn = g_course * int(self.pid(g_color_sensor.get_brightness()))
+        print(f"brt={g_color_sensor.get_brightness():.1f} target={self.pid.setpoint} turn={turn}")
         right_power = self.power - turn
         left_power = self.power + turn
         g_right_motor.set_power(right_power)
@@ -431,7 +432,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
         return Status.RUNNING
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
-    def __init__(self, name, direction, degree=90, power=30, radius=200):
+    def __init__(self, name, direction, degree=45, power=30, radius=200):
         super().__init__(name)
         self.direction = direction  # "left" or "right"
         self.degree = degree
@@ -475,13 +476,13 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避したあとのライントレース
     traceline_sensor_for_obstacle = TraceLine_sensor(
         name="sensor trace normal edge (for obstacle)",
-        target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        target=45, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループのライントレース
     traceline_sensor_for_loop = TraceLine_sensor(
         name="sensor trace normal edge (for loop)",
-        target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        target=45, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループ侵入
@@ -498,14 +499,14 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
     double_loop = Sequence(name="eight_loop", memory=True)
     double_loop.add_children([
-        TraceLine_sensor(name="trace_outer",target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        TraceLine_sensor(name="trace_outer",target=45, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL),
         IsJunction(name="cross_junction1", target_state=JState.JOINING),
-        ArcTurn(name="arc_to_small", direction="left", degree=90, power=30, radius=80),
-        TraceLine_sensor(name="trace_outer",target=45, power=90, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        ArcTurn(name="arc_to_small", direction="left", degree=45, power=30, radius=80),
+        TraceLine_sensor(name="trace_outer",target=45, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL),
         IsJunction(name="cross_junction2", target_state=JState.FORKING),
-        ArcTurn(name="arc_to_big", direction="right", degree=90, power=30, radius=200)
+        ArcTurn(name="arc_to_big", direction="right", degree=45, power=30, radius=200)
     ])
     # ダブルループ侵入とダブルループ処理とライントレース
     mid_selector = Selector(name="mid_selector", memory=True)
