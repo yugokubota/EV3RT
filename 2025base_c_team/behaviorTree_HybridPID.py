@@ -496,7 +496,7 @@ def build_behaviour_tree() -> BehaviourTree:
         ArcTurn(name="arc_into_circle", direction="right", degree=90, power=30, radius=200)
     ])
     # オブジェクト回避とライントレース
-    obstacle_selector = Selector(name="obstacle_or_trace", memory=True)
+    obstacle_selector = Selector(name="obstacle_or_trace", memory=False)
     obstacle_selector.add_children([# 20250625_add_kubota_オブジェクト回避のノード追加
         avoid_seq, 
         traceline_cam_for_obstacle
@@ -526,7 +526,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         obstacle_selector,# 20250625_add_kubota_オブジェクト回避のノード追加
         # mid_selector,#20250627_add_kubota_ダブルループの制御
-        # IsDistanceEarned(name="check distance", delta_dist=40000)
+        IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
 
     calibration = Sequence(name="calibration", memory=True)
