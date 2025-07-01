@@ -370,13 +370,14 @@ class VideoThread(threading.Thread):
             time.sleep(VIDEO_INTERVAL)
 
 class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検知するクラス追加
-    def __init__(self, name: str, threshold: int = 1000):
+    def __init__(self, name: str, threshold: int = 200):
         super().__init__(name)
         self.threshold = threshold
 
     def update(self) -> Status:
         print("IsObstacleNear_start")
         dist = g_sonar_sensor.get_distance()
+        print(f"SONAR distance = {dist}")
         if 0 < dist < self.threshold:
             return Status.SUCCESS
         return Status.FAILURE
@@ -472,7 +473,7 @@ def build_behaviour_tree() -> BehaviourTree:
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
         IsObstacleNear(name="obstacle?"),
-        AvoidObstacleArcFull(name="arc avoid")
+        AvoidObstacleArcFull(name="arc_avoid")
     ])
     # オブジェクト回避したあとのライントレース
     traceline_cam_for_obstacle = TraceLineCam(
