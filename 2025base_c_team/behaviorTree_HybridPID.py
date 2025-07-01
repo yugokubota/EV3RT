@@ -474,14 +474,14 @@ def build_behaviour_tree() -> BehaviourTree:
         AvoidObstacleArcFull(name="arc avoid")
     ])
     # オブジェクト回避したあとのライントレース
-    traceline_cam_for_obstacle = TraceLine_sensor(
+    traceline_cam_for_obstacle = TraceLineCam(
         name="camera trace normal edge",
         power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループのライントレース
-    traceline_cam_for_loop = TraceLine_sensor(
+    traceline_cam_for_loop = TraceLineCam(
         name="camera trace normal edge",
         power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
