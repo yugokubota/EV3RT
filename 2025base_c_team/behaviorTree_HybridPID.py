@@ -476,7 +476,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避したあとのライントレース
     traceline_sensor_for_obstacle = TraceLine_sensor(
         name="sensor trace normal edge (for obstacle)",
-        target=35, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
+        target=10, power=45, pid_p=0.5, pid_i=0.05, pid_d=0.1,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループのライントレース
