@@ -526,7 +526,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         obstacle_selector,# 20250625_add_kubota_オブジェクト回避のノード追加
         # mid_selector,#20250627_add_kubota_ダブルループの制御
-        IsDistanceEarned(name="check distance", delta_dist=40000)
+        # IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
 
     calibration = Sequence(name="calibration", memory=True)
