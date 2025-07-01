@@ -502,11 +502,11 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop = Sequence(name="eight_loop", memory=True)
     double_loop.add_children([
         TraceLineCam(name="trace_outer",power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
         IsJunction(name="cross_junction1", target_state=JState.JOINING),
         ArcTurn(name="arc_to_small", direction="left", degree=45, power=30, radius=80),
         TraceLineCam(name="trace_outer",power=90, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
         IsJunction(name="cross_junction2", target_state=JState.FORKING),
         ArcTurn(name="arc_to_big", direction="right", degree=45, power=30, radius=200)
     ])
