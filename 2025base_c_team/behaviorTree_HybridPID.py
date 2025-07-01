@@ -370,11 +370,12 @@ class VideoThread(threading.Thread):
             time.sleep(VIDEO_INTERVAL)
 
 class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検知するクラス追加
-    def __init__(self, name: str, threshold: int = 200):
+    def __init__(self, name: str, threshold: int = 1000):
         super().__init__(name)
         self.threshold = threshold
 
     def update(self) -> Status:
+        print("IsObstacleNear_start")
         dist = g_sonar_sensor.get_distance()
         if 0 < dist < self.threshold:
             return Status.SUCCESS
