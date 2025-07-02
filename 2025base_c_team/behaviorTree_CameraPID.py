@@ -403,6 +403,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
 
         if self.step == 0:
             # 右へ90度（1/4周）分のカーブ
+            print("step0_start")
             g_left_motor.set_power(50)
             g_right_motor.set_power(20)
             time.sleep(sec)  # degrees
@@ -413,6 +414,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
 
         elif self.step == 1:
             # 前へ直進
+            print("step1_start")
             g_left_motor.set_power(30)
             g_right_motor.set_power(30)
             time.sleep(sec)
@@ -423,6 +425,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
 
         elif self.step == 2:
             # 左へ90度戻して、ラインに復帰する
+            print("step2_start")
             g_left_motor.set_power(20)
             g_right_motor.set_power(50)
             time.sleep(sec)
@@ -478,14 +481,14 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避したあとのライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=30, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        power=50, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループのライントレース
     traceline_cam_for_loop = TraceLineCam(
         name="camera_trace_for_loop",
-        power=30, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        power=50, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
@@ -532,6 +535,7 @@ def build_behaviour_tree() -> BehaviourTree:
         obstacle_loop,# 20250625_add_kubota_オブジェクト回避のノード追加
         # mid_selector,#20250627_add_kubota_ダブルループの制御
         # IsDistanceEarned(name="check distance", delta_dist=40000)
+        traceline_cam_for_obstacle
     ])
 
     calibration = Sequence(name="calibration", memory=True)
