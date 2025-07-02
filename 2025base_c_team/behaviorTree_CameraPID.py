@@ -524,18 +524,16 @@ def build_behaviour_tree() -> BehaviourTree:
         ]),
         traceline_cam_for_loop
     ])
-    obstacle_loop = Parallel(name="obstacle_loop", policy=ParallelPolicy.SuccessOnOne())
-    obstacle_loop.add_children([
-    obstacle_selector,
-    IsDistanceEarned(name="check distance", delta_dist=40000)
-    ])
-
-    loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
+    # obstacle_loop = Parallel(name="obstacle_loop", policy=ParallelPolicy.SuccessOnOne())
+    # obstacle_loop.add_children([
+    # obstacle_selector,
+    # ])
+    loop_01 = Selector(name="loop_01_with_obstacle", memory=False)
     loop_01.add_children([
-        obstacle_loop,# 20250625_add_kubota_オブジェクト回避のノード追加
+        IsDistanceEarned(name="check distance", delta_dist=40000),
+        obstacle_selector,# 20250625_add_kubota_オブジェクト回避のノード追加
         # mid_selector,#20250627_add_kubota_ダブルループの制御
         # IsDistanceEarned(name="check distance", delta_dist=40000)
-        traceline_cam_for_obstacle
     ])
 
     calibration = Sequence(name="calibration", memory=True)
