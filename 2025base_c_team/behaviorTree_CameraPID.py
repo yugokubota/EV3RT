@@ -422,10 +422,21 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
             g_right_motor.set_power(0)
             self.step += 1
             return Status.RUNNING
-
+        
         elif self.step == 2:
-            # 左へ90度戻して、ラインに復帰する
+            # 前へ直進
             print("step2_start")
+            g_left_motor.set_power(60)
+            g_right_motor.set_power(60)
+            time.sleep(sec * 1.5)
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+            self.step += 1
+            return Status.RUNNING
+
+        elif self.step == 3:
+            # 左へ90度戻して、ラインに復帰する
+            print("step3_start")
             g_left_motor.set_power(10)
             g_right_motor.set_power(40)
             time.sleep(sec)
