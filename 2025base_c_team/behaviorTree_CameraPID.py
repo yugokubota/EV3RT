@@ -142,7 +142,7 @@ class IsDistanceEarned(Behaviour):
                 self.logger.info("%+06d %s.delta distance earned" % (cur_dist, self.__class__.__name__))
             return Status.SUCCESS
         else:
-            return Status.RUNNING
+            return Status.FAILURE
 
 
 class IsSonarOn(Behaviour):
