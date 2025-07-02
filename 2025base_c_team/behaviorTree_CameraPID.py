@@ -404,7 +404,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
         if self.step == 0:
             # 右へ90度（1/4周）分のカーブ
             print("step0_start")
-            g_left_motor.set_power(40)
+            g_left_motor.set_power(60)
             g_right_motor.set_power(10)
             time.sleep(sec)  # カーブの大きさ
             g_left_motor.set_power(0)
@@ -416,8 +416,8 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
             # 前へ直進
             print("step1_start")
             g_left_motor.set_power(20)
-            g_right_motor.set_power(40)
-            time.sleep(sec)
+            g_right_motor.set_power(60)
+            time.sleep(sec * 1.3)
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
             self.step += 1
@@ -428,7 +428,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
             print("step2_start")
             g_left_motor.set_power(60)
             g_right_motor.set_power(60)
-            time.sleep(sec * 1.5)
+            time.sleep(sec)
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
             self.step += 1
