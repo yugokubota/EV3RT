@@ -371,40 +371,40 @@ class AvoidKShape(Behaviour):
     def update(self) -> Status:
         if self.state == 0:
             # 左45度回転（右モータ前進、左モータ後退）
-            g_right_motor.set_power(100)
-            g_left_motor.set_power(-100)
+            g_right_motor.set_power(60)
+            g_left_motor.set_power(-60)
             self.count += 1
-            if self.count > 100:  # 回転時間の調整ポイント
+            if self.count > 15:  # 回転時間の調整ポイント
                 self.count = 0
                 self.state = 1
                 print(" -- AvoidKShapeで左に向きます！")
 
         elif self.state == 1:
             # 前進（左斜め方向へ）
-            g_right_motor.set_power(20)
-            g_left_motor.set_power(30)
+            g_right_motor.set_power(40)
+            g_left_motor.set_power(50)
             self.count += 1
-            if self.count > 100:  # 前進距離の調整ポイント
+            if self.count > 15:  # 前進距離の調整ポイント
                 self.count = 0
                 self.state = 2
                 print(" -- AvoidKShapeで進みます！")
 
         elif self.state == 2:
             # 右45度回転（元の方向に戻す）
-            g_right_motor.set_power(-100)
-            g_left_motor.set_power(100)
+            g_right_motor.set_power(-60)
+            g_left_motor.set_power(60)
             self.count += 1
-            if self.count > 100:
+            if self.count > 15:
                 self.count = 0
                 self.state = 3
                 print(" -- AvoidKShapeで右に向きます！")
 
         elif self.state == 3:
             # 直進（元の直線方向）
-            g_right_motor.set_power(20)
-            g_left_motor.set_power(30)
+            g_right_motor.set_power(40)
+            g_left_motor.set_power(50)
             self.count += 1
-            if self.count > 100:
+            if self.count > 15:
                 # 動作終了 → モータ停止＆ブレーキ
                 g_right_motor.set_power(0)
                 g_left_motor.set_power(0)
@@ -451,7 +451,7 @@ def build_behaviour_tree() -> BehaviourTree:
                          pid_p=2.0, pid_i=0.0012, pid_d=0.18,
                          gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL),
             obstacle_sequence,       # ←追加（障害物回避）
-            IsDistanceEarned(name="check distance", delta_dist = 4000),
+            IsDistanceEarned(name="check distance", delta_dist = 8000),
         ]
     )
     root.add_children(
