@@ -19,7 +19,7 @@ from py_trees import (
 from py_etrobo_util import Video, TraceSide, Plotter
 from py_etrobo_util.plotter import TIRE_DIAMETER
 
-EXEC_INTERVAL: float = 0.04
+EXEC_INTERVAL: float = 0.02
 VIDEO_INTERVAL: float = 0.02
 ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
@@ -413,8 +413,8 @@ class AvoidObstacleArcFull(Behaviour):
         g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(30)
-        g_right_motor.set_power(70)
+        g_left_motor.set_power(20)
+        g_right_motor.set_power(40)
         time.sleep(2)  # 必要に応じて調整
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -476,14 +476,14 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=30, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        power=45, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループのライントレース
     traceline_cam_for_loop = TraceLineCam(
         name="camera_trace_for_loop",
-        power=30, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        power=45, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
