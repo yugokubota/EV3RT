@@ -376,6 +376,7 @@ class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検�
 
     def update(self) -> Status:
         dist = g_sonar_sensor.get_distance()
+        print("dist = ",dist)
         if 0 < dist < self.threshold:
             return Status.SUCCESS
             print("IsObstacleNear_start")
