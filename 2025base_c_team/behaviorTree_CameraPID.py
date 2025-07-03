@@ -370,7 +370,7 @@ class VideoThread(threading.Thread):
             time.sleep(VIDEO_INTERVAL)
 
 class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検知するクラス追加
-    def __init__(self, name: str, threshold: int = 200):
+    def __init__(self, name: str, threshold: int = 300):
         super().__init__(name)
         self.threshold = threshold
 
