@@ -472,7 +472,7 @@ def initialize_etrobo(backend: str) -> ETRobo:
             .add_device('right_motor', device_type=Motor, port='A')
             .add_device('left_motor', device_type=Motor, port='B')
             .add_device('touch_sensor', device_type=TouchSensor, port='D')
-            .add_device('color_sensor', device_type=ColorSensor, port='E')
+            #.add_device('color_sensor', device_type=ColorSensor, port='E')
             .add_device('sonar_sensor', device_type=SonarSensor, port='F'))
 
 def setup_thread():
