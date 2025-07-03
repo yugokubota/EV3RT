@@ -377,7 +377,6 @@ class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検�
     def update(self) -> Status:
         print("IsObstacleNear_start")
         dist = g_sonar_sensor.get_distance()
-        print(f"SONAR distance = {dist}")
         if 0 < dist < self.threshold:
             return Status.SUCCESS
         return Status.FAILURE
@@ -390,6 +389,7 @@ class AvoidObstacleArcFull(Behaviour):
 
     def update(self) -> Status:
         print("AvoidObstacleArcFull_start")
+        print(f"SONAR distance = {dist}")
         if self.done:
             return Status.SUCCESS
 
@@ -413,14 +413,14 @@ class AvoidObstacleArcFull(Behaviour):
         g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(20)
-        g_right_motor.set_power(60)
+        g_left_motor.set_power(30)
+        g_right_motor.set_power(70)
         time.sleep(2)  # 必要に応じて調整
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
         # 右に戻してライン復帰
-        g_left_motor.set_power(60)
+        g_left_motor.set_power(40)
         g_right_motor.set_power(20)
         time.sleep(2)
         g_left_motor.set_power(0)
@@ -590,8 +590,8 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
     calibration = Sequence(name="calibration", memory=True)
     calibration.add_children([
-        ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
         ArmUpDownFull(name="arm down", direction=ArmDirection.DOWN),
+        ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
         ResetDevice(name="device reset")
     ])
     start = Sequence(name="start", memory=True)
