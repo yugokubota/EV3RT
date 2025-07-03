@@ -370,7 +370,7 @@ class VideoThread(threading.Thread):
             time.sleep(VIDEO_INTERVAL)
 
 class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検知するクラス追加
-    def __init__(self, name: str, threshold: int = 250):
+    def __init__(self, name: str, threshold: int = 300):
         super().__init__(name)
         self.threshold = threshold
 
@@ -387,13 +387,18 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
         super().__init__(name)
         self.step = 0
         self.running = False
+        self.dist = None
 
     def update(self) -> Status:
         print("AvoidObstacleArcFull_start")
-        dist = g_sonar_sensor.get_distance()
-        if dist <= 0:
-            print("fallback")
-            dist = 100  # フォールバック
+        if self.dist is None:
+            dist = g_sonar_sensor.get_distance()
+            if dist <= 0:
+                print("fallback")
+                dist = 100  # フォールバック
+            self.dist = dist
+        else:
+            dist = self.dist
 
         arc_length = math.pi * dist / 2  # 1/2円（半円）回避
         tire_circ = math.pi * TIRE_DIAMETER
