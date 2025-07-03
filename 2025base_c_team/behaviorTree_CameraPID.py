@@ -393,7 +393,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
         dist = g_sonar_sensor.get_distance()
         if dist <= 0:
             print("fallback")
-            dist = 200  # フォールバック
+            dist = 100  # フォールバック
 
         arc_length = math.pi * dist / 2  # 1/2円（半円）回避
         tire_circ = math.pi * TIRE_DIAMETER
