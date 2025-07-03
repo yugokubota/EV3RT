@@ -382,65 +382,114 @@ class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検�
             return Status.SUCCESS
         return Status.FAILURE
 
-class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト回避するクラスの修正
+class AvoidObstacleArcFull(Behaviour):
     def __init__(self, name: str):
         super().__init__(name)
-        self.step = 0
-        self.running = False
+        self.done = False
         self.dist = None
 
     def update(self) -> Status:
         print("AvoidObstacleArcFull_start")
+        if self.done:
+            return Status.SUCCESS
+
+        # 初回のみ距離取得
         if self.dist is None:
             dist = g_sonar_sensor.get_distance()
             if dist <= 0:
                 print("fallback")
-                dist = 100  # フォールバック
+                dist = 100
             self.dist = dist
         else:
             dist = self.dist
 
-        arc_length = math.pi * dist / 2  # 1/2円（半円）回避
-        tire_circ = math.pi * TIRE_DIAMETER
-        degrees = (arc_length / tire_circ) * 360
+        # --- 以下、単純な回避動作 ---
+        # 右カーブ
+        g_left_motor.set_power(50)
+        g_right_motor.set_power(10)
+        time.sleep(0.5)  # 必要に応じて調整
+        # 止める
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
 
-        # 角度degrees分を秒数に変換（要調整）
-        sec = degrees / 180  # 例：180度で1秒くらい（実機テスト必須）
+        # 左に戻す
+        g_left_motor.set_power(20)
+        g_right_motor.set_power(60)
+        time.sleep(0.7)  # 必要に応じて調整
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
 
-        if self.step == 0:
-            # 右へカーブ
-            print("step0_start")
-            g_left_motor.set_power(50)
-            g_right_motor.set_power(10)
-            time.sleep(sec/2)  # カーブの大きさ
-            g_left_motor.set_power(0)
-            g_right_motor.set_power(0)
-            self.step += 1
-            return Status.RUNNING
+        # 右に戻してライン復帰
+        g_left_motor.set_power(60)
+        g_right_motor.set_power(20)
+        time.sleep(0.7)
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
 
-        elif self.step == 1:
-            # 少し左に戻す
-            print("step1_start")
-            g_left_motor.set_power(20)
-            g_right_motor.set_power(60)
-            time.sleep(sec * 1.3)
-            g_left_motor.set_power(0)
-            g_right_motor.set_power(0)
-            self.step += 1
-            return Status.RUNNING
-        
-        elif self.step == 2:
-            # 右に戻してライン復帰
-            print("step2_start")
-            g_left_motor.set_power(60)
-            g_right_motor.set_power(20)
-            time.sleep(sec * 1.3)
-            g_left_motor.set_power(0)
-            g_right_motor.set_power(0)
-            self.step += 1
-            return Status.RUNNING
-
+        # フラグを立てて終了
+        self.done = True
+        print("AvoidObstacleArcFull complete!")
         return Status.SUCCESS
+
+# class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト回避するクラスの修正
+#     def __init__(self, name: str):
+#         super().__init__(name)
+#         self.step = 0
+#         self.running = False
+#         self.dist = None
+
+#     def update(self) -> Status:
+#         print("AvoidObstacleArcFull_start")
+#         if self.dist is None:
+#             dist = g_sonar_sensor.get_distance()
+#             if dist <= 0:
+#                 print("fallback")
+#                 dist = 100  # フォールバック
+#             self.dist = dist
+#         else:
+#             dist = self.dist
+
+#         arc_length = math.pi * dist / 2  # 1/2円（半円）回避
+#         tire_circ = math.pi * TIRE_DIAMETER
+#         degrees = (arc_length / tire_circ) * 360
+
+#         # 角度degrees分を秒数に変換（要調整）
+#         sec = degrees / 180  # 例：180度で1秒くらい（実機テスト必須）
+
+#         if self.step == 0:
+#             # 右へカーブ
+#             print("step0_start")
+#             g_left_motor.set_power(50)
+#             g_right_motor.set_power(10)
+#             time.sleep(sec/2)  # カーブの大きさ
+#             g_left_motor.set_power(0)
+#             g_right_motor.set_power(0)
+#             self.step += 1
+#             return Status.RUNNING
+
+#         elif self.step == 1:
+#             # 少し左に戻す
+#             print("step1_start")
+#             g_left_motor.set_power(20)
+#             g_right_motor.set_power(60)
+#             time.sleep(sec * 1.3)
+#             g_left_motor.set_power(0)
+#             g_right_motor.set_power(0)
+#             self.step += 1
+#             return Status.RUNNING
+        
+#         elif self.step == 2:
+#             # 右に戻してライン復帰
+#             print("step2_start")
+#             g_left_motor.set_power(60)
+#             g_right_motor.set_power(20)
+#             time.sleep(sec * 1.3)
+#             g_left_motor.set_power(0)
+#             g_right_motor.set_power(0)
+#             self.step += 1
+#             return Status.RUNNING
+
+#         return Status.SUCCESS
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
     def __init__(self, name, direction, degree=45, power=30, radius=200):
