@@ -414,8 +414,8 @@ class AvoidObstacleArcFull(Behaviour):
         g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(30)
-        g_right_motor.set_power(30)
+        g_left_motor.set_power(40)
+        g_right_motor.set_power(40)
         time.sleep(3)  # 必要に応じて調整
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -494,7 +494,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=45, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
@@ -542,7 +542,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         obstacle_selector,
         # mid_selector,
-        TraceLineCam(name="trace_clear_obstacle",power=50, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="trace_clear_obstacle",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
         IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
