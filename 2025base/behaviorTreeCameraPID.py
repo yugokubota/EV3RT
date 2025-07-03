@@ -374,7 +374,7 @@ class AvoidKShape(Behaviour):
             g_right_motor.set_power(60)
             g_left_motor.set_power(-60)
             self.count += 1
-            if self.count > 12:  # 回転時間の調整ポイント
+            if self.count > 10:  # 回転時間の調整ポイント
                 self.count = 0
                 self.state = 1
                 print(" -- AvoidKShapeで左に向きます！")
@@ -447,7 +447,7 @@ def build_behaviour_tree() -> BehaviourTree:
     )
     loop_01.add_children(
         [
-            TraceLineCam(name="camera trace normal edge", power=70,
+            TraceLineCam(name="camera trace normal edge", power=60,
                          pid_p=2.0, pid_i=0.0012, pid_d=0.18,
                          gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL),
             obstacle_sequence,       # ←追加（障害物回避）
