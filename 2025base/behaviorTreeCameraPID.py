@@ -372,7 +372,7 @@ class AvoidKShape(Behaviour):
         if self.state == 0:
             # 左45度回転（右モータ前進、左モータ後退）
             g_right_motor.set_power(100)
-            g_left_motor.set_power(－100)
+            g_left_motor.set_power(-100)
             self.count += 1
             if self.count > 100:  # 回転時間の調整ポイント
                 self.count = 0
@@ -391,7 +391,7 @@ class AvoidKShape(Behaviour):
 
         elif self.state == 2:
             # 右45度回転（元の方向に戻す）
-            g_right_motor.set_power(－100)
+            g_right_motor.set_power(-100)
             g_left_motor.set_power(100)
             self.count += 1
             if self.count > 100:
