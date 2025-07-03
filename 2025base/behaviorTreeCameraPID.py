@@ -374,7 +374,7 @@ class AvoidKShape(Behaviour):
             g_right_motor.set_power(60)
             g_left_motor.set_power(-60)
             self.count += 1
-            if self.count > 15:  # 回転時間の調整ポイント
+            if self.count > 12:  # 回転時間の調整ポイント
                 self.count = 0
                 self.state = 1
                 print(" -- AvoidKShapeで左に向きます！")
@@ -384,7 +384,7 @@ class AvoidKShape(Behaviour):
             g_right_motor.set_power(40)
             g_left_motor.set_power(50)
             self.count += 1
-            if self.count > 15:  # 前進距離の調整ポイント
+            if self.count > 12:  # 前進距離の調整ポイント
                 self.count = 0
                 self.state = 2
                 print(" -- AvoidKShapeで進みます！")
@@ -394,7 +394,7 @@ class AvoidKShape(Behaviour):
             g_right_motor.set_power(-60)
             g_left_motor.set_power(60)
             self.count += 1
-            if self.count > 15:
+            if self.count > 12:
                 self.count = 0
                 self.state = 3
                 print(" -- AvoidKShapeで右に向きます！")
@@ -404,14 +404,14 @@ class AvoidKShape(Behaviour):
             g_right_motor.set_power(40)
             g_left_motor.set_power(50)
             self.count += 1
-            if self.count > 15:
+            if self.count > 12:
                 # 動作終了 → モータ停止＆ブレーキ
-                g_right_motor.set_power(0)
-                g_left_motor.set_power(0)
-                g_right_motor.set_brake(True)
-                g_left_motor.set_brake(True)
-                return Status.SUCCESS
+                #g_right_motor.set_power(0)
+                #g_left_motor.set_power(0)
+                #g_right_motor.set_brake(True)
+                #g_left_motor.set_brake(True)
                 print(" -- AvoidKShapeで進みます2！")
+                #return Status.SUCCESS   
 
         return Status.RUNNING
 # くの字ここまで
