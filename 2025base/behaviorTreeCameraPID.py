@@ -366,15 +366,15 @@ class AvoidKShape(Behaviour):
         super().__init__(name)
         self.state = 0  # 動作ステート（0〜3）
         self.count = 0  # ステート内のカウンター
-        print(" -- AvoidKShapeで避けます！")
+        print(" -- AvoidKShape初期化！")
 
     def update(self) -> Status:
         if self.state == 0:
             # 左45度回転（右モータ前進、左モータ後退）
-            g_right_motor.set_power(20)
-            g_left_motor.set_power(0)
+            g_right_motor.set_power(100)
+            g_left_motor.set_power(－100)
             self.count += 1
-            if self.count > 200:  # 回転時間の調整ポイント
+            if self.count > 100:  # 回転時間の調整ポイント
                 self.count = 0
                 self.state = 1
                 print(" -- AvoidKShapeで左に向きます！")
@@ -384,17 +384,17 @@ class AvoidKShape(Behaviour):
             g_right_motor.set_power(20)
             g_left_motor.set_power(30)
             self.count += 1
-            if self.count > 200:  # 前進距離の調整ポイント
+            if self.count > 100:  # 前進距離の調整ポイント
                 self.count = 0
                 self.state = 2
                 print(" -- AvoidKShapeで進みます！")
 
         elif self.state == 2:
             # 右45度回転（元の方向に戻す）
-            g_right_motor.set_power(0)
-            g_left_motor.set_power(20)
+            g_right_motor.set_power(－100)
+            g_left_motor.set_power(100)
             self.count += 1
-            if self.count > 200:
+            if self.count > 100:
                 self.count = 0
                 self.state = 3
                 print(" -- AvoidKShapeで右に向きます！")
@@ -404,7 +404,7 @@ class AvoidKShape(Behaviour):
             g_right_motor.set_power(20)
             g_left_motor.set_power(30)
             self.count += 1
-            if self.count > 200:
+            if self.count > 100:
                 # 動作終了 → モータ停止＆ブレーキ
                 g_right_motor.set_power(0)
                 g_left_motor.set_power(0)
@@ -427,7 +427,7 @@ def build_behaviour_tree() -> BehaviourTree:
     print("--くの字用")
     obstacle_sequence.add_children(
         [
-            IsSonarOn(name="check obstacle", alert_dist=300),
+            IsSonarOn(name="check obstacle", alert_dist=400),
             AvoidKShape(name="avoid K-shape path")
         ]
     )
