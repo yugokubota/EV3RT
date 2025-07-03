@@ -411,7 +411,7 @@ class AvoidKShape(Behaviour):
                 #g_right_motor.set_brake(True)
                 #g_left_motor.set_brake(True)
                 print(" -- AvoidKShapeで進みます2！")
-                #return Status.SUCCESS   
+                return Status.SUCCESS   
 
         return Status.RUNNING
 # くの字ここまで
@@ -420,7 +420,7 @@ def build_behaviour_tree() -> BehaviourTree:
     root = Sequence(name="loop by camera", memory=True)
     calibration = Sequence(name="calibration", memory=True)
     start = Parallel(name="start", policy=ParallelPolicy.SuccessOnOne())
-    loop_01 = Parallel(name="loop 01", policy=ParallelPolicy.SuccessOnOne())
+    loop_01 = Parallel(name="loop 01", policy=ParallelPolicy.SuccessOnAll())
 
     # くの字用
     obstacle_sequence = Sequence(name="obstacle sequence", memory=True)
