@@ -466,12 +466,29 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
             return Status.SUCCESS
         return Status.RUNNING
 
+class IsDistancePassed(Behaviour):
+    def __init__(self, name: str, target_distance: int):
+        super().__init__(name)
+        self.target_distance = target_distance
+        self.running = False
+
+    def update(self) -> Status:
+        if not self.running:
+            self.running = True
+            self.start_distance = g_plotter.get_distance()
+            print(f"[IsDistancePassed] Start: {self.start_distance}, Target: {self.target_distance}")
+        now_distance = g_plotter.get_distance()
+        if now_distance - self.start_distance >= self.target_distance:
+            print(f"[IsDistancePassed] Passed: {now_distance - self.start_distance}")
+            return Status.SUCCESS
+        return Status.FAILURE
+
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
-        IsObstacleNear(name="obstacle?"),
+        IsDistancePassed(name="distance_passed", target_distance=1450),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
     # オブジェクト回避のライントレース
