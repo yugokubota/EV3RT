@@ -370,7 +370,7 @@ class VideoThread(threading.Thread):
             time.sleep(VIDEO_INTERVAL)
 
 class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検知するクラス追加
-    def __init__(self, name: str, threshold: int = 500):
+    def __init__(self, name: str, threshold: int = 250):
         super().__init__(name)
         self.threshold = threshold
 
@@ -392,7 +392,8 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
         print("AvoidObstacleArcFull_start")
         dist = g_sonar_sensor.get_distance()
         if dist <= 0:
-            dist = 100  # フォールバック
+            print("fallback")
+            dist = 200  # フォールバック
 
         arc_length = math.pi * dist / 2  # 1/2円（半円）回避
         tire_circ = math.pi * TIRE_DIAMETER
@@ -402,7 +403,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
         sec = degrees / 180  # 例：180度で1秒くらい（実機テスト必須）
 
         if self.step == 0:
-            # 右へ90度（1/4周）分のカーブ
+            # 右へカーブ
             print("step0_start")
             g_left_motor.set_power(50)
             g_right_motor.set_power(10)
@@ -413,7 +414,7 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
             return Status.RUNNING
 
         elif self.step == 1:
-            # 前へ直進
+            # 少し左に戻す
             print("step1_start")
             g_left_motor.set_power(20)
             g_right_motor.set_power(60)
@@ -424,26 +425,15 @@ class AvoidObstacleArcFull(Behaviour):# 20250630_add_kubota_オブジェクト�
             return Status.RUNNING
         
         elif self.step == 2:
-            # 前へ直進
+            # 右に戻してライン復帰
             print("step2_start")
             g_left_motor.set_power(60)
-            g_right_motor.set_power(60)
-            time.sleep(sec)
+            g_right_motor.set_power(20)
+            time.sleep(sec * 1.3)
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
             self.step += 1
             return Status.RUNNING
-
-        elif self.step == 3:
-            # 左へ90度戻して、ラインに復帰する
-            print("step3_start")
-            g_left_motor.set_power(10)
-            g_right_motor.set_power(40)
-            time.sleep(sec)
-            g_left_motor.set_power(0)
-            g_right_motor.set_power(0)
-            self.step += 1
-            return Status.SUCCESS
 
         return Status.SUCCESS
 
@@ -503,18 +493,19 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
+    # オブジェクト回避とライントレース
+    obstacle_selector = Selector(name="obstacle_or_trace", memory=False)
+    obstacle_selector.add_children([
+        avoid_seq, 
+        traceline_cam_for_obstacle
+    ])
     # ダブルループ侵入
     enter_circle = Sequence(name="enter_circle", memory=True)
     enter_circle.add_children([
         IsJunction(name="enter_junction", target_state=JState.FORKING),
         ArcTurn(name="arc_into_circle", direction="right", degree=90, power=30, radius=200)
     ])
-    # オブジェクト回避とライントレース
-    obstacle_selector = Selector(name="obstacle_or_trace", memory=False)
-    obstacle_selector.add_children([# 20250625_add_kubota_オブジェクト回避のノード追加
-        avoid_seq, 
-        traceline_cam_for_obstacle
-    ])
+    # ダブルループ処理
     double_loop = Sequence(name="eight_loop", memory=True)
     double_loop.add_children([
         TraceLineCam(name="trace_outer",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
@@ -527,7 +518,7 @@ def build_behaviour_tree() -> BehaviourTree:
         ArcTurn(name="arc_to_big", direction="right", degree=45, power=30, radius=200)
     ])
     # ダブルループ侵入とダブルループ処理とライントレース
-    mid_selector = Selector(name="mid_selector", memory=True)
+    mid_selector = Selector(name="mid_selector", memory=False)
     mid_selector.add_children([
         Sequence(name="loop_seq", memory=True, children=[
         enter_circle,
@@ -535,20 +526,14 @@ def build_behaviour_tree() -> BehaviourTree:
         ]),
         traceline_cam_for_loop
     ])
-    # obstacle_loop = Parallel(name="obstacle_loop", policy=ParallelPolicy.SuccessOnOne())
-    # obstacle_loop.add_children([
-    # obstacle_selector,
-    # ])
-    loop_01 = Selector(name="loop_01_with_obstacle", memory=False)
+    loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
-        IsDistanceEarned(name="check distance", delta_dist=40000),
-        obstacle_selector,# 20250625_add_kubota_オブジェクト回避のノード追加
-        TraceLineCam(name="trace_after_obstacle",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        obstacle_selector,
+        # mid_selector,
+        TraceLineCam(name="trace_clear_obstacle",power=50, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-        # mid_selector,#20250627_add_kubota_ダブルループの制御
-        # IsDistanceEarned(name="check distance", delta_dist=40000)
+        IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
-
     calibration = Sequence(name="calibration", memory=True)
     calibration.add_children([
         ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
