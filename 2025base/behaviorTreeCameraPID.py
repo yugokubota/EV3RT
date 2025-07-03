@@ -372,7 +372,7 @@ class AvoidKShape(Behaviour):
         if self.state == 0:
             # 左45度回転（右モータ前進、左モータ後退）
             g_right_motor.set_power(20)
-            g_left_motor.set_power(-30)
+            g_left_motor.set_power(0)
             self.count += 1
             if self.count > 200:  # 回転時間の調整ポイント
                 self.count = 0
@@ -381,7 +381,7 @@ class AvoidKShape(Behaviour):
 
         elif self.state == 1:
             # 前進（左斜め方向へ）
-            g_right_motor.set_power(30)
+            g_right_motor.set_power(20)
             g_left_motor.set_power(30)
             self.count += 1
             if self.count > 200:  # 前進距離の調整ポイント
@@ -391,7 +391,7 @@ class AvoidKShape(Behaviour):
 
         elif self.state == 2:
             # 右45度回転（元の方向に戻す）
-            g_right_motor.set_power(-20)
+            g_right_motor.set_power(0)
             g_left_motor.set_power(20)
             self.count += 1
             if self.count > 200:
@@ -401,7 +401,7 @@ class AvoidKShape(Behaviour):
 
         elif self.state == 3:
             # 直進（元の直線方向）
-            g_right_motor.set_power(30)
+            g_right_motor.set_power(20)
             g_left_motor.set_power(30)
             self.count += 1
             if self.count > 200:
@@ -427,7 +427,7 @@ def build_behaviour_tree() -> BehaviourTree:
     print("--くの字用")
     obstacle_sequence.add_children(
         [
-            IsSonarOn(name="check obstacle", alert_dist=200),
+            IsSonarOn(name="check obstacle", alert_dist=300),
             AvoidKShape(name="avoid K-shape path")
         ]
     )
@@ -447,7 +447,7 @@ def build_behaviour_tree() -> BehaviourTree:
     )
     loop_01.add_children(
         [
-            TraceLineCam(name="camera trace normal edge", power=45,
+            TraceLineCam(name="camera trace normal edge", power=20,
                          pid_p=2.0, pid_i=0.0012, pid_d=0.18,
                          gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL),
             obstacle_sequence,       # ←追加（障害物回避）
@@ -472,7 +472,7 @@ def initialize_etrobo(backend: str) -> ETRobo:
             .add_device('right_motor', device_type=Motor, port='A')
             .add_device('left_motor', device_type=Motor, port='B')
             .add_device('touch_sensor', device_type=TouchSensor, port='D')
-            #.add_device('color_sensor', device_type=ColorSensor, port='E')
+            .add_device('color_sensor', device_type=ColorSensor, port='E')
             .add_device('sonar_sensor', device_type=SonarSensor, port='F'))
 
 def setup_thread():
