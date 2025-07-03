@@ -370,7 +370,7 @@ class VideoThread(threading.Thread):
             time.sleep(VIDEO_INTERVAL)
 
 class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検知するクラス追加
-    def __init__(self, name: str, threshold: int = 300):
+    def __init__(self, name: str, threshold: int = 250):
         super().__init__(name)
         self.threshold = threshold
 
@@ -421,8 +421,8 @@ class AvoidObstacleArcFull(Behaviour):
         g_right_motor.set_power(0)
 
         # 右に戻してライン復帰
-        g_left_motor.set_power(40)
-        g_right_motor.set_power(20)
+        g_left_motor.set_power(20)
+        g_right_motor.set_power(10)
         time.sleep(1)
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -531,8 +531,8 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
     calibration = Sequence(name="calibration", memory=True)
     calibration.add_children([
-        ArmUpDownFull(name="arm down", direction=ArmDirection.DOWN),
         ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
+        ArmUpDownFull(name="arm down", direction=ArmDirection.DOWN),
         ResetDevice(name="device reset")
     ])
     start = Sequence(name="start", memory=True)
