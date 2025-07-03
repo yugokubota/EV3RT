@@ -375,10 +375,10 @@ class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検�
         self.threshold = threshold
 
     def update(self) -> Status:
-        print("IsObstacleNear_start")
         dist = g_sonar_sensor.get_distance()
         if 0 < dist < self.threshold:
             return Status.SUCCESS
+            print("IsObstacleNear_start")
         return Status.FAILURE
 
 class AvoidObstacleArcFull(Behaviour):
@@ -476,14 +476,14 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        power=30, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループのライントレース
     traceline_cam_for_loop = TraceLineCam(
         name="camera_trace_for_loop",
-        power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        power=30, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
