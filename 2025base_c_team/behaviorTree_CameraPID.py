@@ -414,22 +414,15 @@ class AvoidObstacleArcFull(Behaviour):
         g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(60)
-        g_right_motor.set_power(60)
+        g_left_motor.set_power(30)
+        g_right_motor.set_power(50)
         time.sleep(0.5)  # 必要に応じて調整
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
         # 左に戻してライン復帰
-        g_left_motor.set_power(10)
-        g_right_motor.set_power(60)
-        time.sleep(1.5)
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
-
-        # 右に戻してライン復帰
         g_left_motor.set_power(40)
-        g_right_motor.set_power(20)
+        g_right_motor.set_power(50)
         time.sleep(1.5)
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -501,14 +494,14 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=70, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループのライントレース
     traceline_cam_for_loop = TraceLineCam(
         name="camera_trace_for_loop",
-        power=70, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
