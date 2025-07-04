@@ -423,14 +423,14 @@ class AvoidObstacleArcFull(Behaviour):
         # ライン復帰
         g_left_motor.set_power(10)
         g_right_motor.set_power(52)
-        time.sleep(1.5)
+        time.sleep(1)
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
         # ライン復帰
-        g_left_motor.set_power(40)
-        g_right_motor.set_power(40)
-        time.sleep(1)
+        g_left_motor.set_power(50)
+        g_right_motor.set_power(30)
+        time.sleep(0.5)
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
@@ -449,7 +449,7 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
         self.running = False
 
     def update(self) -> Status:
-        print("カーブします")
+        print("Arcturn_start")
         if not self.running:
             self.running = True
             # degree→タイヤ回転数変換は省略例
@@ -501,7 +501,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=50, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        power=55, pid_p=2.4, pid_i=0.002, pid_d=0.25,
         gs_min=0, gs_max=80,
         trace_side=TraceSide.NORMAL
     )
