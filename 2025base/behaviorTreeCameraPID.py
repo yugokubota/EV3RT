@@ -450,7 +450,7 @@ def build_behaviour_tree() -> BehaviourTree:
         [
             TraceLineCam(name="camera trace normal edge", power=55,
                          pid_p=2.0, pid_i=0.001, pid_d=0.3,
-                         gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL),
+                         gs_min=0, gs_max=40, trace_side=TraceSide.NORMAL),
             obstacle_sequence,       # ←追加（障害物回避）
             IsDistanceEarned(name="check distance", delta_dist = 8000),
         ]
