@@ -19,7 +19,7 @@ from py_trees import (
 )
 from py_etrobo_util import Video, TraceSide, Plotter
 
-EXEC_INTERVAL: float = 0.04
+EXEC_INTERVAL: float = 0.02
 VIDEO_INTERVAL: float = 0.02
 ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
