@@ -394,15 +394,15 @@ class AvoidObstacleArcFull(Behaviour):
             return Status.SUCCESS
 
         # 初回のみ距離取得
-        if self.dist is None:
-            dist = g_sonar_sensor.get_distance()
-            print("dist = ",dist)
-            if dist <= 0:
-                print("fallback")
-                dist = 100
-            self.dist = dist
-        else:
-            dist = self.dist
+        # if self.dist is None:
+        #     dist = g_sonar_sensor.get_distance()
+        #     print("dist = ",dist)
+        #     if dist <= 0:
+        #         print("fallback")
+        #         dist = 100
+        #     self.dist = dist
+        # else:
+        #     dist = self.dist
 
         # --- 以下、単純な回避動作 ---
         # 右カーブ
@@ -547,8 +547,8 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
-        obstacle_selector,
-        # mid_selector,
+        # obstacle_selector,
+        mid_selector,
         # TraceLineCam(name="trace_clear_obstacle",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         # gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
         # IsDistanceEarned(name="check distance", delta_dist=40000)
