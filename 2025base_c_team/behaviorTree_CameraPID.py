@@ -408,7 +408,7 @@ class AvoidObstacleArcFull(Behaviour):
         # 右カーブ
         g_left_motor.set_power(50)
         g_right_motor.set_power(10)
-        time.sleep(1)  # 必要に応じて調整
+        time.sleep(2)  # 必要に応じて調整
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -416,7 +416,7 @@ class AvoidObstacleArcFull(Behaviour):
         # 左に戻す
         g_left_motor.set_power(20)
         g_right_motor.set_power(60)
-        time.sleep(1.2)  # 必要に応じて調整
+        time.sleep(1)  # 必要に応じて調整
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
@@ -488,7 +488,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2600),
+        IsDistancePassed(name="distance_passed", target_distance=2650),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
     # オブジェクト回避のライントレース
@@ -542,9 +542,9 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         obstacle_selector,
         # mid_selector,
-        TraceLineCam(name="trace_clear_obstacle",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-        IsDistanceEarned(name="check distance", delta_dist=40000)
+        # TraceLineCam(name="trace_clear_obstacle",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        # gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        # IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
     calibration = Sequence(name="calibration", memory=True)
     calibration.add_children([
