@@ -245,7 +245,7 @@ class RunAsInstructed(Behaviour):
             self.running = True
             self.logger.info("%+06d %s.started with pwm=(%s, %s)" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
         g_right_motor.set_power(self.pwm_r)
-        g_left_motor.set_power(self.pwm_l + 10) #もっくん
+        g_left_motor.set_power(self.pwm_l ) 
         return Status.RUNNING
 
 
@@ -300,6 +300,7 @@ class TraceLineCam(Behaviour):
                 g_video.set_trace_side(TraceSide.CENTER)
             self.logger.info("%+06d %s.trace started with TS=%s" % (g_plotter.get_distance(), self.__class__.__name__, self.trace_side.name))
         turn = (-1) * int(self.pid(g_video.get_theta()))
+        print("TraceLineCam:" & turn)
         g_right_motor.set_power(self.power - turn)
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
@@ -447,7 +448,7 @@ def build_behaviour_tree() -> BehaviourTree:
     )
     loop_01.add_children(
         [
-            TraceLineCam(name="camera trace normal edge", power=40,
+            TraceLineCam(name="camera trace normal edge", power=30,
                          pid_p=2.0, pid_i=0.0012, pid_d=0.18,
                          gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL),
             obstacle_sequence,       # ←追加（障害物回避）
