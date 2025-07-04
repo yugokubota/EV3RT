@@ -19,7 +19,7 @@ from py_trees import (
 )
 from py_etrobo_util import Video, TraceSide, Plotter
 
-EXEC_INTERVAL: float = 0.02
+EXEC_INTERVAL: float = 0.04
 VIDEO_INTERVAL: float = 0.02
 ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
@@ -449,7 +449,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children(
         [
             TraceLineCam(name="camera trace normal edge", power=55,
-                         pid_p=2.4, pid_i=0.002, pid_d=0.25,
+                         pid_p=1.5, pid_i=0.002, pid_d=0.25,
                          gs_min=0, gs_max=80, trace_side=TraceSide.NORMAL),
             obstacle_sequence,       # ←追加（障害物回避）
             IsDistanceEarned(name="check distance", delta_dist = 8000),
