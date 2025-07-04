@@ -420,12 +420,12 @@ class AvoidObstacleArcFull(Behaviour):
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
-        # # ライン復帰
-        # g_left_motor.set_power(10)
-        # g_right_motor.set_power(40)
-        # time.sleep(1)
-        # g_left_motor.set_power(0)
-        # g_right_motor.set_power(0)
+        # ライン復帰
+        g_left_motor.set_power(30)
+        g_right_motor.set_power(30)
+        time.sleep(1)
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
 
         # # ライン復帰
         # g_left_motor.set_power(50)
@@ -549,8 +549,8 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         obstacle_selector,
         # mid_selector,
-        # TraceLineCam(name="trace_clear_obstacle",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        # gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        TraceLineCam(name="trace_clear_obstacle",power=55, pid_p=2.4, pid_i=0.002, pid_d=0.25,
+        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
         # IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
     calibration = Sequence(name="calibration", memory=True)
