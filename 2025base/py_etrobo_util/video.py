@@ -246,7 +246,15 @@ class Video(object):
         if OUT_FRAME_WIDTH != FRAME_WIDTH or OUT_FRAME_HEIGHT != FRAME_HEIGHT:
             img_comm = cv2.resize(img_comm, (OUT_FRAME_WIDTH,2*OUT_FRAME_HEIGHT))
         # transmit and display the image
-        cv2.imshow("video monitor", img_comm)
+
+        # ==== 🔶 ここから追加（黄色検出） ====
+        img_hsv = cv2.cvtColor(img_orig, cv2.COLOR_BGR2HSV)
+        lower_yellow = np.array([20, 100, 100])
+        upper_yellow = np.array([30, 255, 255])
+        mask_yellow = cv2.inRange(img_hsv, lower_yellow, upper_yellow)
+        if cv2.countNonZero(mask_yellow) > 300:
+            print("[Video] 黄色を検知！" + img_hsv)
+        # ==== 🔶 ここまで追加 ====
 
         c = cv2.waitKey(1) # show the window
         
