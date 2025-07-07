@@ -265,3 +265,16 @@ class Video(object):
 
     def is_target_insight(self) -> bool:
         return self.target_insight
+
+    def is_yellow_detected(self) -> bool:
+    ret, frame = self.cap.read()
+    if not ret:
+        return False
+    frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    # 黄色のHSV範囲（必要に応じて調整）
+    lower_yellow = np.array([20, 100, 100])
+    upper_yellow = np.array([30, 255, 255])
+    mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+    yellow_area = cv2.countNonZero(mask)
+    return yellow_area > 300  # 面積しきい値（調整可）
