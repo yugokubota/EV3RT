@@ -549,7 +549,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         # obstacle_selector,
         # mid_selector,
-        TraceLineCam(name="trace_clear_obstacle",power=50, pid_p=2.4, pid_i=0.002, pid_d=0.25,
+        TraceLineCam(name="trace_clear_obstacle",power=50, pid_p=2, pid_i=0.001, pid_d=0.25,
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
         # IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
