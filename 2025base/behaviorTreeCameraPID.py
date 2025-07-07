@@ -450,7 +450,7 @@ def build_behaviour_tree() -> BehaviourTree:
     )
     loop_01.add_children(
         [
-            TraceLineCam(name="camera trace normal edge", power=55,
+            TraceLineCam(name="camera trace normal edge", power=40,
                          pid_p=2.4, pid_i=0.002, pid_d=0.25,
                          gs_min=0, gs_max=40, trace_side=TraceSide.NORMAL),
             obstacle_sequence,       # ←追加（障害物回避）
