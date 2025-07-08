@@ -547,11 +547,11 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
-        obstacle_selector,
-        # mid_selector,
-        TraceLineCam(name="trace_clear_obstacle",power=50, pid_p=2, pid_i=0.001, pid_d=0.25,
-        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
-        # IsDistanceEarned(name="check distance", delta_dist=40000)
+        # obstacle_selector,
+        mid_selector,
+        TraceLineCam(name="trace_clear_obstacle",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
     calibration = Sequence(name="calibration", memory=True)
     calibration.add_children([
