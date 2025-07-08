@@ -313,6 +313,36 @@ class TraceLineCam(Behaviour):
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
 
+class TraceLineSensor(Behaviour):
+    def __init__(self, name: str, target: int, power: int, pid_p: float, pid_i: float, pid_d: float,
+                 trace_side: TraceSide) -> None:
+        super(TraceLineSensor, self).__init__(name)
+        self.power = power
+        self.pid = PID(pid_p, pid_i, pid_d, setpoint=target, sample_time=EXEC_INTERVAL, output_limits=(-power, power))
+        self.trace_side = trace_side
+        self.running = False
+
+    def update(self) -> Status:
+        if not self.running:
+            self.running = True
+            self.logger.info("%+06d %s.trace started with TS=%s" % (g_plotter.get_distance(), self.__class__.__name__, self.trace_side.name))
+
+        # ★ 青色検知処理を追加
+        detected_color = g_color_sensor.get_color()
+        if detected_color == 'BLUE':  # 色の定義に応じて 'blue' か Color.BLUE に変更
+            self.logger.info("%+06d %s.trace detected blue color" % (g_plotter.get_distance(), self.__class__.__name__))
+            return Status.SUCCESS
+
+        brightness = g_color_sensor.get_brightness()
+        if self.trace_side == TraceSide.NORMAL:
+            turn = (-1) * g_course * int(self.pid(brightness))
+        else:  # TraceSide.OPPOSITE
+            turn = g_course * int(self.pid(brightness))
+
+        g_right_motor.set_power(self.power - turn)
+        g_left_motor.set_power(self.power + turn)
+        return Status.RUNNING
+
 
 class TraverseBehaviourTree(object):
     def __init__(self, tree: BehaviourTree) -> None:
@@ -518,13 +548,25 @@ def build_behaviour_tree() -> BehaviourTree:
         avoid_seq, 
         traceline_cam_for_obstacle
     ])
-    # ダブルループ侵入
-    enter_circle = Sequence(name="enter_circle", memory=True)
+    # 1. ダブルループ侵入
+    enter_circle = Parallel(name="enter_circle", parallelPolicy=successOnTwo)
     enter_circle.add_children([
         IsJunction(name="enter_junction", target_state=JState.FORKING),
-        ArcTurn(name="arc_into_circle", direction="right", degree=90, power=30, radius=200)
+        TraceLineSensor(
+            name="sensor trace normal edge", 
+            target=45, power=45,
+            pid_p=0.5, pid_i=0.05, pid_d=0.1,
+            trace_side=TraceSide.NORMAL
+        ),
     ])
     # ダブルループ処理
+    loop_seq = Sequence(name="loop_seq", memory=True)
+    loop_seq.add_children([
+        enter_circle,
+        ArcTurn(name="arc_into_circle", direction="right", degree=90, power=30, radius=200),
+        double_loop
+    ])
+    # ダブルループ処理2
     double_loop = Sequence(name="eight_loop", memory=True)
     double_loop.add_children([
         TraceLineCam(name="trace_outer",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
@@ -539,10 +581,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # ダブルループ侵入とダブルループ処理とライントレース
     mid_selector = Selector(name="mid_selector", memory=False)
     mid_selector.add_children([
-        Sequence(name="loop_seq", memory=True, children=[
-        enter_circle,
-        double_loop,
-        ]),
+        loop_seq,
         traceline_cam_for_loop
     ])
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
