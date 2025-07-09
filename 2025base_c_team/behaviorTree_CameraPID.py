@@ -438,7 +438,7 @@ class AvoidObstacleArcFull(Behaviour):
         # 右カーブ（鋭角に）
         g_left_motor.set_power(70)
         g_right_motor.set_power(5)
-        time.sleep(1.5)  # 曲がる時間を短縮
+        time.sleep(0.9)  # 曲がる時間を短縮
 
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -447,7 +447,7 @@ class AvoidObstacleArcFull(Behaviour):
         # 左に戻す（調整）
         g_left_motor.set_power(25)
         g_right_motor.set_power(65)
-        time.sleep(2.0)  # 曲がりすぎ防止のためやや長め
+        time.sleep(1.4)  # 曲がりすぎ防止のためやや長め
 
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
