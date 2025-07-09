@@ -435,29 +435,29 @@ class AvoidObstacleArcFull(Behaviour):
         # # g_right_motor.set_power(0)
 
         # 以下、試し
-        # 右カーブ（鋭角に）
-        g_left_motor.set_power(70)
-        g_right_motor.set_power(5)
-        time.sleep(0.9)  # 曲がる時間を短縮
+        # 右半円カーブ（ゆっくり穏やかに）
+        g_left_motor.set_power(40)    # 左モーター少し強め
+        g_right_motor.set_power(25)   # 右モーターも上げて差を縮小
+        time.sleep(1.8)               # 時間は微調整してください
+
+        # 止める（少し余韻を持たせて）
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
+        time.sleep(0.3)
+
+        # 左に戻す（半円を描く後半）
+        g_left_motor.set_power(25)
+        g_right_motor.set_power(40)
+        time.sleep(2.0)
 
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
-        time.sleep(0.2)  # 軽くブレーキ的な短い停止
+        time.sleep(0.3)
 
-        # 左に戻す（調整）
-        g_left_motor.set_power(55)
-        g_right_motor.set_power(95)
-        time.sleep(1.4)  # 曲がりすぎ防止のためやや長め
-
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
-        time.sleep(0.2)
-
-        # 左カーブ（鋭角に）元に戻る
-        g_left_motor.set_power(5)
-        g_right_motor.set_power(70)
-        time.sleep(0.9)  # 曲がる時間を短縮
-
+        # 直進してライン復帰
+        g_left_motor.set_power(30)
+        g_right_motor.set_power(30)
+        time.sleep(1.4)
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
@@ -522,7 +522,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2700),
+        IsDistancePassed(name="distance_passed", target_distance=2600),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
     # オブジェクト回避のライントレース
