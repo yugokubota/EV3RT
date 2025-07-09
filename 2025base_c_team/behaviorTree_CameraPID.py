@@ -344,7 +344,7 @@ class DetectBlue(Behaviour):
         super().__init__(name)
 
     def update(self) -> Status:
-        detected_color = g_color_sensor.get_color()
+        detected_color = g_color_sensor.get_colget_brightnessor()
         if detected_color == 'BLUE' or detected_color == Color.BLUE:
             return Status.SUCCESS
         return Status.RUNNING
