@@ -445,18 +445,18 @@ class AvoidObstacleArcFull(Behaviour):
         time.sleep(0.2)  # 軽くブレーキ的な短い停止
 
         # 左に戻す（調整）
-        g_left_motor.set_power(25)
-        g_right_motor.set_power(65)
+        g_left_motor.set_power(55)
+        g_right_motor.set_power(95)
         time.sleep(1.4)  # 曲がりすぎ防止のためやや長め
 
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
         time.sleep(0.2)
 
-        # ライン復帰まっすぐ
-        g_left_motor.set_power(40)
-        g_right_motor.set_power(40)
-        time.sleep(1.0)
+        # 左カーブ（鋭角に）元に戻る
+        g_left_motor.set_power(5)
+        g_right_motor.set_power(70)
+        time.sleep(0.9)  # 曲がる時間を短縮
 
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
