@@ -549,7 +549,7 @@ def build_behaviour_tree() -> BehaviourTree:
         traceline_cam_for_obstacle
     ])
     # 1. ダブルループ侵入
-    enter_circle = Parallel(name="enter_circle", parallelPolicy=successOnTwo)
+    enter_circle = Parallel(name="enter_circle", parallelPolicy=successOnAll)
     enter_circle.add_children([
         IsJunction(name="enter_junction", target_state=JState.FORKING),
         TraceLineSensor(
