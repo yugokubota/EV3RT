@@ -405,34 +405,61 @@ class AvoidObstacleArcFull(Behaviour):
         #     dist = self.dist
 
         # --- 以下、単純な回避動作 ---
-        # 右カーブ
-        g_left_motor.set_power(52)
-        g_right_motor.set_power(10)
-        time.sleep(2)  # 必要に応じて調整
-        # 止める
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
-
-        # 左に戻す
-        g_left_motor.set_power(20)
-        g_right_motor.set_power(60)
-        time.sleep(2.5)  # 必要に応じて調整
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
-
-        # ライン復帰
-        g_left_motor.set_power(30)
-        g_right_motor.set_power(30)
-        time.sleep(1.4)
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
-
-        # # ライン復帰
-        # g_left_motor.set_power(50)
+        # # 右カーブ
+        # g_left_motor.set_power(52)
         # g_right_motor.set_power(10)
-        # time.sleep(1.17)
+        # time.sleep(2)  # 必要に応じて調整
+        # # 止める
         # g_left_motor.set_power(0)
         # g_right_motor.set_power(0)
+
+        # # 左に戻す
+        # g_left_motor.set_power(20)
+        # g_right_motor.set_power(60)
+        # time.sleep(2.5)  # 必要に応じて調整
+        # g_left_motor.set_power(0)
+        # g_right_motor.set_power(0)
+
+        # # ライン復帰
+        # g_left_motor.set_power(30)
+        # g_right_motor.set_power(30)
+        # time.sleep(1.4)
+        # g_left_motor.set_power(0)
+        # g_right_motor.set_power(0)
+
+        # # # ライン復帰
+        # # g_left_motor.set_power(50)
+        # # g_right_motor.set_power(10)
+        # # time.sleep(1.17)
+        # # g_left_motor.set_power(0)
+        # # g_right_motor.set_power(0)
+
+        # 以下、試し
+        # 右カーブ（鋭角に）
+        g_left_motor.set_power(70)
+        g_right_motor.set_power(5)
+        time.sleep(1.5)  # 曲がる時間を短縮
+
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
+        time.sleep(0.2)  # 軽くブレーキ的な短い停止
+
+        # 左に戻す（調整）
+        g_left_motor.set_power(25)
+        g_right_motor.set_power(65)
+        time.sleep(2.0)  # 曲がりすぎ防止のためやや長め
+
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
+        time.sleep(0.2)
+
+        # ライン復帰まっすぐ
+        g_left_motor.set_power(40)
+        g_right_motor.set_power(40)
+        time.sleep(1.0)
+
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
 
         # フラグを立てて終了
         self.done = True
