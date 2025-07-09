@@ -620,12 +620,12 @@ def build_behaviour_tree() -> BehaviourTree:
     # mid_selectorをParallelに変更し、8の字終了まで常時判定をおこなう
     mid_parallel = Parallel(
         name="mid_parallel",
-        policy=ParallelPolicy.SuccessOnTwo()
+        policy=ParallelPolicy.SuccessOnAll()#SuccessOnAllかOneしか使えないっぽい（TWOは使えない）
     )
     mid_parallel.add_children([
         loop_parallel,
         is_eight_loop_finished,
-        traceline_cam_for_loop
+        # traceline_cam_for_loop　ここにライントレースがあるとパラレル抜けない
     ])
 
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
