@@ -479,54 +479,58 @@ class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検�
 class AvoidObstacleArcFull(Behaviour):
     def __init__(self, name: str, direction="right", duration=1.5):
         super().__init__(name)
-        self.direction = direction        # "right" または "left"：回避方向を指定
-        self.duration = duration          # 回避動作を行う時間（秒）
-        self.start_time = None            # 回避動作開始時刻（初回 update 時に記録）
+        self.direction = direction        # 回避方向（"right" または "left"）
+        self.duration = duration          # 回避動作を続ける時間（秒）
+        self.start_time = None            # 回避開始時刻（1回のみ設定）
+        self.done = False                 # 回避動作が完了したかどうかのフラグ
 
     def update(self) -> Status:
-        now = time.time()                 # 現在時刻を取得
-        if self.start_time is None:
-            self.start_time = now         # 初回のみ開始時刻を記録
-            print(f"AvoidObstacleArcFull: start ({self.direction})")  # 回避開始ログ出力
+        now = time.time()                 # 現在の時刻を取得
 
-        elapsed = now - self.start_time   # 経過時間を計算
-        if elapsed > self.duration:
-            # 指定時間を超えたらモーターを停止し、ビヘイビアを終了
-            g_left_motor.set_power(0)
-            g_right_motor.set_power(0)
-            print("AvoidObstacleArcFull: done")
+        # 一度だけ初期化（start_timeを設定）する
+        if not self.done and self.start_time is None:
+            self.start_time = now         # 初回に開始時刻を記録
+            print(f"AvoidObstacleArcFull: start ({self.direction})")
+
+        # 回避完了後は常に SUCCESS を返す（再実行しないようにする）
+        if self.done:
             return Status.SUCCESS
 
-        # ------------------------------
-        # 回避動作の速度設定パラメータ
-        # ------------------------------
-        base = 70                  # 外側の車輪の基本スピード（直進に近い側）
-        RIGHT_ARC_POWER = 45       # 右回避時に内側（右車輪）から引くパワー差
-        LEFT_ARC_POWER = 30        # 左回避時に内側（左車輪）から引くパワー差
-        MIN_POWER = 30             # モーターが確実に動く最低限の出力
+        # 経過時間を計算
+        elapsed = now - self.start_time
 
-        # ------------------------------
-        # 回避方向に応じてモーター出力を設定
-        # ------------------------------
+        # 経過時間がdurationを超えたらモーターを停止し、完了扱いにする
+        if elapsed > self.duration:
+            g_left_motor.set_power(0)     # 左モーター停止
+            g_right_motor.set_power(0)    # 右モーター停止
+            print("AvoidObstacleArcFull: done")  # ログ出力
+            self.done = True              # フラグをTrueにして終了状態へ
+            return Status.SUCCESS
+
+        # ---- 回避動作中のモーター出力設定 ----
+
+        base = 70                         # 速い方（外側車輪）の速度
+        RIGHT_ARC_POWER = 40              # 右回避時の出力差（右を遅くする）
+        LEFT_ARC_POWER = 30               # 左回避時の出力差（左を遅くする）
+        MIN_POWER = 30                    # モーターが確実に動く最低出力
+
         if self.direction == "right":
-            # 右に避ける（＝右に円弧を描く）
+            # 右回避：左を速く、右を遅く
             left_power = base
             right_power = max(base - RIGHT_ARC_POWER, MIN_POWER)
         else:
-            # 左に避ける（＝左に円弧を描く）
+            # 左回避：右を速く、左を遅く
             left_power = max(base - LEFT_ARC_POWER, MIN_POWER)
             right_power = base
 
-        # ------------------------------
-        # モーター出力を適用
-        # ------------------------------
+        # モーターに出力を設定
         g_left_motor.set_power(left_power)
         g_right_motor.set_power(right_power)
 
-        # デバッグログ（出力値を確認）
+        # ログで現在の出力値を表示
         print(f"Avoiding {self.direction}: left={left_power}, right={right_power}")
 
-        return Status.RUNNING  # まだ実行中なので RUNNING を返す
+        return Status.RUNNING             # 回避動作中のため RUNNING を返す
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
     def __init__(self, name, direction, degree=45, power=30, radius=200):
