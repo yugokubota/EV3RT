@@ -346,8 +346,11 @@ class DetectBlue(Behaviour):
 
     def update(self) -> Status:
         r, g, b = g_color_sensor.get_raw_color()
-        # 0〜255 → 0.0〜1.0 に正規化
-        r_norm, g_norm, b_norm = r / 255.0, g / 255.0, b / 255.0
+        # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
+        max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
+        r_norm = r / max_rgb
+        g_norm = g / max_rgb
+        b_norm = b / max_rgb
         # colorsysで変換（返り値: h,s,vは0.0〜1.0）
         h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
         # 色相Hだけ0〜360度に直す
@@ -356,10 +359,10 @@ class DetectBlue(Behaviour):
         v_per = int(v * 100)
         print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
-        if 200 <= h <= 260 and s > 80 and v > 50:
-            print(f"DetectBlue: BLUE! h={h} s={s} v={v}")
+        if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+            print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
             return Status.SUCCESS
-        print(f"DetectBlue: Not Blue h={h} s={s} v={v}")
+        print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
         return Status.RUNNING
         # detected_color = g_color_sensor.get_color()
         # if detected_color == 'BLUE' or detected_color == Color.BLUE:
