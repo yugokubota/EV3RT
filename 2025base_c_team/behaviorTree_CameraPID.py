@@ -462,7 +462,7 @@ class AvoidObstacleArcFull(Behaviour):
 
         # 以下が円弧回避動作の本体
         base = 50            # 外輪（直進に近い側）のスピード
-        arc_power = 30       # 内輪（遅くする側）の差分（小さいほどカーブはゆるやか）
+        arc_power = 45       # 内輪（遅くする側）の差分（小さいほどカーブはゆるやか）
 
         if self.direction == "right":
             # 右回避：左輪は速く、右輪は遅く（右に曲がる）
