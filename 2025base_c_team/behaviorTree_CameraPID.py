@@ -18,7 +18,7 @@ from py_trees import (
 )
 from py_etrobo_util import Video, TraceSide, Plotter
 from py_etrobo_util.plotter import TIRE_DIAMETER
-import libraspike_art_python as lib#GRBやHSVを使えるライブラリ
+import colorsys#GRBをHSVに変える標準ライブラリ
 
 EXEC_INTERVAL: float = 0.02
 VIDEO_INTERVAL: float = 0.02
@@ -345,12 +345,16 @@ class DetectBlue(Behaviour):
         super().__init__(name)
 
     def update(self) -> Status:
-        col = lib.pup_color_sensor_get_device(lib.pbio_port.ID_E)
-        h, s, v = lib.pup_color_sensor_hsv(col, True)
-        r, g, b = lib.pup_color_sensor_rgb(col)
-        # 値をprintで表示
-        # print(f"[DetectBlue] RGB: r={r}, g={g}, b={b}")
-        print(f"[DetectBlue] HSV: h={h}, s={s}, v={v}")
+        r, g, b = g_color_sensor.get_raw_color()
+        # 0〜255 → 0.0〜1.0 に正規化
+        r_norm, g_norm, b_norm = r / 255.0, g / 255.0, b / 255.0
+        # colorsysで変換（返り値: h,s,vは0.0〜1.0）
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        # 色相Hだけ0〜360度に直す
+        h_deg = int(h * 360)
+        s_per = int(s * 100)
+        v_per = int(v * 100)
+        print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
         if 200 <= h <= 260 and s > 80 and v > 50:
             print(f"DetectBlue: BLUE! h={h} s={s} v={v}")
