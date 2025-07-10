@@ -435,10 +435,10 @@ class AvoidObstacleArcFull(Behaviour):
         # # g_right_motor.set_power(0)
 
         # 以下、試し
-        # 右半円カーブ（ゆっくり穏やかに）
+        # 右回転
         g_left_motor.set_power(100)    # 左モーター少し強め
         g_right_motor.set_power(55)   # 右モーターも上げて差を縮小
-        time.sleep(0.5)               # 時間は微調整してください
+        time.sleep(0.3)
 
         # 止める（少し余韻を持たせて）
         g_left_motor.set_power(0)
@@ -446,20 +446,18 @@ class AvoidObstacleArcFull(Behaviour):
         time.sleep(0.3)
 
         # 左に戻す（半円を描く後半）
-        g_left_motor.set_power(100)
-        g_right_motor.set_power(200)
+        g_left_motor.set_power(50)
+        g_right_motor.set_power(100)
         time.sleep(1.0)
+
+        # 右回転
+        g_left_motor.set_power(100)    # 左モーター少し強め
+        g_right_motor.set_power(55)   # 右モーターも上げて差を縮小
+        time.sleep(0.3)
 
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
         time.sleep(0.3)
-
-        # 直進してライン復帰
-        g_left_motor.set_power(30)
-        g_right_motor.set_power(30)
-        time.sleep(1.4)
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
 
         # フラグを立てて終了
         self.done = True
