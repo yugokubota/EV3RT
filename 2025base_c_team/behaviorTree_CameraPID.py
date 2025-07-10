@@ -439,42 +439,94 @@ class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検�
 #         print("AvoidObstacleArcFull complete!")
 #         return Status.SUCCESS
 
+# class AvoidObstacleArcFull(Behaviour):
+#     def __init__(self, name: str, direction="right", duration=1.5):
+#         super().__init__(name)
+#         self.direction = direction          # "right" または "left"：回避方向
+#         self.duration = duration            # 回避動作を続ける時間（秒）
+#         self.start_time = None              # 開始時刻（初回 update 呼び出し時に記録）
+
+#     def update(self) -> Status:
+#         now = time.time()
+#         if self.start_time is None:
+#             # 初回の update 呼び出しで時刻を記録し、ログ出力
+#             self.start_time = now
+#             print("AvoidObstacleArcFull: start")
+
+#         elapsed = now - self.start_time
+#         if elapsed > self.duration:
+#             # 指定時間が経過したらモーターを止めて SUCCESS を返す
+#             g_left_motor.set_power(0)
+#             g_right_motor.set_power(0)
+#             return Status.SUCCESS
+
+#         # 以下が円弧回避動作の本体
+#         base = 70            # 外輪（直進に近い側）のスピード
+#         arc_power = 45       # 内輪（遅くする側）の差分（小さいほどカーブはゆるやか）
+
+#         if self.direction == "right":
+#             # 右回避：左輪は速く、右輪は遅く（右に曲がる）
+#             g_left_motor.set_power(base)
+#             g_right_motor.set_power(base - arc_power)
+#         else:
+#             # 左回避：右輪は速く、左輪は遅く（左に曲がる）
+#             g_left_motor.set_power(base - arc_power)
+#             g_right_motor.set_power(base)
+
+#         # 時間内は RUNNING を返して、次の update 呼び出しへ
+#         return Status.RUNNING
+
 class AvoidObstacleArcFull(Behaviour):
     def __init__(self, name: str, direction="right", duration=1.5):
         super().__init__(name)
-        self.direction = direction          # "right" または "left"：回避方向
-        self.duration = duration            # 回避動作を続ける時間（秒）
-        self.start_time = None              # 開始時刻（初回 update 呼び出し時に記録）
+        self.direction = direction        # "right" または "left"：回避方向を指定
+        self.duration = duration          # 回避動作を行う時間（秒）
+        self.start_time = None            # 回避動作開始時刻（初回 update 時に記録）
 
     def update(self) -> Status:
-        now = time.time()
+        now = time.time()                 # 現在時刻を取得
         if self.start_time is None:
-            # 初回の update 呼び出しで時刻を記録し、ログ出力
-            self.start_time = now
-            print("AvoidObstacleArcFull: start")
+            self.start_time = now         # 初回のみ開始時刻を記録
+            print(f"AvoidObstacleArcFull: start ({self.direction})")  # 回避開始ログ出力
 
-        elapsed = now - self.start_time
+        elapsed = now - self.start_time   # 経過時間を計算
         if elapsed > self.duration:
-            # 指定時間が経過したらモーターを止めて SUCCESS を返す
+            # 指定時間を超えたらモーターを停止し、ビヘイビアを終了
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
+            print("AvoidObstacleArcFull: done")
             return Status.SUCCESS
 
-        # 以下が円弧回避動作の本体
-        base = 70            # 外輪（直進に近い側）のスピード
-        arc_power = 45       # 内輪（遅くする側）の差分（小さいほどカーブはゆるやか）
+        # ------------------------------
+        # 回避動作の速度設定パラメータ
+        # ------------------------------
+        base = 70                  # 外側の車輪の基本スピード（直進に近い側）
+        RIGHT_ARC_POWER = 45       # 右回避時に内側（右車輪）から引くパワー差
+        LEFT_ARC_POWER = 30        # 左回避時に内側（左車輪）から引くパワー差
+        MIN_POWER = 30             # モーターが確実に動く最低限の出力
 
+        # ------------------------------
+        # 回避方向に応じてモーター出力を設定
+        # ------------------------------
         if self.direction == "right":
-            # 右回避：左輪は速く、右輪は遅く（右に曲がる）
-            g_left_motor.set_power(base)
-            g_right_motor.set_power(base - arc_power)
+            # 右に避ける（＝右に円弧を描く）
+            left_power = base
+            right_power = max(base - RIGHT_ARC_POWER, MIN_POWER)
         else:
-            # 左回避：右輪は速く、左輪は遅く（左に曲がる）
-            g_left_motor.set_power(base - arc_power)
-            g_right_motor.set_power(base)
+            # 左に避ける（＝左に円弧を描く）
+            left_power = max(base - LEFT_ARC_POWER, MIN_POWER)
+            right_power = base
 
-        # 時間内は RUNNING を返して、次の update 呼び出しへ
-        return Status.RUNNING
+        # ------------------------------
+        # モーター出力を適用
+        # ------------------------------
+        g_left_motor.set_power(left_power)
+        g_right_motor.set_power(right_power)
+
+        # デバッグログ（出力値を確認）
+        print(f"Avoiding {self.direction}: left={left_power}, right={right_power}")
+
+        return Status.RUNNING  # まだ実行中なので RUNNING を返す
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
     def __init__(self, name, direction, degree=45, power=30, radius=200):
