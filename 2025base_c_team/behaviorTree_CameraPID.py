@@ -526,8 +526,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=60, pid_p=1.3, pid_i=0.0001, pid_d=0.6,
-        gs_min=12, gs_max=75,
+        power=60, pid_p=30.0, pid_i=0.1, pid_d=5.0,
+        gs_min=10, gs_max=50,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループのライントレース
