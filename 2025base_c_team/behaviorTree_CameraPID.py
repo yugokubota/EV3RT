@@ -456,8 +456,8 @@ class AvoidObstacleArcFull(Behaviour):
         elapsed = now - self.start_time
         if elapsed > self.duration:
             # 指定時間が経過したらモーターを止めて SUCCESS を返す
-            g_left_motor.stop()
-            g_right_motor.stop()
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
             return Status.SUCCESS
 
         # 以下が円弧回避動作の本体
