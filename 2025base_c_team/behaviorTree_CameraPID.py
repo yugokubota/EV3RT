@@ -18,6 +18,7 @@ from py_trees import (
 )
 from py_etrobo_util import Video, TraceSide, Plotter
 from py_etrobo_util.plotter import TIRE_DIAMETER
+import libraspike_art_python as lib#GRBやHSVを使えるライブラリ
 
 EXEC_INTERVAL: float = 0.02
 VIDEO_INTERVAL: float = 0.02
@@ -344,10 +345,22 @@ class DetectBlue(Behaviour):
         super().__init__(name)
 
     def update(self) -> Status:
-        detected_color = g_color_sensor.get_brightness()
-        if detected_color == 'BLUE' or detected_color == Color.BLUE:
+        col = lib.pup_color_sensor_get_device(lib.pbio_port.ID_E)
+        h, s, v = lib.pup_color_sensor_hsv(col, True)
+        r, g, b = lib.pup_color_sensor_rgb(col)
+        # 値をprintで表示
+        # print(f"[DetectBlue] RGB: r={r}, g={g}, b={b}")
+        print(f"[DetectBlue] HSV: h={h}, s={s}, v={v}")
+        # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
+        if 200 <= h <= 260 and s > 80 and v > 50:
+            print(f"DetectBlue: BLUE! h={h} s={s} v={v}")
             return Status.SUCCESS
+        print(f"DetectBlue: Not Blue h={h} s={s} v={v}")
         return Status.RUNNING
+        # detected_color = g_color_sensor.get_color()
+        # if detected_color == 'BLUE' or detected_color == Color.BLUE:
+        #     return Status.SUCCESS
+        # return Status.RUNNING
 
 # トレースエッジ切り替え用クラス
 class SwitchTraceEdge(Behaviour):
