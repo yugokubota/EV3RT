@@ -18,6 +18,7 @@ from py_trees import (
 )
 from py_etrobo_util import Video, TraceSide, Plotter
 from py_etrobo_util.plotter import TIRE_DIAMETER
+import colorsys#GRBをHSVに変える標準ライブラリ
 
 EXEC_INTERVAL: float = 0.02
 VIDEO_INTERVAL: float = 0.02
@@ -313,6 +314,7 @@ class TraceLineCam(Behaviour):
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
 
+# カラーセンサー用クラス
 class TraceLineSensor(Behaviour):
     def __init__(self, name: str, target: int, power: int, pid_p: float, pid_i: float, pid_d: float,
                  trace_side: TraceSide) -> None:
@@ -327,12 +329,6 @@ class TraceLineSensor(Behaviour):
             self.running = True
             self.logger.info("%+06d %s.trace started with TS=%s" % (g_plotter.get_distance(), self.__class__.__name__, self.trace_side.name))
 
-        # ★ 青色検知処理を追加
-        detected_color = g_color_sensor.get_color()
-        if detected_color == 'BLUE':  # 色の定義に応じて 'blue' か Color.BLUE に変更
-            self.logger.info("%+06d %s.trace detected blue color" % (g_plotter.get_distance(), self.__class__.__name__))
-            return Status.SUCCESS
-
         brightness = g_color_sensor.get_brightness()
         if self.trace_side == TraceSide.NORMAL:
             turn = (-1) * g_course * int(self.pid(brightness))
@@ -343,6 +339,69 @@ class TraceLineSensor(Behaviour):
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
 
+# 青色検知用クラス
+class DetectBlue(Behaviour):
+    def __init__(self, name: str):
+        super().__init__(name)
+
+    def update(self) -> Status:
+        r, g, b = g_color_sensor.get_raw_color()
+        # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
+        max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
+        r_norm = r / max_rgb
+        g_norm = g / max_rgb
+        b_norm = b / max_rgb
+        # colorsysで変換（返り値: h,s,vは0.0〜1.0）
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        # 色相Hだけ0〜360度に直す
+        h_deg = int(h * 360)
+        s_per = int(s * 100)
+        v_per = int(v * 100)
+        print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
+        if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+            print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+            return Status.SUCCESS
+        print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+        return Status.RUNNING
+        # detected_color = g_color_sensor.get_color()
+        # if detected_color == 'BLUE' or detected_color == Color.BLUE:
+        #     return Status.SUCCESS
+        # return Status.RUNNING
+
+# トレースエッジ切り替え用クラス
+class SwitchTraceEdge(Behaviour):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.switched = False
+
+    def update(self) -> Status:
+        # TraceSide.NORMAL <-> TraceSide.OPPOSITE 切り替え例
+        current_side = g_video.get_trace_side()
+        if current_side == TraceSide.NORMAL:
+            g_video.set_trace_side(TraceSide.OPPOSITE)
+        else:
+            g_video.set_trace_side(TraceSide.NORMAL)#定義されてなくてエラー
+        self.switched = True
+        print("Trace edge switched!")
+        return Status.SUCCESS
+
+# 8の字走行終了判定用クラス
+class IsEightLoopFinished(Behaviour):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.finished = False
+
+    def update(self) -> Status:
+        # 8の字が終わったかどうかの判定ロジックを実装
+        # ゴールとして判断できるものって何かありましたっけ？＞＜
+        if self.finished:
+            return Status.SUCCESS
+        # 試しに40000mm進んだら終了
+        if g_plotter.get_distance() > 40000:
+            self.finished = True
+            return Status.SUCCESS
+        return Status.RUNNING
 
 class TraverseBehaviourTree(object):
     def __init__(self, tree: BehaviourTree) -> None:
@@ -556,42 +615,50 @@ def build_behaviour_tree() -> BehaviourTree:
     blue_and_junction_seq.add_children([
         DetectBlue(name="detect_blue"),
         IsJunction(name="enter_junction", target_state=JState.FORKING),
-        TraceLineSensor(
-            name="sensor trace normal edge", 
-            target=45, power=45,
-            pid_p=0.5, pid_i=0.05, pid_d=0.1,
-            trace_side=TraceSide.NORMAL
-        ),
+        SwitchTraceEdge(name="switch_trace_edge")
     ])
-    # ダブルループ処理
-    loop_seq = Sequence(name="loop_seq", memory=True)
-    loop_seq.add_children([
-        enter_circle,
-        ArcTurn(name="arc_into_circle", direction="right", degree=90, power=30, radius=200),
-        double_loop
-    ])
-    # ダブルループ処理2
-    double_loop = Sequence(name="eight_loop", memory=True)
-    double_loop.add_children([
-        TraceLineCam(name="trace_outer",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-        IsJunction(name="cross_junction1", target_state=JState.JOINING),
-        ArcTurn(name="arc_to_small", direction="left", degree=45, power=30, radius=80),
-        TraceLineCam(name="trace_outer",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-        IsJunction(name="cross_junction2", target_state=JState.FORKING),
-        ArcTurn(name="arc_to_big", direction="right", degree=45, power=30, radius=200)
-    ])
-    # ダブルループ侵入とダブルループ処理とライントレース
-    mid_selector = Selector(name="mid_selector", memory=False)
-    mid_selector.add_children([
-        loop_seq,
+
+    # 8の字走行中に常時監視するParallelノード
+    loop_parallel = Parallel(
+        name="loop_parallel",
+        policy=ParallelPolicy.SuccessOnOne()
+    )
+    loop_parallel.add_children([
+        blue_and_junction_seq,
         traceline_cam_for_loop
     ])
+
+    # 8の字終了判定ノード
+    is_eight_loop_finished = IsEightLoopFinished(name="is_eight_loop_finished")
+
+    # ダブルループ処理2
+    # double_loop = Sequence(name="eight_loop", memory=True)
+    # double_loop.add_children([
+    #     TraceLineCam(name="trace_outer",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+    #     gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    #     IsJunction(name="cross_junction1", target_state=JState.JOINING),
+    #     ArcTurn(name="arc_to_small", direction="left", degree=45, power=30, radius=80),
+    #     TraceLineCam(name="trace_outer",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+    #     gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    #     IsJunction(name="cross_junction2", target_state=JState.FORKING),
+    #     ArcTurn(name="arc_to_big", direction="right", degree=45, power=30, radius=200)
+    # ])
+
+    # mid_selectorをParallelに変更し、8の字終了まで常時判定をおこなう
+    mid_parallel = Parallel(
+        name="mid_parallel",
+        policy=ParallelPolicy.SuccessOnAll()#SuccessOnAllかOneしか使えないっぽい（TWOは使えない）
+    )
+    mid_parallel.add_children([
+        loop_parallel,
+        is_eight_loop_finished,
+        # traceline_cam_for_loop　ここにライントレースがあるとパラレル抜けない
+    ])
+
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
         # obstacle_selector,
-        mid_selector,
+        mid_parallel,
         TraceLineCam(name="trace_clear_obstacle",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
         IsDistanceEarned(name="check distance", delta_dist=40000)
