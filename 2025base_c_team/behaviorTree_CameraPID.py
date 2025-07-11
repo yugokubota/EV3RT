@@ -381,7 +381,7 @@ class SwitchTraceEdge(Behaviour):
         if current_side == TraceSide.NORMAL:
             g_video.set_trace_side(TraceSide.OPPOSITE)
         else:
-            g_video.set_trace_side(TraceSide.NORMAL)
+            g_video.set_trace_side(TraceSide.NORMAL)#定義されてなくてエラー
         self.switched = True
         print("Trace edge switched!")
         return Status.SUCCESS
