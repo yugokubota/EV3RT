@@ -622,10 +622,10 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         # obstacle_selector,
         traceline_cam_lapfinish_selector,
-        double_loop_selector_1
-        double_loop_selector_2
-        double_loop_selector_3
-        double_loop_selector_4
+        double_loop_selector_1,
+        double_loop_selector_2,
+        double_loop_selector_3,
+        double_loop_selector_4,
         TraceLineCam(name="trace_clear_obstacle",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
         IsDistanceEarned(name="check distance", delta_dist=40000)
