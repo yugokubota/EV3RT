@@ -364,44 +364,6 @@ class DetectBlue(Behaviour):
             return Status.SUCCESS
         print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
         return Status.RUNNING
-        # detected_color = g_color_sensor.get_color()
-        # if detected_color == 'BLUE' or detected_color == Color.BLUE:
-        #     return Status.SUCCESS
-        # return Status.RUNNING
-
-# トレースエッジ切り替え用クラス
-class SwitchTraceEdge(Behaviour):
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.switched = False
-
-    def update(self) -> Status:
-        # TraceSide.NORMAL <-> TraceSide.OPPOSITE 切り替え例
-        current_side = g_video.get_trace_side()
-        if current_side == TraceSide.NORMAL:
-            g_video.set_trace_side(TraceSide.OPPOSITE)
-        else:
-            g_video.set_trace_side(TraceSide.NORMAL)#定義されてなくてエラー
-        self.switched = True
-        print("Trace edge switched!")
-        return Status.SUCCESS
-
-# 8の字走行終了判定用クラス
-class IsEightLoopFinished(Behaviour):
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.finished = False
-
-    def update(self) -> Status:
-        # 8の字が終わったかどうかの判定ロジックを実装
-        # ゴールとして判断できるものって何かありましたっけ？＞＜
-        if self.finished:
-            return Status.SUCCESS
-        # 試しに40000mm進んだら終了
-        if g_plotter.get_distance() > 40000:
-            self.finished = True
-            return Status.SUCCESS
-        return Status.RUNNING
 
 class TraverseBehaviourTree(object):
     def __init__(self, tree: BehaviourTree) -> None:
@@ -423,7 +385,6 @@ class TraverseBehaviourTree(object):
             self.tree.tick_once()
             g_plotter.plot(**kwargs)
 
-
 class ExposeDevices(object):
     def __call__(
         self,
@@ -444,7 +405,6 @@ class ExposeDevices(object):
         g_color_sensor = color_sensor
         g_sonar_sensor = sonar_sensor
 
-
 class VideoThread(threading.Thread):
     def __init__(self):
         super().__init__()
@@ -458,19 +418,6 @@ class VideoThread(threading.Thread):
             g_video.process(g_plotter, g_hub, g_arm_motor, g_right_motor, g_left_motor, g_color_sensor, g_sonar_sensor)
             time.sleep(VIDEO_INTERVAL)
 
-class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検知するクラス追加
-    def __init__(self, name: str, threshold: int = 250):
-        super().__init__(name)
-        self.threshold = threshold
-
-    def update(self) -> Status:
-        dist = g_sonar_sensor.get_distance()
-        print("dist = ",dist)
-        if 0 < dist < self.threshold:
-            return Status.SUCCESS
-            print("IsObstacleNear_start")
-        return Status.FAILURE
-
 class AvoidObstacleArcFull(Behaviour):
     def __init__(self, name: str):
         super().__init__(name)
@@ -481,17 +428,6 @@ class AvoidObstacleArcFull(Behaviour):
         print("AvoidObstacleArcFull_start")
         if self.done:
             return Status.SUCCESS
-
-        # 初回のみ距離取得
-        # if self.dist is None:
-        #     dist = g_sonar_sensor.get_distance()
-        #     print("dist = ",dist)
-        #     if dist <= 0:
-        #         print("fallback")
-        #         dist = 100
-        #     self.dist = dist
-        # else:
-        #     dist = self.dist
 
         # --- 以下、単純な回避動作 ---
         # 右カーブ
@@ -581,41 +517,82 @@ class IsDistancePassed(Behaviour):
 
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
+
+    # =============オブジェクト回避_ノード定義 =============
+
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
         IsDistancePassed(name="distance_passed", target_distance=2700),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
-    # オブジェクト回避のライントレース
+
+    # =============ライントレース_ノード定義 =============
+
+    # オブジェクト回避前のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
         power=60, pid_p=1.2, pid_i=0, pid_d=0.1,
         gs_min=0, gs_max=40,
         trace_side=TraceSide.NORMAL
     )
-    # ダブルループのライントレース
-    traceline_cam_for_loop = TraceLineCam(
-        name="camera_trace_for_loop",
-        power=50, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,
-        trace_side=TraceSide.NORMAL
-    )
+    # # ダブルループのライントレース
+    # traceline_cam_for_loop = TraceLineCam(
+    #     name="camera_trace_for_loop",
+    #     power=50, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+    #     gs_min=0, gs_max=80,
+    #     trace_side=TraceSide.NORMAL
+    # )
     # オブジェクト回避とライントレース
     obstacle_selector = Selector(name="obstacle_or_trace", memory=False)
     obstacle_selector.add_children([
         avoid_seq, 
         traceline_cam_for_obstacle
     ])
-
-    # ================ ダブルループ処理 =================
-    
-    # 青色検知かつ分岐検知でエッジ切り替え処理
-    blue_and_junction_seq = Sequence(name="blue_and_junction", memory=False)
-    blue_and_junction_seq.add_children([
+    # オブジェクト回避後からLAP完了まで（LAP完了は青色検知）
+    traceline_cam_lapfinish_selector = Selector(name="detectblue_or_trace", memory=False)
+    traceline_cam_lapfinish_selector.add_children([
         DetectBlue(name="detect_blue"),
-        IsJunction(name="enter_junction", target_state=JState.FORKING),
-        SwitchTraceEdge(name="switch_trace_edge")
+        TraceLineCam(name="traceline_cam_lapfinish",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    ])
+
+    # ================ ダブルループ処理 ================
+    
+    # 青色検知したら、角度をつける
+    detectblue_and_arc_sequence = Sequence(name="detectblue_and_arc", memory=False)
+    detectblue_and_arc_sequence.add_children([
+        DetectBlue(name="detect_blue"),
+        ArcTurn(name="arc_move", direction="left", degree=45, power=30, radius=80),
+    ])
+
+    # part1_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
+    double_loop_selector_1 = Selector(name="double_loop_selector",memory=False)
+    double_loop_selector.add_children([
+        detectblue_and_arc_sequence,
+        TraceLine(name="detect_blackline", target=45, power=45,
+            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+    ])
+    # part2_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
+    double_loop_selector_2 = Selector(name="double_loop_selector",memory=False)
+    double_loop_selector.add_children([
+        detectblue_and_arc_sequence,
+        TraceLine(name="detect_blackline", target=45, power=45,
+            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+    ])
+    # part3_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
+    double_loop_selector_3 = Selector(name="double_loop_selector",memory=False)
+    double_loop_selector.add_children([
+        detectblue_and_arc_sequence,
+        TraceLine(name="detect_blackline", target=45, power=45,
+            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+    ])
+    # part4_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
+    double_loop_selector_4 = Selector(name="double_loop_selector",memory=False)
+    double_loop_selector.add_children([
+        detectblue_and_arc_sequence,
+        TraceLine(name="detect_blackline", target=45, power=45,
+            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
 
     # 8の字走行中に常時監視するParallelノード
@@ -627,9 +604,6 @@ def build_behaviour_tree() -> BehaviourTree:
         blue_and_junction_seq,
         traceline_cam_for_loop
     ])
-
-    # 8の字終了判定ノード
-    is_eight_loop_finished = IsEightLoopFinished(name="is_eight_loop_finished")
 
     # ダブルループ処理2
     # double_loop = Sequence(name="eight_loop", memory=True)
@@ -644,21 +618,14 @@ def build_behaviour_tree() -> BehaviourTree:
     #     ArcTurn(name="arc_to_big", direction="right", degree=45, power=30, radius=200)
     # ])
 
-    # mid_selectorをParallelに変更し、8の字終了まで常時判定をおこなう
-    mid_parallel = Parallel(
-        name="mid_parallel",
-        policy=ParallelPolicy.SuccessOnAll()#SuccessOnAllかOneしか使えないっぽい（TWOは使えない）
-    )
-    mid_parallel.add_children([
-        loop_parallel,
-        is_eight_loop_finished,
-        # traceline_cam_for_loop　ここにライントレースがあるとパラレル抜けない
-    ])
-
     loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
         # obstacle_selector,
-        mid_parallel,
+        traceline_cam_lapfinish_selector,
+        double_loop_selector_1
+        double_loop_selector_2
+        double_loop_selector_3
+        double_loop_selector_4
         TraceLineCam(name="trace_clear_obstacle",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
         IsDistanceEarned(name="check distance", delta_dist=40000)
