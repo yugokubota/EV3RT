@@ -548,9 +548,13 @@ def build_behaviour_tree() -> BehaviourTree:
         avoid_seq, 
         traceline_cam_for_obstacle
     ])
-    # 1. ダブルループ侵入
-    enter_circle = Parallel(name="enter_circle", parallelPolicy=successOnAll)
-    enter_circle.add_children([
+
+    # ================ ダブルループ処理 =================
+    
+    # 青色検知かつ分岐検知でエッジ切り替え処理
+    blue_and_junction_seq = Sequence(name="blue_and_junction", memory=False)
+    blue_and_junction_seq.add_children([
+        DetectBlue(name="detect_blue"),
         IsJunction(name="enter_junction", target_state=JState.FORKING),
         TraceLineSensor(
             name="sensor trace normal edge", 
