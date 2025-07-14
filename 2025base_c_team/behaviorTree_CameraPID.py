@@ -518,7 +518,7 @@ class IsDistancePassed(Behaviour):
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
 
-    # =============オブジェクト回避_ノード定義 =============
+    # ============= オブジェクト回避 =============
 
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
@@ -527,7 +527,7 @@ def build_behaviour_tree() -> BehaviourTree:
         AvoidObstacleArcFull(name="arc_avoid")
     ])
 
-    # =============ライントレース_ノード定義 =============
+    # ============= ライントレース =============
 
     # オブジェクト回避前のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
@@ -536,13 +536,6 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=40,
         trace_side=TraceSide.NORMAL
     )
-    # # ダブルループのライントレース
-    # traceline_cam_for_loop = TraceLineCam(
-    #     name="camera_trace_for_loop",
-    #     power=50, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-    #     gs_min=0, gs_max=80,
-    #     trace_side=TraceSide.NORMAL
-    # )
     # オブジェクト回避とライントレース
     obstacle_selector = Selector(name="obstacle_or_trace", memory=False)
     obstacle_selector.add_children([
@@ -567,58 +560,35 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
 
     # part1_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
-    double_loop_selector_1 = Selector(name="double_loop_selector",memory=False)
+    double_loop_selector_1 = Selector(name="double_loop_selector1",memory=False)
     double_loop_selector.add_children([
         detectblue_and_arc_sequence,
-        TraceLine(name="detect_blackline", target=45, power=45,
+        TraceLine(name="detect_blackline1", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
     # part2_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
-    double_loop_selector_2 = Selector(name="double_loop_selector",memory=False)
+    double_loop_selector_2 = Selector(name="double_loop_selector2",memory=False)
     double_loop_selector.add_children([
         detectblue_and_arc_sequence,
-        TraceLine(name="detect_blackline", target=45, power=45,
+        TraceLine(name="detect_blackline2", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
     # part3_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
-    double_loop_selector_3 = Selector(name="double_loop_selector",memory=False)
+    double_loop_selector_3 = Selector(name="double_loop_selector3",memory=False)
     double_loop_selector.add_children([
         detectblue_and_arc_sequence,
-        TraceLine(name="detect_blackline", target=45, power=45,
+        TraceLine(name="detect_blackline3", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
     # part4_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
-    double_loop_selector_4 = Selector(name="double_loop_selector",memory=False)
+    double_loop_selector_4 = Selector(name="double_loop_selector4",memory=False)
     double_loop_selector.add_children([
         detectblue_and_arc_sequence,
-        TraceLine(name="detect_blackline", target=45, power=45,
+        TraceLine(name="detect_blackline4", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
 
-    # 8の字走行中に常時監視するParallelノード
-    loop_parallel = Parallel(
-        name="loop_parallel",
-        policy=ParallelPolicy.SuccessOnOne()
-    )
-    loop_parallel.add_children([
-        blue_and_junction_seq,
-        traceline_cam_for_loop
-    ])
-
-    # ダブルループ処理2
-    # double_loop = Sequence(name="eight_loop", memory=True)
-    # double_loop.add_children([
-    #     TraceLineCam(name="trace_outer",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-    #     gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-    #     IsJunction(name="cross_junction1", target_state=JState.JOINING),
-    #     ArcTurn(name="arc_to_small", direction="left", degree=45, power=30, radius=80),
-    #     TraceLineCam(name="trace_outer",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-    #     gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-    #     IsJunction(name="cross_junction2", target_state=JState.FORKING),
-    #     ArcTurn(name="arc_to_big", direction="right", degree=45, power=30, radius=200)
-    # ])
-
-    loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
+    loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
         # obstacle_selector,
         traceline_cam_lapfinish_selector,
@@ -626,9 +596,9 @@ def build_behaviour_tree() -> BehaviourTree:
         double_loop_selector_2,
         double_loop_selector_3,
         double_loop_selector_4,
-        TraceLineCam(name="trace_clear_obstacle",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-        IsDistanceEarned(name="check distance", delta_dist=40000)
+        # TraceLineCam(name="trace_clear_obstacle",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        # gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        # IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
     calibration = Sequence(name="calibration", memory=True)
     calibration.add_children([
