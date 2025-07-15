@@ -357,7 +357,7 @@ class DetectBlue(Behaviour):
         h_deg = int(h * 360)
         s_per = int(s * 100)
         v_per = int(v * 100)
-        print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
         if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
             print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
@@ -493,6 +493,9 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
                 print(f"right_motor power: {right_curve_power}, left_motor power: {left_curve_power}")
             # time.sleepで簡易的にカーブの長さを調整する例
             time.sleep(base_angle / 90 * 0.7)  # 調整要
+            g_left_motor.set_power(40)
+            g_right_motor.set_power(40)
+            time.sleep(2)
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
             return Status.SUCCESS
@@ -614,8 +617,8 @@ def build_behaviour_tree() -> BehaviourTree:
         double_loop_selector_2,
         double_loop_selector_3,
         double_loop_selector_4,
-        # TraceLineCam(name="trace_clear_obstacle",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        # gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
         # IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
     calibration = Sequence(name="calibration", memory=True)
