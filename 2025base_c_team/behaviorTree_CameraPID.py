@@ -59,8 +59,7 @@ g_video_thread: threading.Thread = None
 g_course: int = 0
 
 
-class TheEnd(Behaviour):
-# ctl+cで処理を終了させるようにしている
+class TheEnd(Behaviour):# ctl+cで処理を終了させるようにしている
     def __init__(self, name: str):
         super(TheEnd, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -73,8 +72,7 @@ class TheEnd(Behaviour):
         return Status.RUNNING
 
 
-class ResetDevice(Behaviour):
-# ロボットのモーターの回転数をリセットする専用の「初期化ビヘイビア」
+class ResetDevice(Behaviour):# ロボットのモーターの回転数をリセットする専用の「初期化ビヘイビア」
     def __init__(self, name: str):
         super(ResetDevice, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -93,8 +91,7 @@ class ResetDevice(Behaviour):
         return Status.RUNNING
 
 
-class ArmUpDownFull(Behaviour):
-# アームを上げ下げして初期化するビヘイビア
+class ArmUpDownFull(Behaviour):# アームを上げ下げして初期化するビヘイビア
     def __init__(self, name: str, direction: ArmDirection):
         super(ArmUpDownFull, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -121,8 +118,7 @@ class ArmUpDownFull(Behaviour):
         return Status.RUNNING
 
 
-class IsDistanceEarned(Behaviour):
-# ロボットがある距離だけ進んだかどうかをチェックするビヘイビア
+class IsDistanceEarned(Behaviour):# ロボットがある距離だけ進んだかどうかをチェックするビヘイビア
     def __init__(self, name: str, delta_dist: int):
         super(IsDistanceEarned, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -146,8 +142,7 @@ class IsDistanceEarned(Behaviour):
             return Status.FAILURE
 
 
-class IsSonarOn(Behaviour):
-# 障害物が近くにある場合に次の行動を制御できる
+class IsSonarOn(Behaviour):# 障害物が近くにある場合に次の行動を制御できる
     def __init__(self, name: str, alert_dist: int):
         super(IsSonarOn, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -194,8 +189,7 @@ class StopNow(Behaviour):
         return Status.SUCCESS
 
 
-class IsJunction(Behaviour):
-# 分岐チェックを知らせるだけのクラス
+class IsJunction(Behaviour):# 分岐チェックを知らせるだけのクラス
     def __init__(self, name: str, target_state: JState) -> None:
         super(IsJunction, self).__init__(name)
         self.target_state = target_state
@@ -238,8 +232,7 @@ class IsJunction(Behaviour):
             return Status.RUNNING
 
 
-class RunAsInstructed(Behaviour):
-# ロボットの左右のモーターに固定のPWM（出力）を与えて動かす「行動ノード」
+class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定のPWM（出力）を与えて動かす「行動ノード」
     def __init__(self, name: str, pwm_l: int, pwm_r: int) -> None:
         super(RunAsInstructed, self).__init__(name)
         self.pwm_l = g_course * pwm_l
@@ -314,8 +307,7 @@ class TraceLineCam(Behaviour):
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
 
-# カラーセンサー用クラス
-class TraceLineSensor(Behaviour):
+class TraceLineSensor(Behaviour):# カラーセンサー用クラス
     def __init__(self, name: str, target: int, power: int, pid_p: float, pid_i: float, pid_d: float,
                  trace_side: TraceSide) -> None:
         super(TraceLineSensor, self).__init__(name)
@@ -339,8 +331,7 @@ class TraceLineSensor(Behaviour):
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
 
-# 青色検知用クラス
-class DetectBlue(Behaviour):
+class DetectBlue(Behaviour):# 青色検知用クラス
     def __init__(self, name: str):
         super().__init__(name)
 
