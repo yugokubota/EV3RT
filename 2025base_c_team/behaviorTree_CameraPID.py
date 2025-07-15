@@ -363,7 +363,7 @@ class DetectBlue(Behaviour):
             print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
             return Status.SUCCESS
         # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
-        return Status.FAILURE
+        return Status.RUNNING
 
 class TraverseBehaviourTree(object):
     def __init__(self, tree: BehaviourTree) -> None:
@@ -516,7 +516,7 @@ class IsDistancePassed(Behaviour):
         if now_distance - self.start_distance >= self.target_distance:
             print(f"[IsDistancePassed] Passed: {now_distance - self.start_distance}")
             return Status.SUCCESS
-        return Status.FAILURE
+        return Status.RUNNING
 
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
@@ -540,8 +540,8 @@ def build_behaviour_tree() -> BehaviourTree:
         trace_side=TraceSide.NORMAL
     )
     # オブジェクト回避とライントレース
-    obstacle_selector = Selector(name="obstacle_or_trace", memory=False)
-    obstacle_selector.add_children([
+    obstacle_Parallel = Parallel(name="obstacle_or_trace", memory=False, policy=ParallelPolicy.SuccessOnOne())
+    obstacle_Parallel.add_children([
         avoid_seq, 
         traceline_cam_for_obstacle
     ])
@@ -556,25 +556,25 @@ def build_behaviour_tree() -> BehaviourTree:
     # ================ ダブルループ処理 ================
     
     # part1_青色検知したら、角度をつける
-    detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc", memory=False)
+    detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc1", memory=False)
     detectblue_and_arc_sequence_1.add_children([
         DetectBlue(name="detect_blue1"),
         ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
     ])
     # part2_青色検知したら、角度をつける
-    detectblue_and_arc_sequence_2 = Sequence(name="detectblue_and_arc", memory=False)
+    detectblue_and_arc_sequence_2 = Sequence(name="detectblue_and_arc2", memory=False)
     detectblue_and_arc_sequence_2.add_children([
         DetectBlue(name="detect_blue2"),
         ArcTurn(name="arc_move2", direction="left", degree=45, power=30, radius=80),
     ])
     # part3_青色検知したら、角度をつける
-    detectblue_and_arc_sequence_3 = Sequence(name="detectblue_and_arc", memory=False)
+    detectblue_and_arc_sequence_3 = Sequence(name="detectblue_and_arc3", memory=False)
     detectblue_and_arc_sequence_3.add_children([
         DetectBlue(name="detect_blue3"),
         ArcTurn(name="arc_move3", direction="right", degree=45, power=30, radius=80),
     ])
     # part4_青色検知したら、角度をつける
-    detectblue_and_arc_sequence_4 = Sequence(name="detectblue_and_arc", memory=False)
+    detectblue_and_arc_sequence_4 = Sequence(name="detectblue_and_arc4", memory=False)
     detectblue_and_arc_sequence_4.add_children([
         DetectBlue(name="detect_blue4"),
         ArcTurn(name="arc_move4", direction="left", degree=45, power=30, radius=80),
@@ -611,7 +611,7 @@ def build_behaviour_tree() -> BehaviourTree:
 
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
-        # obstacle_selector,
+        # obstacle_Parallel,
         traceline_cam_lapfinish_selector,
         double_loop_sequence_1,
         double_loop_selector_2,
