@@ -363,7 +363,7 @@ class DetectBlue(Behaviour):
             print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
             return Status.SUCCESS
         print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
-        return Status.RUNNING
+        return Status.FAILURE
 
 class TraverseBehaviourTree(object):
     def __init__(self, tree: BehaviourTree) -> None:
