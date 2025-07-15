@@ -552,9 +552,27 @@ def build_behaviour_tree() -> BehaviourTree:
 
     # ================ ダブルループ処理 ================
     
-    # 青色検知したら、角度をつける
-    detectblue_and_arc_sequence = Sequence(name="detectblue_and_arc", memory=False)
-    detectblue_and_arc_sequence.add_children([
+    # part1_青色検知したら、角度をつける
+    detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc", memory=False)
+    detectblue_and_arc_sequence_1.add_children([
+        DetectBlue(name="detect_blue"),
+        ArcTurn(name="arc_move", direction="left", degree=45, power=30, radius=80),
+    ])
+    # part2_青色検知したら、角度をつける
+    detectblue_and_arc_sequence_2 = Sequence(name="detectblue_and_arc", memory=False)
+    detectblue_and_arc_sequence_2.add_children([
+        DetectBlue(name="detect_blue"),
+        ArcTurn(name="arc_move", direction="left", degree=45, power=30, radius=80),
+    ])
+    # part3_青色検知したら、角度をつける
+    detectblue_and_arc_sequence_3 = Sequence(name="detectblue_and_arc", memory=False)
+    detectblue_and_arc_sequence_3.add_children([
+        DetectBlue(name="detect_blue"),
+        ArcTurn(name="arc_move", direction="left", degree=45, power=30, radius=80),
+    ])
+    # part4_青色検知したら、角度をつける
+    detectblue_and_arc_sequence_4 = Sequence(name="detectblue_and_arc", memory=False)
+    detectblue_and_arc_sequence_4.add_children([
         DetectBlue(name="detect_blue"),
         ArcTurn(name="arc_move", direction="left", degree=45, power=30, radius=80),
     ])
@@ -562,28 +580,28 @@ def build_behaviour_tree() -> BehaviourTree:
     # part1_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_1 = Selector(name="double_loop_selector1",memory=False)
     double_loop_selector_1.add_children([
-        detectblue_and_arc_sequence,
+        detectblue_and_arc_sequence_!,
         TraceLineSensor(name="detect_blackline1", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
     # part2_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_2 = Selector(name="double_loop_selector2",memory=False)
     double_loop_selector_2.add_children([
-        detectblue_and_arc_sequence,
+        detectblue_and_arc_sequence_2,
         TraceLineSensor(name="detect_blackline2", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
     # part3_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_3 = Selector(name="double_loop_selector3",memory=False)
     double_loop_selector_3.add_children([
-        detectblue_and_arc_sequence,
+        detectblue_and_arc_sequence_3,
         TraceLineSensor(name="detect_blackline3", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
     # part4_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_4 = Selector(name="double_loop_selector4",memory=False)
     double_loop_selector_4.add_children([
-        detectblue_and_arc_sequence,
+        detectblue_and_arc_sequence_4,
         TraceLineSensor(name="detect_blackline4", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
