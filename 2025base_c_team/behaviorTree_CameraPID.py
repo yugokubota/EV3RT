@@ -546,8 +546,8 @@ def build_behaviour_tree() -> BehaviourTree:
         traceline_cam_for_obstacle
     ])
     # オブジェクト回避後からLAP完了まで（LAP完了は青色検知）
-    traceline_cam_lapfinish_selector = Selector(name="detectblue_or_trace", memory=False)
-    traceline_cam_lapfinish_selector.add_children([
+    traceline_cam_lapfinish_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
+    traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="traceline_cam_lapfinish",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
@@ -612,7 +612,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
         # obstacle_Parallel,
-        traceline_cam_lapfinish_selector,
+        traceline_cam_lapfinish_Parallel,
         double_loop_sequence_1,
         double_loop_selector_2,
         double_loop_selector_3,
