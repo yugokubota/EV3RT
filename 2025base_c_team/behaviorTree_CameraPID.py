@@ -540,7 +540,7 @@ def build_behaviour_tree() -> BehaviourTree:
         trace_side=TraceSide.NORMAL
     )
     # オブジェクト回避とライントレース
-    obstacle_Parallel = Parallel(name="obstacle_or_trace", memory=False, policy=ParallelPolicy.SuccessOnOne())
+    obstacle_Parallel = Parallel(name="obstacle_or_trace", policy=ParallelPolicy.SuccessOnOne())
     obstacle_Parallel.add_children([
         avoid_seq, 
         traceline_cam_for_obstacle
