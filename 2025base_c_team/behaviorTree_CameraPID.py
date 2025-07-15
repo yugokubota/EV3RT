@@ -362,7 +362,7 @@ class DetectBlue(Behaviour):
         if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
             print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
             return Status.SUCCESS
-        print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+        # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
         return Status.FAILURE
 
 class TraverseBehaviourTree(object):
