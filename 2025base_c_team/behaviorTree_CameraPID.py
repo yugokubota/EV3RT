@@ -486,7 +486,7 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
             time.sleep(base_angle / 90 * 0.7)  # 調整要
             g_left_motor.set_power(40)
             g_right_motor.set_power(40)
-            time.sleep(2)
+            time.sleep(20)
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
             return Status.SUCCESS
@@ -610,8 +610,8 @@ def build_behaviour_tree() -> BehaviourTree:
         double_loop_selector_4,
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-        # IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
+
     calibration = Sequence(name="calibration", memory=True)
     calibration.add_children([
         ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
@@ -622,7 +622,7 @@ def build_behaviour_tree() -> BehaviourTree:
     start.add_children([
         IsTouchOn(name="touch start"),
     ])
-    # 各ノードの定義終了
+
     root = Sequence(name="loop by cam", memory=True)
     root.add_children([
         calibration,
