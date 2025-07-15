@@ -580,7 +580,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # part1_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_1 = Selector(name="double_loop_selector1",memory=False)
     double_loop_selector_1.add_children([
-        detectblue_and_arc_sequence_!,
+        detectblue_and_arc_sequence_1,
         TraceLineSensor(name="detect_blackline1", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
