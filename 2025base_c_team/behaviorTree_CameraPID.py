@@ -356,6 +356,32 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
         return Status.RUNNING
 
+class Detectcolor(Behaviour):# 色や明るさを取得する
+    def __init__(self, name: str):
+        super().__init__(name)
+
+    def update(self) -> Status:
+        r, g, b = g_color_sensor.get_raw_color()
+        # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
+        max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
+        r_norm = r / max_rgb
+        g_norm = g / max_rgb
+        b_norm = b / max_rgb
+        # colorsysで変換（返り値: h,s,vは0.0〜1.0）
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        # 色相Hだけ0〜360度に直す
+        h_deg = int(h * 360)
+        s_per = int(s * 100)
+        v_per = int(v * 100)
+        print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        print(f"brightness={brightness}")
+        # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
+        if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+            # print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+            return Status.RUNNING
+        # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+        return Status.RUNNING
+
 class IsOnBlackLine(Behaviour):#黒色を明るさで検知
     def __init__(self, name: str, threshold: int = 40):
         super().__init__(name)
@@ -624,10 +650,11 @@ def build_behaviour_tree() -> BehaviourTree:
 
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
+        Detectcolor(name="detectcolor"),
         # obstacle_Parallel,
-        traceline_cam_lapfinish_Parallel,
-        double_loop_sequence_1,
-        double_loop_selector_2,
+        # traceline_cam_lapfinish_Parallel,
+        # double_loop_sequence_1,
+        # double_loop_selector_2,
         # double_loop_selector_3,
         # double_loop_selector_4,
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
