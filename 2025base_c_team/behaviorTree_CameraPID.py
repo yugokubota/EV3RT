@@ -356,6 +356,21 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
         return Status.RUNNING
 
+class IsOnBlackLine(Behaviour):#黒色を明るさで検知
+    def __init__(self, name: str, threshold: int = 40):
+        super().__init__(name)
+        self.threshold = threshold
+
+    def update(self) -> Status:
+        brightness = g_color_sensor.get_brightness()
+        if brightness < self.threshold:  # 明るさがthreshold未満=黒い
+            print(f"[IsOnBlackLine] Detected! brightness={brightness}")
+            return Status.SUCCESS
+        else:
+            return Status.FAILURE
+
+
+
 class TraverseBehaviourTree(object):
     def __init__(self, tree: BehaviourTree) -> None:
         self.tree = tree
@@ -484,9 +499,6 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
                 print(f"right_motor power: {right_curve_power}, left_motor power: {left_curve_power}")
             # time.sleepで簡易的にカーブの長さを調整する例
             time.sleep(base_angle / 90 * 0.7)  # 調整要
-            g_left_motor.set_power(40)
-            g_right_motor.set_power(40)
-            time.sleep(20)
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
             return Status.SUCCESS
@@ -543,6 +555,14 @@ def build_behaviour_tree() -> BehaviourTree:
         TraceLineCam(name="traceline_cam_lapfinish",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
+    # 黒色検知するまでまっすぐ走る
+    go_until_blackline = Selector(name="go_until_blackline")
+    go_until_blackline.add_children([
+    IsOnBlackLine(name="detect_blackline", threshold=40),
+    RunAsInstructed(name="go_straight", pwm_l=40, pwm_r=40)
+    ])
+
+
 
     # ================ ダブルループ処理 ================
     
@@ -575,6 +595,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_sequence_1 = Sequence(name="double_loop_selector1",memory=False)
     double_loop_sequence_1.add_children([
         detectblue_and_arc_sequence_1,
+        go_until_blackline,
         TraceLineSensor(name="detect_blackline1", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
@@ -605,9 +626,9 @@ def build_behaviour_tree() -> BehaviourTree:
         # obstacle_Parallel,
         traceline_cam_lapfinish_Parallel,
         double_loop_sequence_1,
-        double_loop_selector_2,
-        double_loop_selector_3,
-        double_loop_selector_4,
+        # double_loop_selector_2,
+        # double_loop_selector_3,
+        # double_loop_selector_4,
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
