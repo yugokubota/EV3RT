@@ -336,6 +336,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         super().__init__(name)
         self.count = 0
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+        self.running = False
 
     def update(self) -> Status:
         r, g, b = g_color_sensor.get_raw_color()
@@ -352,11 +353,11 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         v_per = int(v * 100)
         # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
-        if self.count == 0:
+        if not self.running:
+            self.running = True
             if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
                 self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
                 print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
-                self.count += 1
                 return Status.SUCCESS
             else:
                 # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
