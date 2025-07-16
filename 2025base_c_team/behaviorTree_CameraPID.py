@@ -367,6 +367,7 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
             print(f"[IsOnBlackLine] Detected! brightness={brightness}")
             return Status.SUCCESS
         else:
+            print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
             return Status.FAILURE
 
 
