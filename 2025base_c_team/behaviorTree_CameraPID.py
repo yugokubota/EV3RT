@@ -602,107 +602,92 @@ def build_behaviour_tree() -> BehaviourTree:
         TraceLineCam(name="traceline_cam_lapfinish",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
-    # part1_黒色検知するまでまっすぐ走る
-    go_until_blackline_Parallel_1 = Parallel(name="go_until_blackline_1", policy=ParallelPolicy.SuccessOnOne())
-    go_until_blackline_Parallel_1.add_children([
-        IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        RunAsInstructed(name="go_straight_1", pwm_l=40, pwm_r=40)
-    ])
-    # part2_黒色検知するまでまっすぐ走る
-    go_until_blackline_Parallel_2 = Parallel(name="go_until_blackline_2", policy=ParallelPolicy.SuccessOnOne())
-    go_until_blackline_Parallel_2.add_children([
-        IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        RunAsInstructed(name="go_straight_2", pwm_l=40, pwm_r=40)
-    ])
-    # part3_黒色検知するまでまっすぐ走る
-    go_until_blackline_Parallel_3 = Parallel(name="go_until_blackline_3", policy=ParallelPolicy.SuccessOnOne())
-    go_until_blackline_Parallel_3.add_children([
-        IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=40)
-    ])
-    # part4_黒色検知するまでまっすぐ走る
-    go_until_blackline_Parallel_4 = Parallel(name="go_until_blackline_4", policy=ParallelPolicy.SuccessOnOne())
-    go_until_blackline_Parallel_4.add_children([
-        IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        RunAsInstructed(name="go_straight_4", pwm_l=40, pwm_r=40)
-    ])
     # ================ ダブルループ処理 ================
 
     # ================ 青色検知と角度付け ================
 
     # part1_青色検知したら、角度をつける
-    # detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc1", memory=False)
-    # detectblue_and_arc_sequence_1.add_children([
-    #     DetectBlue(name="detect_blue1"),
-    #     ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
-    # ])
+    detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc1", memory=False)
+    detectblue_and_arc_sequence_1.add_children([
+        DetectBlue(name="detect_blue1"),
+        ArcTurn(name="arc_move1", direction="left", degree=45, power=30, radius=80),
+    ])
     # part2_青色検知したら、角度をつける
     detectblue_and_arc_sequence_2 = Sequence(name="detectblue_and_arc2", memory=False)
     detectblue_and_arc_sequence_2.add_children([
         DetectBlue(name="detect_blue2"),
-        ArcTurn(name="arc_move2", direction="left", degree=45, power=30, radius=80),
+        ArcTurn(name="arc_move2", direction="right", degree=45, power=30, radius=80),
     ])
     # part3_青色検知したら、角度をつける
     detectblue_and_arc_sequence_3 = Sequence(name="detectblue_and_arc3", memory=False)
     detectblue_and_arc_sequence_3.add_children([
         DetectBlue(name="detect_blue3"),
-        ArcTurn(name="arc_move3", direction="right", degree=45, power=30, radius=80),
-    ])
-    # part4_青色検知したら、角度をつける
-    detectblue_and_arc_sequence_4 = Sequence(name="detectblue_and_arc4", memory=False)
-    detectblue_and_arc_sequence_4.add_children([
-        DetectBlue(name="detect_blue4"),
-        ArcTurn(name="arc_move4", direction="left", degree=45, power=30, radius=80),
+        ArcTurn(name="arc_move3", direction="left", degree=45, power=30, radius=80),
     ])
 
     # ================ 黒線検知でライントレース ================
 
-    # part1_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
-    double_loop_sequence_1 = Sequence(name="double_loop_selector1",memory=True)
-    double_loop_sequence_1.add_children([
-        ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
-        go_until_blackline_Parallel_1,
-        # TraceLineSensor(name="detect_blackline1", target=45, power=45,
-        #     pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+    # part1_黒線を検知した場合ライントレース
+    double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
+    double_loop_black_selector_1.add_children([
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        RunAsInstructed(name="go_straight_1", pwm_l=40, pwm_r=40),
     ])
-    # part2_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
-    double_loop_selector_2 = Selector(name="double_loop_selector2",memory=False)
-    double_loop_selector_2.add_children([
-        detectblue_and_arc_sequence_2,
-        TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
-        go_until_blackline_Parallel_2,
+    # part2_黒線を検知した場合ライントレース
+    double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
+    double_loop_black_selector_2.add_children([
+        IsOnBlackLine(name="detect_blackline_2", threshold=5),
+        RunAsInstructed(name="go_straight_2", pwm_l=40, pwm_r=40),
     ])
-    # part3_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
-    double_loop_selector_3 = Selector(name="double_loop_selector3",memory=False)
-    double_loop_selector_3.add_children([
-        detectblue_and_arc_sequence_3,
-        TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
-        go_until_blackline_Parallel_3
+    # part3_黒線を検知した場合ライントレース
+    double_loop_black_selector_3 = Selector(name="double_loop_black_selector3",memory=False)
+    double_loop_black_selector_3.add_children([
+        IsOnBlackLine(name="detect_blackline_3", threshold=5),
+        RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=40),
     ])
-    # part4_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
-    double_loop_selector_4 = Selector(name="double_loop_selector4",memory=False)
-    double_loop_selector_4.add_children([
-        detectblue_and_arc_sequence_4,
-        TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
-        go_until_blackline_Parallel_4
+    # part4_黒線を検知した場合ライントレース
+    double_loop_black_selector_4 = Selector(name="double_loop_black_selector4",memory=False)
+    double_loop_black_selector_4.add_children([
+        IsOnBlackLine(name="detect_blackline_4", threshold=5),
+        RunAsInstructed(name="go_straight_4", pwm_l=40, pwm_r=40),
     ])
 
-    double_loop = Sequence(name="double_loop", memory=True)
-    double_loop.add_children([
-        traceline_cam_lapfinish_Parallel,
-        double_loop_sequence_1,
-        double_loop_selector_2,
-        double_loop_selector_3,
-        # double_loop_selector_4,
+    # ================ 青色検知で角度をつける ================
+    
+    # part1_青色検知で角度をつける
+    double_loop_blue_selector_1 = Selector(name="double_loop_blue_selector_1",memory=False)
+    double_loop_selector_1.add_children([
+        detectblue_and_arc_sequence_1,
+        TraceLineCam(name="Tracelinecam_DetectBlue_1",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
+    # part2_青色検知で角度をつける
+    double_loop_blue_selector_2 = Selector(name="double_loop_blue_selector_2",memory=False)
+    double_loop_selector_2.add_children([
+        detectblue_and_arc_sequence_2,
+        TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
+    ])
+    # part3_青色検知で角度をつける
+    double_loop_blue_selector_3 = Selector(name="double_loop_blue_selector_3",memory=False)
+    double_loop_selector_3.add_children([
+        detectblue_and_arc_sequence_3,
+        TraceLineCam(name="Tracelinecam_DetectBlue_3",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
+    ])
+
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
         # Detectcolor(name="detectcolor"),#色や明るさを検知できる
         # obstacle_Parallel,
-        double_loop,
+        traceline_cam_lapfinish_Parallel,
+        ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
+        double_loop_black_selector_1,
+        double_loop_blue_selector_1,
+        double_loop_black_selector_2,
+        double_loop_blue_selector_2,
+        double_loop_black_selector_3,
+        double_loop_blue_selector_3,
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
