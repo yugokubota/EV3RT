@@ -353,23 +353,43 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         v_per = int(v * 100)
         # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
-        if not self.running:
-            self.running = True
-            if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
-                self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
-                print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
-                return Status.SUCCESS
-            else:
-                # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
-                return Status.RUNNING
+        if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+            self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
+            print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+            return Status.SUCCESS
         else:
-            if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
-                self.logger.info("%+06d %s.DetectBlue more!" % (g_plotter.get_distance(), self.__class__.__name__))
-                print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
-                return Status.SUCCESS
-            else:
-                print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
-                return Status.FAILURE
+            # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+            return Status.RUNNING
+
+class DetectBlue_failure(Behaviour):# 青色検知用クラス
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.count = 0
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+        self.running = False
+
+    def update(self) -> Status:
+        r, g, b = g_color_sensor.get_raw_color()
+        # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
+        max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
+        r_norm = r / max_rgb
+        g_norm = g / max_rgb
+        b_norm = b / max_rgb
+        # colorsysで変換（返り値: h,s,vは0.0〜1.0）
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        # 色相Hだけ0〜360度に直す
+        h_deg = int(h * 360)
+        s_per = int(s * 100)
+        v_per = int(v * 100)
+        # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
+        if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+            self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
+            print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+            return Status.SUCCESS
+        else:
+            # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+            return Status.FAILURE
 
 class Detectcolor(Behaviour):# 色や明るさを取得する
     def __init__(self, name: str):
@@ -610,19 +630,19 @@ def build_behaviour_tree() -> BehaviourTree:
     # part1_青色検知したら、角度をつける
     detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc1", memory=False)
     detectblue_and_arc_sequence_1.add_children([
-        DetectBlue(name="detect_blue"),
+        DetectBlue_failure(name="detect_blue"),
         ArcTurn(name="arc_move1", direction="left", degree=45, power=30, radius=80),
     ])
     # part2_青色検知したら、角度をつける
     detectblue_and_arc_sequence_2 = Sequence(name="detectblue_and_arc2", memory=False)
     detectblue_and_arc_sequence_2.add_children([
-        DetectBlue(name="detect_blue"),
+        DetectBlue_failure(name="detect_blue"),
         ArcTurn(name="arc_move2", direction="right", degree=45, power=30, radius=80),
     ])
     # part3_青色検知したら、角度をつける
     detectblue_and_arc_sequence_3 = Sequence(name="detectblue_and_arc3", memory=False)
     detectblue_and_arc_sequence_3.add_children([
-        DetectBlue(name="detect_blue"),
+        DetectBlue_failure(name="detect_blue"),
         ArcTurn(name="arc_move3", direction="left", degree=45, power=30, radius=80),
     ])
 
