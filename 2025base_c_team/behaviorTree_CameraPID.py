@@ -586,7 +586,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # 黒色検知するまでまっすぐ走る
     go_until_blackline = Selector(name="go_until_blackline", memory=False)
     go_until_blackline.add_children([
-    IsOnBlackLine(name="detect_blackline", threshold=40),
+    IsOnBlackLine(name="detect_blackline", threshold=5),
     RunAsInstructed(name="go_straight", pwm_l=40, pwm_r=40)
     ])
 
@@ -651,11 +651,11 @@ def build_behaviour_tree() -> BehaviourTree:
 
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
-        Detectcolor(name="detectcolor"),
+        # Detectcolor(name="detectcolor"),
         # obstacle_Parallel,
-        # traceline_cam_lapfinish_Parallel,
-        # double_loop_sequence_1,
-        # double_loop_selector_2,
+        traceline_cam_lapfinish_Parallel,
+        double_loop_sequence_1,
+        double_loop_selector_2,
         # double_loop_selector_3,
         # double_loop_selector_4,
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
