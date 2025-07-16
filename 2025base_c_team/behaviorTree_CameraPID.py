@@ -595,10 +595,10 @@ def build_behaviour_tree() -> BehaviourTree:
     # part1_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_sequence_1 = Sequence(name="double_loop_selector1",memory=False)
     double_loop_sequence_1.add_children([
-        detectblue_and_arc_sequence_1,
+        ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
         go_until_blackline,
-        TraceLineSensor(name="detect_blackline1", target=45, power=45,
-            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+        # TraceLineSensor(name="detect_blackline1", target=45, power=45,
+        #     pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
     # part2_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_2 = Selector(name="double_loop_selector2",memory=False)
