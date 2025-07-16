@@ -334,6 +334,7 @@ class TraceLineSensor(Behaviour):# カラーセンサー用クラス
 class DetectBlue(Behaviour):# 青色検知用クラス
     def __init__(self, name: str):
         super().__init__(name)
+        self.count = 0
 
     def update(self) -> Status:
         r, g, b = g_color_sensor.get_raw_color()
@@ -350,11 +351,21 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         v_per = int(v * 100)
         # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
-        if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
-            print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
-            return Status.SUCCESS
+        if count == 0:
+            if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+                print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+                self.count += 1
+                return Status.SUCCESS
+            else:
         # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
-        return Status.RUNNING
+                return Status.RUNNING
+        else:
+            if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+                print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+                return Status.SUCCESS
+            else:
+            # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+                return Status.FAILURE
 
 class Detectcolor(Behaviour):# 色や明るさを取得する
     def __init__(self, name: str):
@@ -581,7 +592,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="traceline_cam_lapfinish",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
     # 黒色検知するまでまっすぐ走る
     go_until_blackline = Selector(name="go_until_blackline", memory=False)
@@ -593,13 +604,15 @@ def build_behaviour_tree() -> BehaviourTree:
 
 
     # ================ ダブルループ処理 ================
-    
+
+    # ================ 青色検知と角度付け ================
+
     # part1_青色検知したら、角度をつける
-    detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc1", memory=False)
-    detectblue_and_arc_sequence_1.add_children([
-        DetectBlue(name="detect_blue1"),
-        ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
-    ])
+    # detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc1", memory=False)
+    # detectblue_and_arc_sequence_1.add_children([
+    #     DetectBlue(name="detect_blue1"),
+    #     ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
+    # ])
     # part2_青色検知したら、角度をつける
     detectblue_and_arc_sequence_2 = Sequence(name="detectblue_and_arc2", memory=False)
     detectblue_and_arc_sequence_2.add_children([
@@ -619,13 +632,15 @@ def build_behaviour_tree() -> BehaviourTree:
         ArcTurn(name="arc_move4", direction="left", degree=45, power=30, radius=80),
     ])
 
+    # ================ 黒線検知でライントレース ================
+
     # part1_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_sequence_1 = Sequence(name="double_loop_selector1",memory=True)
     double_loop_sequence_1.add_children([
         ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
         go_until_blackline,
-        TraceLineSensor(name="detect_blackline1", target=45, power=45,
-            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+        # TraceLineSensor(name="detect_blackline1", target=45, power=45,
+        #     pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
     # part2_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_2 = Selector(name="double_loop_selector2",memory=False)
