@@ -354,7 +354,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
             print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
             return Status.SUCCESS
         # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
-        return Status.FAILURE
+        return Status.RUNNING
 
 class Detectcolor(Behaviour):# 色や明るさを取得する
     def __init__(self, name: str):
@@ -620,7 +620,7 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
 
     # part1_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
-    double_loop_sequence_1 = Sequence(name="double_loop_selector1",memory=True)
+    double_loop_sequence_1 = Sequence(name="double_loop_selector1",memory=False)
     double_loop_sequence_1.add_children([
         ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
         go_until_blackline,
