@@ -353,6 +353,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
         if self.count == 0:
             if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+                self.logger.debug("%s.__init__()" % (self.__class__.__name__))
                 print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
                 self.count += 1
                 return Status.SUCCESS
@@ -361,10 +362,11 @@ class DetectBlue(Behaviour):# 青色検知用クラス
                 return Status.RUNNING
         else:
             if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+                self.logger.debug("%s.__init__()" % (self.__class__.__name__))
                 print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
                 return Status.SUCCESS
             else:
-                print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+                # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
                 return Status.FAILURE
 
 class Detectcolor(Behaviour):# 色や明るさを取得する
@@ -402,9 +404,11 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
     def update(self) -> Status:
         brightness = g_color_sensor.get_brightness()
         if brightness < self.threshold:  # 明るさがthreshold未満=黒い
+            self.logger.debug("%s.__init__()" % (self.__class__.__name__))
             print(f"[IsOnBlackLine] Detected! brightness={brightness}")
             return Status.SUCCESS
         else:
+            self.logger.debug("%s.__init__()" % (self.__class__.__name__))
             print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
             return Status.FAILURE
 
@@ -470,6 +474,7 @@ class AvoidObstacleArcFull(Behaviour):
         self.dist = None
 
     def update(self) -> Status:
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
         print("AvoidObstacleArcFull_start")
         if self.done:
             return Status.SUCCESS
@@ -519,8 +524,9 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
         self.running = False
 
     def update(self) -> Status:
-        print("Arcturn_start")
         if not self.running:
+            self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+            print("Arcturn_start")
             self.running = True
             # degree→タイヤ回転数変換は省略例
             base_angle = self.degree
@@ -671,7 +677,7 @@ def build_behaviour_tree() -> BehaviourTree:
         traceline_cam_lapfinish_Parallel,
         double_loop_sequence_1,
         double_loop_selector_2,
-        # double_loop_selector_3,
+        double_loop_selector_3,
         # double_loop_selector_4,
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
