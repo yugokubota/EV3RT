@@ -651,7 +651,7 @@ def build_behaviour_tree() -> BehaviourTree:
 
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
-        # Detectcolor(name="detectcolor"),
+        # Detectcolor(name="detectcolor"),#色や明るさを検知できる
         # obstacle_Parallel,
         traceline_cam_lapfinish_Parallel,
         double_loop_sequence_1,
