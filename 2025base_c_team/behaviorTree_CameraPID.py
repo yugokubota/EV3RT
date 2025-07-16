@@ -556,7 +556,7 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
     # 黒色検知するまでまっすぐ走る
-    go_until_blackline = Selector(name="go_until_blackline")
+    go_until_blackline = Selector(name="go_until_blackline", memory=False)
     go_until_blackline.add_children([
     IsOnBlackLine(name="detect_blackline", threshold=40),
     RunAsInstructed(name="go_straight", pwm_l=40, pwm_r=40)
