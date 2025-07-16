@@ -627,7 +627,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # obstacle_Parallel,
         traceline_cam_lapfinish_Parallel,
         double_loop_sequence_1,
-        # double_loop_selector_2,
+        double_loop_selector_2,
         # double_loop_selector_3,
         # double_loop_selector_4,
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
