@@ -354,7 +354,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
         if self.count == 0:
             if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
-                self.logger.info("%+06d %s.DetectBlue Once!" % (distance, self.__class__.__name__))
+                self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
                 print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
                 self.count += 1
                 return Status.SUCCESS
@@ -363,7 +363,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
                 return Status.RUNNING
         else:
             if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
-                self.logger.info("%+06d %s.DetectBlue more!" % (distance, self.__class__.__name__))
+                self.logger.info("%+06d %s.DetectBlue more!" % (g_plotter.get_distance(), self.__class__.__name__))
                 print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
                 return Status.SUCCESS
             else:
@@ -406,11 +406,11 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
     def update(self) -> Status:
         brightness = g_color_sensor.get_brightness()
         if brightness < self.threshold:  # 明るさがthreshold未満=黒い
-            self.logger.info("%+06d %s.DetectBlack!" % (distance, self.__class__.__name__))
+            self.logger.info("%+06d %s.DetectBlack!" % (g_plotter.get_distance(), self.__class__.__name__))
             print(f"[IsOnBlackLine] Detected! brightness={brightness}")
             return Status.SUCCESS
         else:
-            self.logger.info("%+06d %s.NotDetected..." % (distance, self.__class__.__name__))
+            self.logger.info("%+06d %s.NotDetected..." % (g_plotter.get_distance(), self.__class__.__name__))
             print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
             return Status.FAILURE
 
@@ -479,7 +479,7 @@ class AvoidObstacleArcFull(Behaviour):
     def update(self) -> Status:
         if self.done:
             return Status.SUCCESS
-        self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (distance, self.__class__.__name__))
+        self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (g_plotter.get_distance(), self.__class__.__name__))
         # --- 以下、単純な回避動作 ---
         # 右カーブ
         g_left_motor.set_power(52)
@@ -512,7 +512,7 @@ class AvoidObstacleArcFull(Behaviour):
 
         # フラグを立てて終了
         self.done = True
-        self.logger.info("%+06d %s.AvoidObstacleArcFull_complete!" % (distance, self.__class__.__name__))
+        self.logger.info("%+06d %s.AvoidObstacleArcFull_complete!" % (g_plotter.get_distance(), self.__class__.__name__))
         return Status.SUCCESS
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
@@ -527,7 +527,7 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
 
     def update(self) -> Status:
         if not self.running:
-            self.logger.info("%+06d %s.Arcturn_start!" % (distance, self.__class__.__name__))
+            self.logger.info("%+06d %s.Arcturn_start!" % (g_plotter.get_distance(), self.__class__.__name__))
             self.running = True
             # degree→タイヤ回転数変換は省略例
             base_angle = self.degree
@@ -547,7 +547,7 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
             time.sleep(base_angle / 90 * 0.7)  # 調整要
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
-            self.logger.info("%+06d %s.Arcturn_complete!" % (distance, self.__class__.__name__))
+            self.logger.info("%+06d %s.Arcturn_complete!" % (g_plotter.get_distance(), self.__class__.__name__))
             return Status.SUCCESS
         return Status.RUNNING
 
