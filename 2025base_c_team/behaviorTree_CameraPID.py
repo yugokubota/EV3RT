@@ -338,7 +338,6 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
 
     def update(self) -> Status:
-        print("self.count"=self.count)
         r, g, b = g_color_sensor.get_raw_color()
         # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
         max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
@@ -610,19 +609,19 @@ def build_behaviour_tree() -> BehaviourTree:
     # part1_青色検知したら、角度をつける
     detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc1", memory=False)
     detectblue_and_arc_sequence_1.add_children([
-        DetectBlue(name="detect_blue1"),
+        DetectBlue(name="detect_blue"),
         ArcTurn(name="arc_move1", direction="left", degree=45, power=30, radius=80),
     ])
     # part2_青色検知したら、角度をつける
     detectblue_and_arc_sequence_2 = Sequence(name="detectblue_and_arc2", memory=False)
     detectblue_and_arc_sequence_2.add_children([
-        DetectBlue(name="detect_blue2"),
+        DetectBlue(name="detect_blue"),
         ArcTurn(name="arc_move2", direction="right", degree=45, power=30, radius=80),
     ])
     # part3_青色検知したら、角度をつける
     detectblue_and_arc_sequence_3 = Sequence(name="detectblue_and_arc3", memory=False)
     detectblue_and_arc_sequence_3.add_children([
-        DetectBlue(name="detect_blue3"),
+        DetectBlue(name="detect_blue"),
         ArcTurn(name="arc_move3", direction="left", degree=45, power=30, radius=80),
     ])
 
