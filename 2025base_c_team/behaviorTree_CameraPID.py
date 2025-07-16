@@ -351,7 +351,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         v_per = int(v * 100)
         # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
-        if count == 0:
+        if self.count == 0:
             if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
                 print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
                 self.count += 1
