@@ -360,7 +360,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
                 self.count += 1
                 return Status.SUCCESS
             else:
-        # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+                # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
                 return Status.RUNNING
         else:
             if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
@@ -368,7 +368,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
                 print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
                 return Status.SUCCESS
             else:
-                # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+                print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
                 return Status.FAILURE
 
 class Detectcolor(Behaviour):# 色や明るさを取得する
@@ -412,7 +412,7 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
             return Status.SUCCESS
         else:
             # self.logger.info("%+06d %s.NotDetected..." % (g_plotter.get_distance(), self.__class__.__name__))
-            print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
+            # print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
             return Status.FAILURE
 
 
