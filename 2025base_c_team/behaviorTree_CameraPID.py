@@ -382,155 +382,62 @@ class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検�
             print("IsObstacleNear_start")
         return Status.FAILURE
 
-# class AvoidObstacleArcFull(Behaviour):
-#     def __init__(self, name: str):
-#         super().__init__(name)
-#         self.done = False
-#         self.dist = None
-
-#     def update(self) -> Status:
-#         print("AvoidObstacleArcFull_start")
-#         if self.done:
-#             return Status.SUCCESS
-
-#         # 初回のみ距離取得
-#         # if self.dist is None:
-#         #     dist = g_sonar_sensor.get_distance()
-#         #     print("dist = ",dist)
-#         #     if dist <= 0:
-#         #         print("fallback")
-#         #         dist = 100
-#         #     self.dist = dist
-#         # else:
-#         #     dist = self.dist
-
-#         # --- 以下、単純な回避動作 ---
-#         # 右カーブ
-#         g_left_motor.set_power(52)
-#         g_right_motor.set_power(10)
-#         time.sleep(2)  # 必要に応じて調整
-#         # 止める
-#         g_left_motor.set_power(0)
-#         g_right_motor.set_power(0)
-
-#         # 左に戻す
-#         g_left_motor.set_power(20)
-#         g_right_motor.set_power(60)
-#         time.sleep(2.5)  # 必要に応じて調整
-#         g_left_motor.set_power(0)
-#         g_right_motor.set_power(0)
-
-#         # ライン復帰
-#         g_left_motor.set_power(30)
-#         g_right_motor.set_power(30)
-#         time.sleep(1.4)
-#         g_left_motor.set_power(0)
-#         g_right_motor.set_power(0)
-
-#         # # ライン復帰
-#         # g_left_motor.set_power(50)
-#         # g_right_motor.set_power(10)
-#         # time.sleep(1.17)
-#         # g_left_motor.set_power(0)
-#         # g_right_motor.set_power(0)
-
-#         # フラグを立てて終了
-#         self.done = True
-#         print("AvoidObstacleArcFull complete!")
-#         return Status.SUCCESS
-
-# class AvoidObstacleArcFull(Behaviour):
-#     def __init__(self, name: str, direction="right", duration=1.5):
-#         super().__init__(name)
-#         self.direction = direction          # "right" または "left"：回避方向
-#         self.duration = duration            # 回避動作を続ける時間（秒）
-#         self.start_time = None              # 開始時刻（初回 update 呼び出し時に記録）
-
-#     def update(self) -> Status:
-#         now = time.time()
-#         if self.start_time is None:
-#             # 初回の update 呼び出しで時刻を記録し、ログ出力
-#             self.start_time = now
-#             print("AvoidObstacleArcFull: start")
-
-#         elapsed = now - self.start_time
-#         if elapsed > self.duration:
-#             # 指定時間が経過したらモーターを止めて SUCCESS を返す
-#             g_left_motor.set_power(0)
-#             g_right_motor.set_power(0)
-#             return Status.SUCCESS
-
-#         # 以下が円弧回避動作の本体
-#         base = 70            # 外輪（直進に近い側）のスピード
-#         arc_power = 45       # 内輪（遅くする側）の差分（小さいほどカーブはゆるやか）
-
-#         if self.direction == "right":
-#             # 右回避：左輪は速く、右輪は遅く（右に曲がる）
-#             g_left_motor.set_power(base)
-#             g_right_motor.set_power(base - arc_power)
-#         else:
-#             # 左回避：右輪は速く、左輪は遅く（左に曲がる）
-#             g_left_motor.set_power(base - arc_power)
-#             g_right_motor.set_power(base)
-
-#         # 時間内は RUNNING を返して、次の update 呼び出しへ
-#         return Status.RUNNING
-
 class AvoidObstacleArcFull(Behaviour):
-    def __init__(self, name: str, direction="right", duration=1.5):
+    def __init__(self, name: str):
         super().__init__(name)
-        self.direction = direction        # 回避方向（"right" または "left"）
-        self.duration = duration          # 回避動作を続ける時間（秒）
-        self.start_time = None            # 回避開始時刻（1回のみ設定）
-        self.done = False                 # 回避動作が完了したかどうかのフラグ
+        self.done = False
+        self.dist = None
 
     def update(self) -> Status:
-        now = time.time()                 # 現在の時刻を取得
-
-        # 一度だけ初期化（start_timeを設定）する
-        if not self.done and self.start_time is None:
-            self.start_time = now         # 初回に開始時刻を記録
-            print(f"AvoidObstacleArcFull: start ({self.direction})")
-
-        # 回避完了後は常に SUCCESS を返す（再実行しないようにする）
+        print("AvoidObstacleArcFull_start")
         if self.done:
             return Status.SUCCESS
 
-        # 経過時間を計算
-        elapsed = now - self.start_time
+        # 初回のみ距離取得
+        # if self.dist is None:
+        #     dist = g_sonar_sensor.get_distance()
+        #     print("dist = ",dist)
+        #     if dist <= 0:
+        #         print("fallback")
+        #         dist = 100
+        #     self.dist = dist
+        # else:
+        #     dist = self.dist
 
-        # 経過時間がdurationを超えたらモーターを停止し、完了扱いにする
-        if elapsed > self.duration:
-            g_left_motor.set_power(0)     # 左モーター停止
-            g_right_motor.set_power(0)    # 右モーター停止
-            print("AvoidObstacleArcFull: done")  # ログ出力
-            self.done = True              # フラグをTrueにして終了状態へ
-            return Status.SUCCESS
+        # --- 以下、単純な回避動作 ---
+        # 右カーブ
+        g_left_motor.set_power(52)
+        g_right_motor.set_power(10)
+        time.sleep(2)  # 必要に応じて調整
+        # 止める
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
 
-        # ---- 回避動作中のモーター出力設定 ----
+        # 左に戻す
+        g_left_motor.set_power(20)
+        g_right_motor.set_power(60)
+        time.sleep(2.5)  # 必要に応じて調整
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
 
-        base = 70                         # 速い方（外側車輪）の速度
-        RIGHT_ARC_POWER = 40              # 右回避時の出力差（右を遅くする）
-        LEFT_ARC_POWER = 30               # 左回避時の出力差（左を遅くする）
-        MIN_POWER = 30                    # モーターが確実に動く最低出力
+        # ライン復帰
+        g_left_motor.set_power(30)
+        g_right_motor.set_power(30)
+        time.sleep(1.4)
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
 
-        if self.direction == "right":
-            # 右回避：左を速く、右を遅く
-            left_power = base
-            right_power = max(base - RIGHT_ARC_POWER, MIN_POWER)
-        else:
-            # 左回避：右を速く、左を遅く
-            left_power = max(base - LEFT_ARC_POWER, MIN_POWER)
-            right_power = base
+        # # ライン復帰
+        # g_left_motor.set_power(50)
+        # g_right_motor.set_power(10)
+        # time.sleep(1.17)
+        # g_left_motor.set_power(0)
+        # g_right_motor.set_power(0)
 
-        # モーターに出力を設定
-        g_left_motor.set_power(left_power)
-        g_right_motor.set_power(right_power)
-
-        # ログで現在の出力値を表示
-        print(f"Avoiding {self.direction}: left={left_power}, right={right_power}")
-
-        return Status.RUNNING             # 回避動作中のため RUNNING を返す
+        # フラグを立てて終了
+        self.done = True
+        print("AvoidObstacleArcFull complete!")
+        return Status.SUCCESS
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
     def __init__(self, name, direction, degree=45, power=30, radius=200):
