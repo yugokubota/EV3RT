@@ -338,7 +338,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
 
     def update(self) -> Status:
-        self.logger.info("%+06d %s.DetectBlue_start" % (g_plotter.get_distance(), self.__class__.__name__))
+        print("self.count"=self.count)
         r, g, b = g_color_sensor.get_raw_color()
         # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
         max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
