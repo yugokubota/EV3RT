@@ -595,8 +595,8 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
     # 黒色検知するまでまっすぐ走る
-    go_until_blackline = Selector(name="go_until_blackline", memory=False)
-    go_until_blackline.add_children([
+    go_until_blackline_Parallel = Parallel(name="go_until_blackline", policy=ParallelPolicy.SuccessOnOne())
+    go_until_blackline_Parallel.add_children([
     IsOnBlackLine(name="detect_blackline", threshold=5),
     RunAsInstructed(name="go_straight", pwm_l=40, pwm_r=40)
     ])
@@ -638,7 +638,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_sequence_1 = Sequence(name="double_loop_selector1",memory=True)
     double_loop_sequence_1.add_children([
         ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
-        go_until_blackline,
+        go_until_blackline_Parallel,
         # TraceLineSensor(name="detect_blackline1", target=45, power=45,
         #     pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
