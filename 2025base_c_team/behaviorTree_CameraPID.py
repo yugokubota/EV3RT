@@ -670,7 +670,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_selector_2.add_children([
         detectblue_and_arc_sequence_2,
         TraceLineSensor(name="detect_blackline2", target=45, power=45,
-            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL),
         go_until_blackline_Parallel_2,
     ])
     # part3_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
@@ -678,7 +678,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_selector_3.add_children([
         detectblue_and_arc_sequence_3,
         TraceLineSensor(name="detect_blackline3", target=45, power=45,
-            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL),
         go_until_blackline_Parallel_3
     ])
     # part4_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
@@ -686,7 +686,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_selector_4.add_children([
         detectblue_and_arc_sequence_4,
         TraceLineSensor(name="detect_blackline4", target=45, power=45,
-            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL),
         go_until_blackline_Parallel_4
     ])
 
