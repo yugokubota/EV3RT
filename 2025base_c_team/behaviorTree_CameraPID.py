@@ -364,7 +364,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
                 print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
                 return Status.SUCCESS
             else:
-            # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+                print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
                 return Status.FAILURE
 
 class Detectcolor(Behaviour):# 色や明るさを取得する
