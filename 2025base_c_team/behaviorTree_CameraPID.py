@@ -690,15 +690,19 @@ def build_behaviour_tree() -> BehaviourTree:
         go_until_blackline_Parallel_4
     ])
 
-    loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
-    loop_01.add_children([
-        # Detectcolor(name="detectcolor"),#色や明るさを検知できる
-        # obstacle_Parallel,
+    double_loop = Sequence(name="double_loop", memory=True)
+    double_loop.add_children([
         traceline_cam_lapfinish_Parallel,
         double_loop_sequence_1,
         double_loop_selector_2,
         double_loop_selector_3,
         # double_loop_selector_4,
+    ])
+    loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
+    loop_01.add_children([
+        # Detectcolor(name="detectcolor"),#色や明るさを検知できる
+        # obstacle_Parallel,
+        double_loop,
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
