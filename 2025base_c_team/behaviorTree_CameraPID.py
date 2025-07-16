@@ -549,7 +549,7 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
             g_right_motor.set_power(0)
             self.logger.info("%+06d %s.Arcturn_complete!" % (g_plotter.get_distance(), self.__class__.__name__))
             return Status.SUCCESS
-        return Status.RUNNING
+        return Status.SUCCESS
 
 class IsDistancePassed(Behaviour):
     def __init__(self, name: str, target_distance: int):
@@ -605,26 +605,26 @@ def build_behaviour_tree() -> BehaviourTree:
     # part1_黒色検知するまでまっすぐ走る
     go_until_blackline_Parallel_1 = Parallel(name="go_until_blackline_1", policy=ParallelPolicy.SuccessOnOne())
     go_until_blackline_Parallel_1.add_children([
-    IsOnBlackLine(name="detect_blackline_1", threshold=5),
-    RunAsInstructed(name="go_straight_1", pwm_l=40, pwm_r=40)
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        RunAsInstructed(name="go_straight_1", pwm_l=40, pwm_r=40)
     ])
     # part2_黒色検知するまでまっすぐ走る
     go_until_blackline_Parallel_2 = Parallel(name="go_until_blackline_2", policy=ParallelPolicy.SuccessOnOne())
     go_until_blackline_Parallel_2.add_children([
-    IsOnBlackLine(name="detect_blackline_2", threshold=5),
-    RunAsInstructed(name="go_straight_2", pwm_l=40, pwm_r=40)
+        IsOnBlackLine(name="detect_blackline_2", threshold=5),
+        RunAsInstructed(name="go_straight_2", pwm_l=40, pwm_r=40)
     ])
     # part3_黒色検知するまでまっすぐ走る
     go_until_blackline_Parallel_3 = Parallel(name="go_until_blackline_3", policy=ParallelPolicy.SuccessOnOne())
     go_until_blackline_Parallel_3.add_children([
-    IsOnBlackLine(name="detect_blackline_3", threshold=5),
-    RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=40)
+        IsOnBlackLine(name="detect_blackline_3", threshold=5),
+        RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=40)
     ])
     # part4_黒色検知するまでまっすぐ走る
     go_until_blackline_Parallel_4 = Parallel(name="go_until_blackline_4", policy=ParallelPolicy.SuccessOnOne())
     go_until_blackline_Parallel_4.add_children([
-    IsOnBlackLine(name="detect_blackline_4", threshold=5),
-    RunAsInstructed(name="go_straight_4", pwm_l=40, pwm_r=40)
+        IsOnBlackLine(name="detect_blackline_4", threshold=5),
+        RunAsInstructed(name="go_straight_4", pwm_l=40, pwm_r=40)
     ])
     # ================ ダブルループ処理 ================
 
@@ -669,24 +669,24 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_selector_2 = Selector(name="double_loop_selector2",memory=False)
     double_loop_selector_2.add_children([
         detectblue_and_arc_sequence_2,
-        TraceLineSensor(name="detect_blackline2", target=45, power=45,
-            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL),
+        TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
         go_until_blackline_Parallel_2,
     ])
     # part3_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_3 = Selector(name="double_loop_selector3",memory=False)
     double_loop_selector_3.add_children([
         detectblue_and_arc_sequence_3,
-        TraceLineSensor(name="detect_blackline3", target=45, power=45,
-            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL),
+        TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
         go_until_blackline_Parallel_3
     ])
     # part4_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_4 = Selector(name="double_loop_selector4",memory=False)
     double_loop_selector_4.add_children([
         detectblue_and_arc_sequence_4,
-        TraceLineSensor(name="detect_blackline4", target=45, power=45,
-            pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL),
+        TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
         go_until_blackline_Parallel_4
     ])
 
