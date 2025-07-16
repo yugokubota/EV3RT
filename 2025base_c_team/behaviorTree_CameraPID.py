@@ -374,6 +374,7 @@ class Detectcolor(Behaviour):# 色や明るさを取得する
         s_per = int(s * 100)
         v_per = int(v * 100)
         print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        brightness = g_color_sensor.get_brightness()
         print(f"brightness={brightness}")
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
         if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
