@@ -335,6 +335,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
     def __init__(self, name: str):
         super().__init__(name)
         self.count = 0
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
 
     def update(self) -> Status:
         r, g, b = g_color_sensor.get_raw_color()
@@ -353,7 +354,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
         if self.count == 0:
             if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
-                self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+                self.logger.info("%+06d %s.DetectBlue Once!" % (distance, self.__class__.__name__))
                 print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
                 self.count += 1
                 return Status.SUCCESS
@@ -362,7 +363,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
                 return Status.RUNNING
         else:
             if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
-                self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+                self.logger.info("%+06d %s.DetectBlue more!" % (distance, self.__class__.__name__))
                 print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
                 return Status.SUCCESS
             else:
@@ -400,15 +401,16 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
     def __init__(self, name: str, threshold: int = 40):
         super().__init__(name)
         self.threshold = threshold
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
 
     def update(self) -> Status:
         brightness = g_color_sensor.get_brightness()
         if brightness < self.threshold:  # 明るさがthreshold未満=黒い
-            self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+            self.logger.info("%+06d %s.DetectBlack!" % (distance, self.__class__.__name__))
             print(f"[IsOnBlackLine] Detected! brightness={brightness}")
             return Status.SUCCESS
         else:
-            self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+            self.logger.info("%+06d %s.NotDetected..." % (distance, self.__class__.__name__))
             print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
             return Status.FAILURE
 
@@ -472,13 +474,12 @@ class AvoidObstacleArcFull(Behaviour):
         super().__init__(name)
         self.done = False
         self.dist = None
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
 
     def update(self) -> Status:
-        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
-        print("AvoidObstacleArcFull_start")
         if self.done:
             return Status.SUCCESS
-
+        self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (distance, self.__class__.__name__))
         # --- 以下、単純な回避動作 ---
         # 右カーブ
         g_left_motor.set_power(52)
@@ -511,7 +512,7 @@ class AvoidObstacleArcFull(Behaviour):
 
         # フラグを立てて終了
         self.done = True
-        print("AvoidObstacleArcFull complete!")
+        self.logger.info("%+06d %s.AvoidObstacleArcFull_complete!" % (distance, self.__class__.__name__))
         return Status.SUCCESS
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
@@ -522,11 +523,11 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
         self.power = power
         self.radius = radius
         self.running = False
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
 
     def update(self) -> Status:
         if not self.running:
-            self.logger.debug("%s.__init__()" % (self.__class__.__name__))
-            print("Arcturn_start")
+            self.logger.info("%+06d %s.Arcturn_start!" % (distance, self.__class__.__name__))
             self.running = True
             # degree→タイヤ回転数変換は省略例
             base_angle = self.degree
@@ -546,6 +547,7 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
             time.sleep(base_angle / 90 * 0.7)  # 調整要
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
+            self.logger.info("%+06d %s.Arcturn_complete!" % (distance, self.__class__.__name__))
             return Status.SUCCESS
         return Status.RUNNING
 
@@ -600,15 +602,30 @@ def build_behaviour_tree() -> BehaviourTree:
         TraceLineCam(name="traceline_cam_lapfinish",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
-    # 黒色検知するまでまっすぐ走る
-    go_until_blackline_Parallel = Parallel(name="go_until_blackline", policy=ParallelPolicy.SuccessOnOne())
-    go_until_blackline_Parallel.add_children([
-    IsOnBlackLine(name="detect_blackline", threshold=5),
-    RunAsInstructed(name="go_straight", pwm_l=40, pwm_r=40)
+    # part1_黒色検知するまでまっすぐ走る
+    go_until_blackline_Parallel_1 = Parallel(name="go_until_blackline_1", policy=ParallelPolicy.SuccessOnOne())
+    go_until_blackline_Parallel_1.add_children([
+    IsOnBlackLine(name="detect_blackline_1", threshold=5),
+    RunAsInstructed(name="go_straight_1", pwm_l=40, pwm_r=40)
     ])
-
-
-
+    # part2_黒色検知するまでまっすぐ走る
+    go_until_blackline_Parallel_2 = Parallel(name="go_until_blackline_2", policy=ParallelPolicy.SuccessOnOne())
+    go_until_blackline_Parallel_2.add_children([
+    IsOnBlackLine(name="detect_blackline_2", threshold=5),
+    RunAsInstructed(name="go_straight_2", pwm_l=40, pwm_r=40)
+    ])
+    # part3_黒色検知するまでまっすぐ走る
+    go_until_blackline_Parallel_3 = Parallel(name="go_until_blackline_3", policy=ParallelPolicy.SuccessOnOne())
+    go_until_blackline_Parallel_3.add_children([
+    IsOnBlackLine(name="detect_blackline_3", threshold=5),
+    RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=40)
+    ])
+    # part4_黒色検知するまでまっすぐ走る
+    go_until_blackline_Parallel_4 = Parallel(name="go_until_blackline_4", policy=ParallelPolicy.SuccessOnOne())
+    go_until_blackline_Parallel_4.add_children([
+    IsOnBlackLine(name="detect_blackline_4", threshold=5),
+    RunAsInstructed(name="go_straight_4", pwm_l=40, pwm_r=40)
+    ])
     # ================ ダブルループ処理 ================
 
     # ================ 青色検知と角度付け ================
@@ -644,7 +661,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_sequence_1 = Sequence(name="double_loop_selector1",memory=True)
     double_loop_sequence_1.add_children([
         ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
-        go_until_blackline_Parallel,
+        go_until_blackline_Parallel_1,
         # TraceLineSensor(name="detect_blackline1", target=45, power=45,
         #     pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
     ])
@@ -654,6 +671,7 @@ def build_behaviour_tree() -> BehaviourTree:
         detectblue_and_arc_sequence_2,
         TraceLineSensor(name="detect_blackline2", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+        go_until_blackline_Parallel_2,
     ])
     # part3_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_3 = Selector(name="double_loop_selector3",memory=False)
@@ -661,6 +679,7 @@ def build_behaviour_tree() -> BehaviourTree:
         detectblue_and_arc_sequence_3,
         TraceLineSensor(name="detect_blackline3", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+        go_until_blackline_Parallel_3
     ])
     # part4_黒線を検知した場合ライントレース、そうでないなら青色検知で角度をつける
     double_loop_selector_4 = Selector(name="double_loop_selector4",memory=False)
@@ -668,6 +687,7 @@ def build_behaviour_tree() -> BehaviourTree:
         detectblue_and_arc_sequence_4,
         TraceLineSensor(name="detect_blackline4", target=45, power=45,
             pid_p=0.5, pid_i=0.05, pid_d=0.1, trace_side=TraceSide.NORMAL)
+        go_until_blackline_Parallel_4
     ])
 
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
