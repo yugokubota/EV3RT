@@ -631,19 +631,19 @@ def build_behaviour_tree() -> BehaviourTree:
     detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc1", memory=False)
     detectblue_and_arc_sequence_1.add_children([
         DetectBlue_failure(name="detect_blue"),
-        ArcTurn(name="arc_move1", direction="left", degree=45, power=30, radius=80),
+        # ArcTurn(name="arc_move1", direction="left", degree=45, power=30, radius=80),
     ])
     # part2_青色検知したら、角度をつける
     detectblue_and_arc_sequence_2 = Sequence(name="detectblue_and_arc2", memory=False)
     detectblue_and_arc_sequence_2.add_children([
         DetectBlue_failure(name="detect_blue"),
-        ArcTurn(name="arc_move2", direction="right", degree=45, power=30, radius=80),
+        # ArcTurn(name="arc_move2", direction="right", degree=45, power=30, radius=80),
     ])
     # part3_青色検知したら、角度をつける
     detectblue_and_arc_sequence_3 = Sequence(name="detectblue_and_arc3", memory=False)
     detectblue_and_arc_sequence_3.add_children([
         DetectBlue_failure(name="detect_blue"),
-        ArcTurn(name="arc_move3", direction="left", degree=45, power=30, radius=80),
+        # ArcTurn(name="arc_move3", direction="left", degree=45, power=30, radius=80),
     ])
     # part1_黒を4回検知
     DetectBlack_yon_1 = Sequence(name="DetectBlack_yon", memory=False)
@@ -738,7 +738,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # Detectcolor(name="detectcolor"),#色や明るさを検知できる
         # obstacle_Parallel,
         traceline_cam_lapfinish_Parallel,
-        ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
+        # ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
         double_loop_black_selector_1,
         double_loop_blue_selector_1,
         double_loop_black_selector_2,
