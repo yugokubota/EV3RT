@@ -649,13 +649,6 @@ def build_behaviour_tree() -> BehaviourTree:
     DetectBlack_1 = Sequence(name="DetectBlack", memory=False)
     DetectBlack_1.add_children([
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        IsOnBlackLine(name="detect_blackline_1", threshold=5),
     ])
     # part2_黒を4回検知
     DetectBlack_2 = Sequence(name="DetectBlack", memory=False)
@@ -688,6 +681,12 @@ def build_behaviour_tree() -> BehaviourTree:
 
     # ================ 黒線検知でライントレース ================
 
+    # part1_黒線を検知した場合ライントレース
+    distance_loop_selector = Selector(name="distance_loop_selector",memory=False)
+    distance_loop_selector.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=200),
+        RunAsInstructed(name="go_straight_1", pwm_l=57, pwm_r=50),
+    ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
     double_loop_black_selector_1.add_children([
@@ -743,6 +742,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # obstacle_Parallel,
         traceline_cam_lapfinish_Parallel,
         ArcTurn(name="arc_move1", direction="right", degree=45, power=40, radius=80),
+        distance_loop_selector,
         double_loop_black_selector_1,
         double_loop_blue_selector_1,
         double_loop_black_selector_2,
