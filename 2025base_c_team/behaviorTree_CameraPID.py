@@ -620,7 +620,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="traceline_cam_lapfinish",power=50, pid_p=1.7, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="traceline_cam_lapfinish",power=50, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
     # ================ ダブルループ処理 ================
@@ -720,20 +720,20 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_selector_1.add_children([
         detectblue_and_arc_sequence_1,
         TraceLineCam(name="Tracelinecam_DetectBlue_1",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
     ])
     # part2_青色検知で角度をつける
     double_loop_blue_selector_2 = Selector(name="double_loop_blue_selector_2",memory=False)
     double_loop_blue_selector_2.add_children([
         detectblue_and_arc_sequence_2,
-        TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
+        TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
+        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
     ])
     # part3_青色検知で角度をつける
     double_loop_blue_selector_3 = Selector(name="double_loop_blue_selector_3",memory=False)
     double_loop_blue_selector_3.add_children([
         detectblue_and_arc_sequence_3,
-        TraceLineCam(name="Tracelinecam_DetectBlue_3",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="Tracelinecam_DetectBlue_3",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
 
