@@ -682,8 +682,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # ================ 黒線検知でライントレース ================
 
     # part1_黒線を検知した場合ライントレース
-    distance_loop_selector = Selector(name="distance_loop_selector",memory=False)
-    distance_loop_selector.add_children([
+    distance_loop_Parallel = Parallel(name="distance_loop_Parallel", policy=ParallelPolicy.SuccessOnOne())
+    distance_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=200),
         RunAsInstructed(name="go_straight_1", pwm_l=57, pwm_r=50),
     ])
