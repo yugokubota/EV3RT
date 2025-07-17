@@ -652,7 +652,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
     double_loop_black_selector_1.add_children([
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        RunAsInstructed(name="go_straight_1", pwm_l=40, pwm_r=40),
+        RunAsInstructed(name="go_straight_1", pwm_l=50, pwm_r=40),
     ])
     # part2_黒線を検知した場合ライントレース
     double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
