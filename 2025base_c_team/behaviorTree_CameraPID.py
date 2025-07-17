@@ -631,6 +631,9 @@ def build_behaviour_tree() -> BehaviourTree:
     detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc1", memory=False)
     detectblue_and_arc_sequence_1.add_children([
         DetectBlue_failure(name="detect_blue"),
+        DetectBlue_failure(name="detect_blue"),
+        DetectBlue_failure(name="detect_blue"),
+        DetectBlue_failure(name="detect_blue"),
         # ArcTurn(name="arc_move1", direction="left", degree=45, power=30, radius=80),
     ])
     # part2_青色検知したら、角度をつける
