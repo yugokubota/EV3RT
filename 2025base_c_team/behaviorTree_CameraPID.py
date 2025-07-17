@@ -620,7 +620,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="traceline_cam_lapfinish",power=50, pid_p=1.2, pid_i=0, pid_d=0.1,
+        TraceLineCam(name="traceline_cam_lapfinish",power=50, pid_p=1.7, pid_i=0, pid_d=0.1,
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
     # ================ ダブルループ処理 ================
@@ -689,7 +689,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_black_selector_1.add_children([
         # IsOnBlackLine(name="detect_blackline_1", threshold=5),
         DetectBlack_yon_1,
-        RunAsInstructed(name="go_straight_1", pwm_l=50, pwm_r=40),
+        RunAsInstructed(name="go_straight_1", pwm_l=60, pwm_r=50),
     ])
     # part2_黒線を検知した場合ライントレース
     double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
