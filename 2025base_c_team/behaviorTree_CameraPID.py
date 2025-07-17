@@ -664,18 +664,10 @@ def build_behaviour_tree() -> BehaviourTree:
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        IsOnBlackLine(name="detect_blackline_2", threshold=5),
     ])
     # part3_黒を4回検知
     DetectBlack_3 = Sequence(name="DetectBlack", memory=False)
     DetectBlack_3.add_children([
-        IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        IsOnBlackLine(name="detect_blackline_3", threshold=5),
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
