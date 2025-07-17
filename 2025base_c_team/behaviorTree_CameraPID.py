@@ -685,7 +685,7 @@ def build_behaviour_tree() -> BehaviourTree:
     distance_loop_Parallel = Parallel(name="distance_loop_Parallel", policy=ParallelPolicy.SuccessOnOne())
     distance_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=900),
-        RunAsInstructed(name="go_straight_1", pwm_l=54, pwm_r=50),
+        RunAsInstructed(name="go_straight_1", pwm_l=55, pwm_r=50),
     ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
