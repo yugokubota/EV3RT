@@ -742,7 +742,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # obstacle_Parallel,
         traceline_cam_lapfinish_Parallel,
         ArcTurn(name="arc_move1", direction="right", degree=45, power=40, radius=80),
-        distance_loop_selector,
+        distance_loop_Parallel,
         double_loop_black_selector_1,
         double_loop_blue_selector_1,
         double_loop_black_selector_2,
