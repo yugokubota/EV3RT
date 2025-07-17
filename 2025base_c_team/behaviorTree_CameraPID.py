@@ -645,13 +645,22 @@ def build_behaviour_tree() -> BehaviourTree:
         DetectBlue_failure(name="detect_blue"),
         ArcTurn(name="arc_move3", direction="left", degree=45, power=30, radius=80),
     ])
+    # part3_青色検知したら、角度をつける
+    DetectBlack_fifth = Sequence(name="DetectBlack_fifth", memory=False)
+    DetectBlack_fifth.add_children([
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+    ])
 
     # ================ 黒線検知でライントレース ================
 
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
     double_loop_black_selector_1.add_children([
-        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        # IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        DetectBlack_fifth,
         RunAsInstructed(name="go_straight_1", pwm_l=50, pwm_r=40),
     ])
     # part2_黒線を検知した場合ライントレース
