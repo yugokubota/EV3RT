@@ -620,7 +620,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=1.2, pid_i=0, pid_d=0.1,
+        TraceLineCam(name="traceline_cam_lapfinish",power=50, pid_p=1.2, pid_i=0, pid_d=0.1,
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
     # ================ ダブルループ処理 ================
@@ -648,6 +648,10 @@ def build_behaviour_tree() -> BehaviourTree:
     # part1_黒を4回検知
     DetectBlack_yon_1 = Sequence(name="DetectBlack_yon", memory=False)
     DetectBlack_yon_1.add_children([
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
