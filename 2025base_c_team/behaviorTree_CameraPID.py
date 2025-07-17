@@ -646,8 +646,8 @@ def build_behaviour_tree() -> BehaviourTree:
         # ArcTurn(name="arc_move3", direction="left", degree=45, power=30, radius=80),
     ])
     # part1_黒を4回検知
-    DetectBlack_yon_1 = Sequence(name="DetectBlack_yon", memory=False)
-    DetectBlack_yon_1.add_children([
+    DetectBlack_1 = Sequence(name="DetectBlack", memory=False)
+    DetectBlack_1.add_children([
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
@@ -658,24 +658,36 @@ def build_behaviour_tree() -> BehaviourTree:
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
     ])
     # part2_黒を4回検知
-    DetectBlack_yon_2 = Sequence(name="DetectBlack_yon", memory=False)
-    DetectBlack_yon_2.add_children([
+    DetectBlack_2 = Sequence(name="DetectBlack", memory=False)
+    DetectBlack_2.add_children([
+        IsOnBlackLine(name="detect_blackline_2", threshold=5),
+        IsOnBlackLine(name="detect_blackline_2", threshold=5),
+        IsOnBlackLine(name="detect_blackline_2", threshold=5),
+        IsOnBlackLine(name="detect_blackline_2", threshold=5),
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
     ])
     # part3_黒を4回検知
-    DetectBlack_yon_3 = Sequence(name="DetectBlack_yon", memory=False)
-    DetectBlack_yon_3.add_children([
+    DetectBlack_3 = Sequence(name="DetectBlack", memory=False)
+    DetectBlack_3.add_children([
+        IsOnBlackLine(name="detect_blackline_3", threshold=5),
+        IsOnBlackLine(name="detect_blackline_3", threshold=5),
+        IsOnBlackLine(name="detect_blackline_3", threshold=5),
+        IsOnBlackLine(name="detect_blackline_3", threshold=5),
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
     ])
     # part_黒を4回検知
-    DetectBlack_yon_4 = Sequence(name="DetectBlack_yon", memory=False)
-    DetectBlack_yon_4.add_children([
+    DetectBlack_4 = Sequence(name="DetectBlack", memory=False)
+    DetectBlack_4.add_children([
+        IsOnBlackLine(name="detect_blackline_4", threshold=5),
+        IsOnBlackLine(name="detect_blackline_4", threshold=5),
+        IsOnBlackLine(name="detect_blackline_4", threshold=5),
+        IsOnBlackLine(name="detect_blackline_4", threshold=5),
         IsOnBlackLine(name="detect_blackline_4", threshold=5),
         IsOnBlackLine(name="detect_blackline_4", threshold=5),
         IsOnBlackLine(name="detect_blackline_4", threshold=5),
@@ -687,30 +699,26 @@ def build_behaviour_tree() -> BehaviourTree:
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
     double_loop_black_selector_1.add_children([
-        # IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        DetectBlack_yon_1,
+        DetectBlack_1,
         RunAsInstructed(name="go_straight_1", pwm_l=60, pwm_r=50),
     ])
     # part2_黒線を検知した場合ライントレース
     double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
     double_loop_black_selector_2.add_children([
-        # IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        DetectBlack_yon_2,
-        RunAsInstructed(name="go_straight_2", pwm_l=40, pwm_r=50),
+        DetectBlack_2,
+        RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=50),
     ])
     # part3_黒線を検知した場合ライントレース
     double_loop_black_selector_3 = Selector(name="double_loop_black_selector3",memory=False)
     double_loop_black_selector_3.add_children([
-        # IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        DetectBlack_yon_3,
-        RunAsInstructed(name="go_straight_3", pwm_l=50, pwm_r=40),
+        DetectBlack_3,
+        RunAsInstructed(name="go_straight_3", pwm_l=45, pwm_r=50),
     ])
     # part4_黒線を検知した場合ライントレース
     double_loop_black_selector_4 = Selector(name="double_loop_black_selector4",memory=False)
     double_loop_black_selector_4.add_children([
-        # IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        DetectBlack_yon_4,
-        RunAsInstructed(name="go_straight_4", pwm_l=40, pwm_r=50),
+        DetectBlack_4,
+        RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),
     ])
 
     # ================ 青色検知で角度をつける ================
