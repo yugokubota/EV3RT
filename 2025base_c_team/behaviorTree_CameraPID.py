@@ -738,7 +738,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # Detectcolor(name="detectcolor"),#色や明るさを検知できる
         # obstacle_Parallel,
         traceline_cam_lapfinish_Parallel,
-        # ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
+        ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
         double_loop_black_selector_1,
         double_loop_blue_selector_1,
         double_loop_black_selector_2,
