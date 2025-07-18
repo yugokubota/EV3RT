@@ -496,7 +496,7 @@ def build_behaviour_tree() -> BehaviourTree:
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
         # IsDistancePassed(name="distance_passed", target_distance=1),
-        IsDistancePassed(name="distance_passed", target_distance=2700),
+        IsDistancePassed(name="distance_passed", target_distance=2600),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
     # オブジェクト回避のライントレース
