@@ -408,14 +408,14 @@ class AvoidObstacleArcFull(Behaviour):
         # 右カーブ
         g_left_motor.set_power(80)
         g_right_motor.set_power(40)
-        time.sleep(2)  # 必要に応じて調整
+        time.sleep(0.5)  # 必要に応じて調整
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(20)
-        g_right_motor.set_power(60)
+        g_left_motor.set_power(40)
+        g_right_motor.set_power(80)
         time.sleep(2.5)  # 必要に応じて調整
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
