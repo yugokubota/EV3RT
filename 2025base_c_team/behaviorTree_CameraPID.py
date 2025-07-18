@@ -406,19 +406,19 @@ class AvoidObstacleArcFull(Behaviour):
 
         # --- 以下、単純な回避動作 ---
         # 右カーブ
-        g_left_motor.set_power(52)
-        g_right_motor.set_power(10)
+        g_left_motor.set_power(70)
+        g_right_motor.set_power(30)
         time.sleep(2)  # 必要に応じて調整
         # 止める
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
+        #g_left_motor.set_power(0)
+        #g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(20)
-        g_right_motor.set_power(60)
+        g_left_motor.set_power(30)
+        g_right_motor.set_power(70)
         time.sleep(2.5)  # 必要に応じて調整
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
+        #g_left_motor.set_power(0)
+        #g_right_motor.set_power(0)
 
         # ライン復帰
         g_left_motor.set_power(30)
@@ -495,7 +495,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2700),
+        IsDistancePassed(name="distance_passed", target_distance=2600),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
     # オブジェクト回避のライントレース
