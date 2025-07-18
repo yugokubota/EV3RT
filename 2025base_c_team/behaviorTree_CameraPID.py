@@ -414,25 +414,25 @@ class AvoidObstacleArcFull(Behaviour):
         #g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(30)
+        g_left_motor.set_power(50)
         g_right_motor.set_power(80)
-        time.sleep(2.5)  # 必要に応じて調整
+        time.sleep(1.5)  # 必要に応じて調整
         #g_left_motor.set_power(0)
         #g_right_motor.set_power(0)
 
         # ライン復帰
-        g_left_motor.set_power(30)
-        g_right_motor.set_power(30)
-        time.sleep(1.4)
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
+        #g_left_motor.set_power(30)
+        #g_right_motor.set_power(30)
+        #time.sleep(1.4)
+        #g_left_motor.set_power(0)
+        #g_right_motor.set_power(0)
 
         # ライン復帰
-        g_left_motor.set_power(50)
-        g_right_motor.set_power(10)
-        time.sleep(1.17)
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
+        #g_left_motor.set_power(50)
+        #g_right_motor.set_power(10)
+        #time.sleep(1.17)
+        #g_left_motor.set_power(0)
+        #g_right_motor.set_power(0)
 
         # フラグを立てて終了
         self.done = True
