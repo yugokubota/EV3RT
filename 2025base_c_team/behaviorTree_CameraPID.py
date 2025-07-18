@@ -690,16 +690,16 @@ def build_behaviour_tree() -> BehaviourTree:
         # obstacle_Parallel,#直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
         traceline_cam_lapfinish_Parallel,#オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
-        distance_loop_Parallel,#弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
-        double_loop_black_selector_1,#調整した後、黒いラインをトレースする処理（いらないかも）
-        double_loop_blue_selector_1,#ライントレースしながら青いラインを探す処理
+        distance_loop_Parallel,#①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
+        double_loop_black_selector_1,#②調整した後、黒いライン検知する処理（いらないかも）
+        double_loop_blue_selector_1,#③ライントレースしながら青いラインを探す処理
         # --------ここから下は上手くいかないかも---------
         # 小さい円に移るときの処理
-        double_loop_black_selector_2,#青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
-        double_loop_blue_selector_2,#ライントレースしながら青いラインを探す処理
+        double_loop_black_selector_2,#④青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        double_loop_blue_selector_2,#⑤ライントレースしながら青いラインを探す処理
         # 小さい円から大きい円に移るときの処理
-        double_loop_black_selector_3,#青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
-        double_loop_blue_selector_3,#ライントレースしながら青いラインを探す処理
+        double_loop_black_selector_3,#⑥青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        double_loop_blue_selector_3,#⑦ライントレースしながら青いラインを探す処理
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
