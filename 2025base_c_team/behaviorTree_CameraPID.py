@@ -495,14 +495,14 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2600),
+        IsDistancePassed(name="distance_passed", target_distance=2700),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
     # オブジェクト回避のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=75, pid_p=2.2, pid_i=0.002, pid_d=0.35,
-        gs_min=0, gs_max=70,
+        power=70, pid_p=0.8, pid_i=0.001, pid_d=0.3,
+        gs_min=0, gs_max=40,
         trace_side=TraceSide.NORMAL
     )
     # ダブルループのライントレース
@@ -549,7 +549,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         obstacle_selector,
         # mid_selector,
-        TraceLineCam(name="trace_clear_obstacle",power=50, pid_p=2, pid_i=0.001, pid_d=0.25,
+        TraceLineCam(name="trace_clear_obstacle",power=150, pid_p=2, pid_i=0.001, pid_d=0.25,
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
         # IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
