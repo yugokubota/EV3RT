@@ -406,16 +406,16 @@ class AvoidObstacleArcFull(Behaviour):
 
         # --- 以下、単純な回避動作 ---
         # 右カーブ
-        g_left_motor.set_power(70)
-        g_right_motor.set_power(30)
-        time.sleep(2)  # 必要に応じて調整
+        g_left_motor.set_power(80)
+        g_right_motor.set_power(40)
+        time.sleep(1)  # 必要に応じて調整
         # 止める
         #g_left_motor.set_power(0)
         #g_right_motor.set_power(0)
 
         # 左に戻す
         g_left_motor.set_power(30)
-        g_right_motor.set_power(70)
+        g_right_motor.set_power(80)
         time.sleep(2.5)  # 必要に応じて調整
         #g_left_motor.set_power(0)
         #g_right_motor.set_power(0)
@@ -501,7 +501,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=50, pid_p=1, pid_i=0.001, pid_d=0.3,
+        power=70, pid_p=1, pid_i=0.001, pid_d=0.3,
         gs_min=0, gs_max=40,
         trace_side=TraceSide.NORMAL
     )
