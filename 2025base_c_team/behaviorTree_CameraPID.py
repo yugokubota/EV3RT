@@ -620,74 +620,15 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        DetectBlue(name="detect_blue"),
-        DetectBlue(name="detect_blue"),
-        DetectBlue(name="detect_blue"),
         TraceLineCam(name="traceline_cam_lapfinish",power=55, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
+
     # ================ ダブルループ処理 ================
-
-    # ================ 青色検知と角度付け ================
-
-    # part1_青色検知したら、角度をつける
-    detectblue_and_arc_sequence_1 = Sequence(name="detectblue_and_arc1", memory=False)
-    detectblue_and_arc_sequence_1.add_children([
-        DetectBlue_failure(name="detect_blue"),
-        DetectBlue_failure(name="detect_blue"),
-        DetectBlue_failure(name="detect_blue"),
-        DetectBlue_failure(name="detect_blue"),
-        # ArcTurn(name="arc_move1", direction="left", degree=45, power=30, radius=80),
-    ])
-    # part2_青色検知したら、角度をつける
-    detectblue_and_arc_sequence_2 = Sequence(name="detectblue_and_arc2", memory=False)
-    detectblue_and_arc_sequence_2.add_children([
-        DetectBlue_failure(name="detect_blue"),
-        # ArcTurn(name="arc_move2", direction="right", degree=45, power=30, radius=80),
-    ])
-    # part3_青色検知したら、角度をつける
-    detectblue_and_arc_sequence_3 = Sequence(name="detectblue_and_arc3", memory=False)
-    detectblue_and_arc_sequence_3.add_children([
-        DetectBlue_failure(name="detect_blue"),
-        # ArcTurn(name="arc_move3", direction="left", degree=45, power=30, radius=80),
-    ])
-    # part1_黒を4回検知
-    DetectBlack_1 = Sequence(name="DetectBlack", memory=False)
-    DetectBlack_1.add_children([
-        IsOnBlackLine(name="detect_blackline_1", threshold=5),
-    ])
-    # part2_黒を4回検知
-    DetectBlack_2 = Sequence(name="DetectBlack", memory=False)
-    DetectBlack_2.add_children([
-        IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        IsOnBlackLine(name="detect_blackline_2", threshold=5),
-    ])
-    # part3_黒を4回検知
-    DetectBlack_3 = Sequence(name="DetectBlack", memory=False)
-    DetectBlack_3.add_children([
-        IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        IsOnBlackLine(name="detect_blackline_3", threshold=5),
-    ])
-    # part_黒を4回検知
-    DetectBlack_4 = Sequence(name="DetectBlack", memory=False)
-    DetectBlack_4.add_children([
-        IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        IsOnBlackLine(name="detect_blackline_4", threshold=5),
-    ])
 
     # ================ 黒線検知でライントレース ================
 
-    # part1_黒線を検知した場合ライントレース
+    # 一定距離右周りに弧を描くように走る
     distance_loop_Parallel = Parallel(name="distance_loop_Parallel", policy=ParallelPolicy.SuccessOnOne())
     distance_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=600),
@@ -696,48 +637,48 @@ def build_behaviour_tree() -> BehaviourTree:
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
     double_loop_black_selector_1.add_children([
-        DetectBlack_1,
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
         RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),
     ])
     # part2_黒線を検知した場合ライントレース
     double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
     double_loop_black_selector_2.add_children([
-        DetectBlack_2,
+        IsOnBlackLine(name="detect_blackline_2", threshold=5),
         RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=48),
     ])
     # part3_黒線を検知した場合ライントレース
     double_loop_black_selector_3 = Selector(name="double_loop_black_selector3",memory=False)
     double_loop_black_selector_3.add_children([
-        DetectBlack_3,
+        IsOnBlackLine(name="detect_blackline_3", threshold=5),
         RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=47),
     ])
     # part4_黒線を検知した場合ライントレース
     double_loop_black_selector_4 = Selector(name="double_loop_black_selector4",memory=False)
     double_loop_black_selector_4.add_children([
-        DetectBlack_4,
+        IsOnBlackLine(name="detect_blackline_4", threshold=5),
         RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),
     ])
 
-    # ================ 青色検知で角度をつける ================
+    # ================ 青色検知するまでライントレース ================
     
-    # part1_青色検知で角度をつける
+    # part1_青色検知するまでライントレース
     double_loop_blue_selector_1 = Selector(name="double_loop_blue_selector_1",memory=False)
     double_loop_blue_selector_1.add_children([
-        detectblue_and_arc_sequence_1,
+        DetectBlue_failure(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_1",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
     ])
-    # part2_青色検知で角度をつける
+    # part2_青色検知するまでライントレース
     double_loop_blue_selector_2 = Selector(name="double_loop_blue_selector_2",memory=False)
     double_loop_blue_selector_2.add_children([
-        detectblue_and_arc_sequence_2,
+        DetectBlue_failure(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
     ])
-    # part3_青色検知で角度をつける
+    # part3_青色検知するまでライントレース
     double_loop_blue_selector_3 = Selector(name="double_loop_blue_selector_3",memory=False)
     double_loop_blue_selector_3.add_children([
-        detectblue_and_arc_sequence_3,
+        DetectBlue_failure(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_3",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
@@ -745,16 +686,20 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
         # Detectcolor(name="detectcolor"),#色や明るさを検知できる
-        # obstacle_Parallel,
-        traceline_cam_lapfinish_Parallel,
-        ArcTurn(name="arc_move1", direction="right", degree=45, power=40, radius=80),
-        distance_loop_Parallel,
-        double_loop_black_selector_1,
-        double_loop_blue_selector_1,
-        double_loop_black_selector_2,
-        double_loop_blue_selector_2,
-        double_loop_black_selector_3,
-        double_loop_blue_selector_3,
+        # --------直線とオブジェクト回避--------
+        # obstacle_Parallel,#直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
+        traceline_cam_lapfinish_Parallel,#オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
+        # --------ここからダブルループ--------
+        distance_loop_Parallel,#弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
+        double_loop_black_selector_1,#調整した後、黒いラインをトレースする処理（いらないかも）
+        double_loop_blue_selector_1,#ライントレースしながら青いラインを探す処理
+        # --------ここから下は上手くいかないかも---------
+        # 小さい円に移るときの処理
+        double_loop_black_selector_2,#青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        double_loop_blue_selector_2,#ライントレースしながら青いラインを探す処理
+        # 小さい円から大きい円に移るときの処理
+        double_loop_black_selector_3,#青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        double_loop_blue_selector_3,#ライントレースしながら青いラインを探す処理
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
