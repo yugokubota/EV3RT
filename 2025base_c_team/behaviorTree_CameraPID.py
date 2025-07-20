@@ -701,7 +701,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # --------ここから下は上手くいかないかも---------
         # 小さい円に移るときの処理
         double_loop_black_selector_2,#            ④青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
-        ArcTurn(name="arc_move1", direction="right", degree=45, power=30, radius=80),
+        ArcTurn(name="arc_move1", direction="right", degree=45, power=45, radius=80),
         double_loop_blue_selector_2,#             ⑤ライントレースしながら青いラインを探す処理
         # 小さい円から大きい円に移るときの処理
         double_loop_black_selector_3,#            ⑥青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
