@@ -521,8 +521,8 @@ class AvoidObstacleArcFull(Behaviour):
         g_left_motor.set_power(100)
         g_right_motor.set_power(60)
         time.sleep(0.5)
-        #g_left_motor.set_power(0)
-        #g_right_motor.set_power(0)
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
 
         # ライン復帰
         #g_left_motor.set_power(50)
@@ -620,7 +620,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="traceline_cam_lapfinish",power=55, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="traceline_cam_lapfinish",power=50, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
 
