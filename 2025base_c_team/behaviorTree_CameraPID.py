@@ -631,7 +631,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # 一定距離右周りに弧を描くように走る
     distance_loop_Parallel = Parallel(name="distance_loop_Parallel", policy=ParallelPolicy.SuccessOnOne())
     distance_loop_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=600),
+        IsDistancePassed(name="distance_passed", target_distance=500),
         # RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),#LEFT用
         RunAsInstructed(name="go_straight_1", pwm_l=-50, pwm_r=-58),#RIGHT用
     ])
