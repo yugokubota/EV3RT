@@ -503,33 +503,33 @@ class AvoidObstacleArcFull(Behaviour):
         self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (g_plotter.get_distance(), self.__class__.__name__))
         # --- 以下、単純な回避動作 ---
         # 右カーブ
-        g_left_motor.set_power(52)
-        g_right_motor.set_power(10)
-        time.sleep(2)  # 必要に応じて調整
+        g_left_motor.set_power(100)
+        g_right_motor.set_power(60)
+        time.sleep(0.6)  # 必要に応じて調整
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(20)
+        g_left_motor.set_power(60)
+        g_right_motor.set_power(100)
+        time.sleep(0.85)  # 必要に応じて調整 
+        #g_left_motor.set_power(0)
+        #g_right_motor.set_power(0)
+
+        # ライン復帰
+        g_left_motor.set_power(100)
         g_right_motor.set_power(60)
-        time.sleep(2.5)  # 必要に応じて調整
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
+        time.sleep(0.5)
+        #g_left_motor.set_power(0)
+        #g_right_motor.set_power(0)
 
         # ライン復帰
-        g_left_motor.set_power(30)
-        g_right_motor.set_power(30)
-        time.sleep(1.4)
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
-
-        # ライン復帰
-        g_left_motor.set_power(50)
-        g_right_motor.set_power(10)
-        time.sleep(1.17)
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
+        #g_left_motor.set_power(50)
+        #g_right_motor.set_power(10)
+        #time.sleep(1.17)
+        #g_left_motor.set_power(0)
+        #g_right_motor.set_power(0)
 
         # フラグを立てて終了
         self.done = True
@@ -597,7 +597,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2700),
+        IsDistancePassed(name="distance_passed", target_distance=2500),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
 
@@ -606,7 +606,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避前のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=60, pid_p=1.2, pid_i=0, pid_d=0.1,
+        power=70, pid_p=1.0, pid_i=0.001, pid_d=0.3,
         gs_min=0, gs_max=40,
         trace_side=TraceSide.NORMAL
     )
@@ -685,21 +685,21 @@ def build_behaviour_tree() -> BehaviourTree:
 
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
-        # Detectcolor(name="detectcolor"),#色や明るさを検知できる
+        # Detectcolor(name="detectcolor"),#       色や明るさを検知できる
         # --------直線とオブジェクト回避--------
-        # obstacle_Parallel,#直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
-        traceline_cam_lapfinish_Parallel,#オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
+        obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
+        traceline_cam_lapfinish_Parallel,#        オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
-        distance_loop_Parallel,#①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
-        double_loop_black_selector_1,#②調整した後、黒いライン検知する処理（いらないかも）
-        double_loop_blue_selector_1,#③ライントレースしながら青いラインを探す処理
+        distance_loop_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
+        double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
+        double_loop_blue_selector_1,#             ③ライントレースしながら青いラインを探す処理
         # --------ここから下は上手くいかないかも---------
         # 小さい円に移るときの処理
-        double_loop_black_selector_2,#④青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
-        double_loop_blue_selector_2,#⑤ライントレースしながら青いラインを探す処理
+        double_loop_black_selector_2,#            ④青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        double_loop_blue_selector_2,#             ⑤ライントレースしながら青いラインを探す処理
         # 小さい円から大きい円に移るときの処理
-        double_loop_black_selector_3,#⑥青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
-        double_loop_blue_selector_3,#⑦ライントレースしながら青いラインを探す処理
+        double_loop_black_selector_3,#            ⑥青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        double_loop_blue_selector_3,#             ⑦ライントレースしながら青いラインを探す処理
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
