@@ -632,31 +632,31 @@ def build_behaviour_tree() -> BehaviourTree:
     distance_loop_Parallel = Parallel(name="distance_loop_Parallel", policy=ParallelPolicy.SuccessOnOne())
     distance_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=600),
-        RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),
+        RunAsInstructed(name="go_straight_1", pwm_l=-58, pwm_r=-50),
     ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
     double_loop_black_selector_1.add_children([
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),
+        RunAsInstructed(name="go_straight_1", pwm_l=-58, pwm_r=-50),
     ])
     # part2_黒線を検知した場合ライントレース
     double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
     double_loop_black_selector_2.add_children([
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=48),
+        RunAsInstructed(name="go_straight_2", pwm_l=-45, pwm_r=-48),
     ])
     # part3_黒線を検知した場合ライントレース
     double_loop_black_selector_3 = Selector(name="double_loop_black_selector3",memory=False)
     double_loop_black_selector_3.add_children([
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=47),
+        RunAsInstructed(name="go_straight_3", pwm_l=-40, pwm_r=-47),
     ])
     # part4_黒線を検知した場合ライントレース
     double_loop_black_selector_4 = Selector(name="double_loop_black_selector4",memory=False)
     double_loop_black_selector_4.add_children([
         IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),
+        RunAsInstructed(name="go_straight_4", pwm_l=-50, pwm_r=-50),
     ])
 
     # ================ 青色検知するまでライントレース ================
