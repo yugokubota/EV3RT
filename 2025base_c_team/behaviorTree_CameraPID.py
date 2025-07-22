@@ -699,11 +699,11 @@ def build_behaviour_tree() -> BehaviourTree:
         double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
         double_loop_blue_selector_1,#             ③ライントレースしながら青いラインを探す処理
         # --------ここから下は上手くいかないかも---------
-        # 小さい円に移るときの処理
+        # 小円に移るときの処理
         double_loop_black_selector_2,#            ④青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         # ArcTurn(name="arc_move1", direction="right", degree=45, power=45, radius=80),
         double_loop_blue_selector_2,#             ⑤ライントレースしながら青いラインを探す処理
-        # 小さい円から大きい円に移るときの処理
+        # 小円から大円に移るときの処理
         double_loop_black_selector_3,#            ⑥青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         double_loop_blue_selector_3,#             ⑦ライントレースしながら青いラインを探す処理
         TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
