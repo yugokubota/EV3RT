@@ -631,50 +631,50 @@ def build_behaviour_tree() -> BehaviourTree:
     distance_loop_Parallel = Parallel(name="distance_loop_Parallel", policy=ParallelPolicy.SuccessOnOne())
     distance_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=500),
-        RunAsInstructed(name="go_straight", pwm_l=58, pwm_r=50),      #LEFT用
-        # RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-58),  #RIGHT用
+        #RunAsInstructed(name="go_straight", pwm_l=58, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-58),  #RIGHT用
     ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
     double_loop_black_selector_1.add_children([
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),      #LEFT用
-        # RunAsInstructed(name="go_straight_1", pwm_l=-50, pwm_r=-60),  #RIGHT用
+        #RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="go_straight_1", pwm_l=-50, pwm_r=-60),  #RIGHT用
     ])
     # part2_黒線を検知した場合ライントレース
     double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
     double_loop_black_selector_2.add_children([
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=48),      #LEFT用
-        # RunAsInstructed(name="go_straight_2", pwm_l=-40, pwm_r=-45),  #RIGHT用
+        #RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=48),      #LEFT用
+        RunAsInstructed(name="go_straight_2", pwm_l=-40, pwm_r=-45),  #RIGHT用
     ])
     # part3_黒線を検知した場合ライントレース
     double_loop_black_selector_3 = Selector(name="double_loop_black_selector3",memory=False)
     double_loop_black_selector_3.add_children([
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=47),      #LEFT用
-        # RunAsInstructed(name="go_straight_3", pwm_l=-47, pwm_r=-40),  #RIGHT用
+        #RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=47),      #LEFT用
+        RunAsInstructed(name="go_straight_3", pwm_l=-47, pwm_r=-40),  #RIGHT用
     ])
     # part4_黒線を検知した場合ライントレース
     double_loop_black_selector_4 = Selector(name="double_loop_black_selector4",memory=False)
     double_loop_black_selector_4.add_children([
         IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),      #LEFT用
-        # RunAsInstructed(name="go_straight_4", pwm_l=-50, pwm_r=-50),  #RIGHT用
+        #RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="go_straight_4", pwm_l=-50, pwm_r=-50),  #RIGHT用
     ])
     # 小円に入るときの調整
     SmallCircleEntryTuning_selector = Selector(name="SmallCircleEntryTuning_selector",memory=False)
     SmallCircleEntryTuning_selector.add_children([
         IsDistancePassed(name="distance_passed", target_distance=200),  #200は適当なので要調整
-        RunAsInstructed(name="SmallCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
-        # RunAsInstructed(name="SmallCircle_Entry", pwm_l=-50, pwm_r=-60),  #RIGHT用
+        #RunAsInstructed(name="SmallCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="SmallCircle_Entry", pwm_l=-50, pwm_r=-60),  #RIGHT用
     ])
     # 大円に入るときの調整
     BigCircleEntryTuning_selector = Selector(name="BigCircleEntryTuning_selector",memory=False)
     BigCircleEntryTuning_selector.add_children([
         IsDistancePassed(name="distance_passed", target_distance=200),  #200は適当なので要調整
-        RunAsInstructed(name="BigCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
-        # RunAsInstructed(name="BigCircle_Entry", pwm_l=-50, pwm_r=-60),  #RIGHT用
+        #RunAsInstructed(name="BigCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="BigCircle_Entry", pwm_l=-50, pwm_r=-60),  #RIGHT用
     ])
 
     # ================ 青色検知するまでライントレース ================
@@ -705,7 +705,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         # Detectcolor(name="detectcolor"),#       色や明るさを検知できる
         # --------直線とオブジェクト回避--------
-        obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
+        #obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
         traceline_cam_lapfinish_Parallel,#        オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
         distance_loop_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
