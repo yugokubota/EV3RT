@@ -284,6 +284,7 @@ class TraceLineCam(Behaviour):
         self.gs_min = gs_min
         self.gs_max = gs_max
         self.trace_side = trace_side
+        self.dynamic_pid_by_distance = dynamic_pid_by_distance if dynamic_pid_by_distance else [] # ← 本橋追加
         self.running = False
 
     def update(self) -> Status:
