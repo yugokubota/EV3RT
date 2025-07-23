@@ -276,7 +276,8 @@ class TraceLine_sensor(Behaviour):
 
 class TraceLineCam(Behaviour):
     def __init__(self, name: str, power: int, pid_p: float, pid_i: float, pid_d: float,
-                 gs_min: int, gs_max: int, trace_side: TraceSide) -> None:
+                 gs_min: int, gs_max: int, trace_side: TraceSide,
+                 dynamic_pid_by_distance: list = None) -> None:  # ← 本橋追加
         super(TraceLineCam, self).__init__(name)
         self.power = power
         self.pid = PID(pid_p, pid_i, pid_d, setpoint=0, sample_time=EXEC_INTERVAL, output_limits=(-power, power))
@@ -302,6 +303,16 @@ class TraceLineCam(Behaviour):
             else: # TraceSide.CENTER
                 g_video.set_trace_side(TraceSide.CENTER)
             self.logger.info("%+06d %s.trace started with TS=%s" % (g_plotter.get_distance(), self.__class__.__name__, self.trace_side.name))
+        
+        #距離に応じたPIDの動的切り替え （本橋追記）
+        if self.dynamic_pid_by_distance:
+            current_distance = g_distance_sensor_motor.get_distance()
+            for entry in self.dynamic_pid_by_distance:
+                if entry["start"] <= current_distance < entry["end"]:
+                    self.pid.set_pid(entry["p"], entry["i"], entry["d"])
+                    self.power = entry["power"]
+                    break
+        
         turn = (-1) * int(self.pid(g_video.get_theta()))
         g_right_motor.set_power(self.power - turn - 1)
         g_left_motor.set_power(self.power + turn)
@@ -621,7 +632,14 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER,
+        # 距離ごとのPOWERとPID設定（本橋修正）
+        dynamic_pid_by_distance=[
+            {"start": 0, "end": 300, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18},
+            {"start": 300, "end": 2000, "power": 80, "p": 1.2,  "i": 0.001,  "d": 0.3},
+            {"start": 2000, "end": 9999, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18}
+        ]
+        ),
     ])
 
     # ================ ダブルループ処理 ================
