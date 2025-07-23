@@ -277,7 +277,9 @@ class TraceLine_sensor(Behaviour):
 class TraceLineCam(Behaviour):
     def __init__(self, name: str, power: int, pid_p: float, pid_i: float, pid_d: float,
                  gs_min: int, gs_max: int, trace_side: TraceSide,
-                 dynamic_pid_by_distance: list = None) -> None:  # ← 本橋追加
+                 dynamic_pid_by_distance: list = None, # ← 本橋追加
+                 distance_sensor_motor=None # ← 本橋追加
+                 ) -> None: 
         super(TraceLineCam, self).__init__(name)
         self.power = power
         self.pid = PID(pid_p, pid_i, pid_d, setpoint=0, sample_time=EXEC_INTERVAL, output_limits=(-power, power))
@@ -285,6 +287,7 @@ class TraceLineCam(Behaviour):
         self.gs_max = gs_max
         self.trace_side = trace_side
         self.dynamic_pid_by_distance = dynamic_pid_by_distance if dynamic_pid_by_distance else [] # ← 本橋追加
+        self.distance_sensor_motor = distance_sensor_motor  # ← 本橋追加
         self.running = False
 
     def update(self) -> Status:
@@ -307,7 +310,7 @@ class TraceLineCam(Behaviour):
         
         #距離に応じたPIDの動的切り替え （本橋追記）
         if self.dynamic_pid_by_distance:
-            current_distance = g_distance_sensor_motor.get_distance()
+            current_distance = self.distance_sensor_motor.get_distance() if self.distance_sensor_motor else 0
             for entry in self.dynamic_pid_by_distance:
                 if entry["start"] <= current_distance < entry["end"]:
                     self.pid.set_pid(entry["p"], entry["i"], entry["d"])
@@ -640,7 +643,8 @@ def build_behaviour_tree() -> BehaviourTree:
             {"start": 0, "end": 300, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18},
             {"start": 300, "end": 2000, "power": 80, "p": 1.2,  "i": 0.001,  "d": 0.3},
             {"start": 2000, "end": 9999, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18}
-        ]
+        ],
+        distance_sensor_motor=g_distance_sensor_motor
         ),
     ])
 
