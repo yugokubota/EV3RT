@@ -311,6 +311,7 @@ class TraceLineCam(Behaviour):
                 if entry["start"] <= current_distance < entry["end"]:
                     self.pid.set_pid(entry["p"], entry["i"], entry["d"])
                     self.power = entry["power"]
+                    print(f"[TraceLineCam] Distance={current_distance}, Power={self.power}, PID={self.pid.p}, {self.pid.i}, {self.pid.d}")
                     break
         
         turn = (-1) * int(self.pid(g_video.get_theta()))
