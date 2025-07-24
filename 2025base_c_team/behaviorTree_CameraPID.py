@@ -308,7 +308,7 @@ class TraceLineCam(Behaviour):
         
         #距離に応じたPIDの動的切り替え （本橋追記）
         if self.dynamic_pid_by_distance:
-            current_distance = g_plotter.get_distance()
+            current_distance = g_plotter.get_distance() - 2500
             for entry in self.dynamic_pid_by_distance:
                 if entry["start"] <= current_distance < entry["end"]:
                     self.power = entry["power"]
@@ -550,6 +550,7 @@ class AvoidObstacleArcFull(Behaviour):
         # フラグを立てて終了
         self.done = True
         self.logger.info("%+06d %s.AvoidObstacleArcFull_complete!" % (g_plotter.get_distance(), self.__class__.__name__))
+        
         return Status.SUCCESS
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
