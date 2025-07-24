@@ -276,13 +276,16 @@ class TraceLine_sensor(Behaviour):
 
 class TraceLineCam(Behaviour):
     def __init__(self, name: str, power: int, pid_p: float, pid_i: float, pid_d: float,
-                 gs_min: int, gs_max: int, trace_side: TraceSide) -> None:
+                 gs_min: int, gs_max: int, trace_side: TraceSide,
+                 dynamic_pid_by_distance: list = None # ← 本橋追加
+                 ) -> None: 
         super(TraceLineCam, self).__init__(name)
         self.power = power
         self.pid = PID(pid_p, pid_i, pid_d, setpoint=0, sample_time=EXEC_INTERVAL, output_limits=(-power, power))
         self.gs_min = gs_min
         self.gs_max = gs_max
         self.trace_side = trace_side
+        self.dynamic_pid_by_distance = dynamic_pid_by_distance if dynamic_pid_by_distance else [] # ← 本橋追加
         self.running = False
 
     def update(self) -> Status:
@@ -302,6 +305,19 @@ class TraceLineCam(Behaviour):
             else: # TraceSide.CENTER
                 g_video.set_trace_side(TraceSide.CENTER)
             self.logger.info("%+06d %s.trace started with TS=%s" % (g_plotter.get_distance(), self.__class__.__name__, self.trace_side.name))
+        
+        #距離に応じたPIDの動的切り替え （本橋追記）
+        if self.dynamic_pid_by_distance:
+            current_distance = g_plotter.get_distance() - 2500
+            for entry in self.dynamic_pid_by_distance:
+                if entry["start"] <= current_distance < entry["end"]:
+                    self.power = entry["power"]
+                    self.pid.p = entry["p"]
+                    self.pid.i = entry["i"]
+                    self.pid.d = entry["d"]
+                    print(f"[TraceLineCam] Distance={current_distance}, Power={self.power}, PID={self.pid.p}, {self.pid.i}, {self.pid.d}")
+                    break
+        
         turn = (-1) * int(self.pid(g_video.get_theta()))
         g_right_motor.set_power(self.power - turn - 1)
         g_left_motor.set_power(self.power + turn)
@@ -513,7 +529,7 @@ class AvoidObstacleArcFull(Behaviour):
         # 左に戻す
         g_left_motor.set_power(60)
         g_right_motor.set_power(100)
-        time.sleep(0.85)  # 必要に応じて調整 
+        time.sleep(1.1)  # 必要に応じて調整 
         #g_left_motor.set_power(0)
         #g_right_motor.set_power(0)
 
@@ -534,6 +550,7 @@ class AvoidObstacleArcFull(Behaviour):
         # フラグを立てて終了
         self.done = True
         self.logger.info("%+06d %s.AvoidObstacleArcFull_complete!" % (g_plotter.get_distance(), self.__class__.__name__))
+        
         return Status.SUCCESS
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
@@ -621,7 +638,14 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER,
+        # 距離ごとのPOWERとPID設定（本橋修正）
+        dynamic_pid_by_distance=[
+            {"start": 0, "end": 2500, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18},
+            {"start": 2500, "end": 4500, "power": 80, "p": 1.2,  "i": 0.001,  "d": 0.3},
+            {"start": 4500, "end": 9999, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18}
+        ]
+        ),
     ])
 
     # ================ ダブルループ処理 ================
