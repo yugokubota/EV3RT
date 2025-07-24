@@ -311,8 +311,10 @@ class TraceLineCam(Behaviour):
             current_distance = g_plotter.get_distance()
             for entry in self.dynamic_pid_by_distance:
                 if entry["start"] <= current_distance < entry["end"]:
-                    self.pid.set_pid(entry["p"], entry["i"], entry["d"])
                     self.power = entry["power"]
+                    self.pid.p = entry["p"]
+                    self.pid.i = entry["i"]
+                    self.pid.d = entry["d"]
                     print(f"[TraceLineCam] Distance={current_distance}, Power={self.power}, PID={self.pid.p}, {self.pid.i}, {self.pid.d}")
                     break
         
