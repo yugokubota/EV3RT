@@ -18,6 +18,7 @@ from py_trees import (
 )
 from py_etrobo_util import Video, TraceSide, Plotter
 from py_etrobo_util.plotter import TIRE_DIAMETER
+import colorsys#GRBをHSVに変える標準ライブラリ
 
 EXEC_INTERVAL: float = 0.02
 VIDEO_INTERVAL: float = 0.02
@@ -58,8 +59,7 @@ g_video_thread: threading.Thread = None
 g_course: int = 0
 
 
-class TheEnd(Behaviour):
-# ctl+cで処理を終了させるようにしている
+class TheEnd(Behaviour):# ctl+cで処理を終了させるようにしている
     def __init__(self, name: str):
         super(TheEnd, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -72,8 +72,7 @@ class TheEnd(Behaviour):
         return Status.RUNNING
 
 
-class ResetDevice(Behaviour):
-# ロボットのモーターの回転数をリセットする専用の「初期化ビヘイビア」
+class ResetDevice(Behaviour):# ロボットのモーターの回転数をリセットする専用の「初期化ビヘイビア」
     def __init__(self, name: str):
         super(ResetDevice, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -92,8 +91,7 @@ class ResetDevice(Behaviour):
         return Status.RUNNING
 
 
-class ArmUpDownFull(Behaviour):
-# アームを上げ下げして初期化するビヘイビア
+class ArmUpDownFull(Behaviour):# アームを上げ下げして初期化するビヘイビア
     def __init__(self, name: str, direction: ArmDirection):
         super(ArmUpDownFull, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -120,8 +118,7 @@ class ArmUpDownFull(Behaviour):
         return Status.RUNNING
 
 
-class IsDistanceEarned(Behaviour):
-# ロボットがある距離だけ進んだかどうかをチェックするビヘイビア
+class IsDistanceEarned(Behaviour):# ロボットがある距離だけ進んだかどうかをチェックするビヘイビア
     def __init__(self, name: str, delta_dist: int):
         super(IsDistanceEarned, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -145,8 +142,7 @@ class IsDistanceEarned(Behaviour):
             return Status.FAILURE
 
 
-class IsSonarOn(Behaviour):
-# 障害物が近くにある場合に次の行動を制御できる
+class IsSonarOn(Behaviour):# 障害物が近くにある場合に次の行動を制御できる
     def __init__(self, name: str, alert_dist: int):
         super(IsSonarOn, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -193,8 +189,7 @@ class StopNow(Behaviour):
         return Status.SUCCESS
 
 
-class IsJunction(Behaviour):
-# 分岐チェックを知らせるだけのクラス
+class IsJunction(Behaviour):# 分岐チェックを知らせるだけのクラス
     def __init__(self, name: str, target_state: JState) -> None:
         super(IsJunction, self).__init__(name)
         self.target_state = target_state
@@ -237,8 +232,7 @@ class IsJunction(Behaviour):
             return Status.RUNNING
 
 
-class RunAsInstructed(Behaviour):
-# ロボットの左右のモーターに固定のPWM（出力）を与えて動かす「行動ノード」
+class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定のPWM（出力）を与えて動かす「行動ノード」
     def __init__(self, name: str, pwm_l: int, pwm_r: int) -> None:
         super(RunAsInstructed, self).__init__(name)
         self.pwm_l = g_course * pwm_l
@@ -282,13 +276,16 @@ class TraceLine_sensor(Behaviour):
 
 class TraceLineCam(Behaviour):
     def __init__(self, name: str, power: int, pid_p: float, pid_i: float, pid_d: float,
-                 gs_min: int, gs_max: int, trace_side: TraceSide) -> None:
+                 gs_min: int, gs_max: int, trace_side: TraceSide,
+                 dynamic_pid_by_distance: list = None # ← 本橋追加
+                 ) -> None: 
         super(TraceLineCam, self).__init__(name)
         self.power = power
         self.pid = PID(pid_p, pid_i, pid_d, setpoint=0, sample_time=EXEC_INTERVAL, output_limits=(-power, power))
         self.gs_min = gs_min
         self.gs_max = gs_max
         self.trace_side = trace_side
+        self.dynamic_pid_by_distance = dynamic_pid_by_distance if dynamic_pid_by_distance else [] # ← 本橋追加
         self.running = False
 
     def update(self) -> Status:
@@ -308,10 +305,152 @@ class TraceLineCam(Behaviour):
             else: # TraceSide.CENTER
                 g_video.set_trace_side(TraceSide.CENTER)
             self.logger.info("%+06d %s.trace started with TS=%s" % (g_plotter.get_distance(), self.__class__.__name__, self.trace_side.name))
+        
+        #距離に応じたPIDの動的切り替え （本橋追記）
+        if self.dynamic_pid_by_distance:
+            current_distance = g_plotter.get_distance() - 2500
+            for entry in self.dynamic_pid_by_distance:
+                if entry["start"] <= current_distance < entry["end"]:
+                    self.power = entry["power"]
+                    self.pid.p = entry["p"]
+                    self.pid.i = entry["i"]
+                    self.pid.d = entry["d"]
+                    print(f"[TraceLineCam] Distance={current_distance}, Power={self.power}, PID={self.pid.p}, {self.pid.i}, {self.pid.d}")
+                    break
+        
         turn = (-1) * int(self.pid(g_video.get_theta()))
+        g_right_motor.set_power(self.power - turn - 1)
+        g_left_motor.set_power(self.power + turn)
+        return Status.RUNNING
+
+class TraceLineSensor(Behaviour):# カラーセンサー用クラス
+    def __init__(self, name: str, target: int, power: int, pid_p: float, pid_i: float, pid_d: float,
+                 trace_side: TraceSide) -> None:
+        super(TraceLineSensor, self).__init__(name)
+        self.power = power
+        self.pid = PID(pid_p, pid_i, pid_d, setpoint=target, sample_time=EXEC_INTERVAL, output_limits=(-power, power))
+        self.trace_side = trace_side
+        self.running = False
+
+    def update(self) -> Status:
+        if not self.running:
+            self.running = True
+            self.logger.info("%+06d %s.trace started with TS=%s" % (g_plotter.get_distance(), self.__class__.__name__, self.trace_side.name))
+
+        brightness = g_color_sensor.get_brightness()
+        if self.trace_side == TraceSide.NORMAL:
+            turn = (-1) * g_course * int(self.pid(brightness))
+        else:  # TraceSide.OPPOSITE
+            turn = g_course * int(self.pid(brightness))
+
         g_right_motor.set_power(self.power - turn)
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
+
+class DetectBlue(Behaviour):# 青色検知用クラス
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.count = 0
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+        self.running = False
+
+    def update(self) -> Status:
+        r, g, b = g_color_sensor.get_raw_color()
+        # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
+        max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
+        r_norm = r / max_rgb
+        g_norm = g / max_rgb
+        b_norm = b / max_rgb
+        # colorsysで変換（返り値: h,s,vは0.0〜1.0）
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        # 色相Hだけ0〜360度に直す
+        h_deg = int(h * 360)
+        s_per = int(s * 100)
+        v_per = int(v * 100)
+        # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
+        if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+            self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
+            print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+            return Status.SUCCESS
+        else:
+            # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+            return Status.RUNNING
+
+class DetectBlue_failure(Behaviour):# 青色検知用クラス
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.count = 0
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+        self.running = False
+
+    def update(self) -> Status:
+        r, g, b = g_color_sensor.get_raw_color()
+        # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
+        max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
+        r_norm = r / max_rgb
+        g_norm = g / max_rgb
+        b_norm = b / max_rgb
+        # colorsysで変換（返り値: h,s,vは0.0〜1.0）
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        # 色相Hだけ0〜360度に直す
+        h_deg = int(h * 360)
+        s_per = int(s * 100)
+        v_per = int(v * 100)
+        # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
+        if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+            self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
+            print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+            return Status.SUCCESS
+        else:
+            # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+            return Status.FAILURE
+
+class Detectcolor(Behaviour):# 色や明るさを取得する
+    def __init__(self, name: str):
+        super().__init__(name)
+
+    def update(self) -> Status:
+        r, g, b = g_color_sensor.get_raw_color()
+        # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
+        max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
+        r_norm = r / max_rgb
+        g_norm = g / max_rgb
+        b_norm = b / max_rgb
+        # colorsysで変換（返り値: h,s,vは0.0〜1.0）
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        # 色相Hだけ0〜360度に直す
+        h_deg = int(h * 360)
+        s_per = int(s * 100)
+        v_per = int(v * 100)
+        print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        brightness = g_color_sensor.get_brightness()
+        print(f"brightness={brightness}")
+        # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
+        if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+            # print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+            return Status.RUNNING
+        # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
+        return Status.RUNNING
+
+class IsOnBlackLine(Behaviour):#黒色を明るさで検知
+    def __init__(self, name: str, threshold: int = 40):
+        super().__init__(name)
+        self.threshold = threshold
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+
+    def update(self) -> Status:
+        brightness = g_color_sensor.get_brightness()
+        if brightness < self.threshold:  # 明るさがthreshold未満=黒い
+            self.logger.info("%+06d %s.DetectBlack!" % (g_plotter.get_distance(), self.__class__.__name__))
+            print(f"[IsOnBlackLine] Detected! brightness={brightness}")
+            return Status.SUCCESS
+        else:
+            # self.logger.info("%+06d %s.NotDetected..." % (g_plotter.get_distance(), self.__class__.__name__))
+            # print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
+            return Status.FAILURE
+
 
 
 class TraverseBehaviourTree(object):
@@ -334,7 +473,6 @@ class TraverseBehaviourTree(object):
             self.tree.tick_once()
             g_plotter.plot(**kwargs)
 
-
 class ExposeDevices(object):
     def __call__(
         self,
@@ -355,7 +493,6 @@ class ExposeDevices(object):
         g_color_sensor = color_sensor
         g_sonar_sensor = sonar_sensor
 
-
 class VideoThread(threading.Thread):
     def __init__(self):
         super().__init__()
@@ -369,41 +506,17 @@ class VideoThread(threading.Thread):
             g_video.process(g_plotter, g_hub, g_arm_motor, g_right_motor, g_left_motor, g_color_sensor, g_sonar_sensor)
             time.sleep(VIDEO_INTERVAL)
 
-class IsObstacleNear(Behaviour):# 20250625_add_kubota_ソナーで障害物検知するクラス追加
-    def __init__(self, name: str, threshold: int = 250):
-        super().__init__(name)
-        self.threshold = threshold
-
-    def update(self) -> Status:
-        dist = g_sonar_sensor.get_distance()
-        print("dist = ",dist)
-        if 0 < dist < self.threshold:
-            return Status.SUCCESS
-            print("IsObstacleNear_start")
-        return Status.FAILURE
-
 class AvoidObstacleArcFull(Behaviour):
     def __init__(self, name: str):
         super().__init__(name)
         self.done = False
         self.dist = None
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
 
     def update(self) -> Status:
-        print("AvoidObstacleArcFull_start")
         if self.done:
             return Status.SUCCESS
-
-        # 初回のみ距離取得
-        # if self.dist is None:
-        #     dist = g_sonar_sensor.get_distance()
-        #     print("dist = ",dist)
-        #     if dist <= 0:
-        #         print("fallback")
-        #         dist = 100
-        #     self.dist = dist
-        # else:
-        #     dist = self.dist
-
+        self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (g_plotter.get_distance(), self.__class__.__name__))
         # --- 以下、単純な回避動作 ---
         # 右カーブ
         g_left_motor.set_power(100)
@@ -416,7 +529,7 @@ class AvoidObstacleArcFull(Behaviour):
         # 左に戻す
         g_left_motor.set_power(60)
         g_right_motor.set_power(100)
-        time.sleep(0.85)  # 必要に応じて調整 
+        time.sleep(1.1)  # 必要に応じて調整 
         #g_left_motor.set_power(0)
         #g_right_motor.set_power(0)
 
@@ -424,19 +537,20 @@ class AvoidObstacleArcFull(Behaviour):
         g_left_motor.set_power(100)
         g_right_motor.set_power(60)
         time.sleep(0.5)
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
+
+        # ライン復帰
+        #g_left_motor.set_power(50)
+        #g_right_motor.set_power(10)
+        #time.sleep(1.17)
         #g_left_motor.set_power(0)
         #g_right_motor.set_power(0)
 
-        # # ライン復帰
-        # g_left_motor.set_power(50)
-        # g_right_motor.set_power(10)
-        # time.sleep(1.17)
-        # g_left_motor.set_power(0)
-        # g_right_motor.set_power(0)
-
         # フラグを立てて終了
         self.done = True
-        print("AvoidObstacleArcFull complete!")
+        self.logger.info("%+06d %s.AvoidObstacleArcFull_complete!" % (g_plotter.get_distance(), self.__class__.__name__))
+        
         return Status.SUCCESS
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
@@ -447,10 +561,11 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
         self.power = power
         self.radius = radius
         self.running = False
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
 
     def update(self) -> Status:
-        print("Arcturn_start")
         if not self.running:
+            self.logger.info("%+06d %s.Arcturn_start!" % (g_plotter.get_distance(), self.__class__.__name__))
             self.running = True
             # degree→タイヤ回転数変換は省略例
             base_angle = self.degree
@@ -470,8 +585,9 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
             time.sleep(base_angle / 90 * 0.7)  # 調整要
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
+            self.logger.info("%+06d %s.Arcturn_complete!" % (g_plotter.get_distance(), self.__class__.__name__))
             return Status.SUCCESS
-        return Status.RUNNING
+        return Status.SUCCESS
 
 class IsDistancePassed(Behaviour):
     def __init__(self, name: str, target_distance: int):
@@ -488,72 +604,136 @@ class IsDistancePassed(Behaviour):
         if now_distance - self.start_distance >= self.target_distance:
             print(f"[IsDistancePassed] Passed: {now_distance - self.start_distance}")
             return Status.SUCCESS
-        return Status.FAILURE
+        return Status.RUNNING
 
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
+
+    # ============= オブジェクト回避 =============
+
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
-        # IsDistancePassed(name="distance_passed", target_distance=1),
-        IsDistancePassed(name="distance_passed", target_distance=2600),
+        IsDistancePassed(name="distance_passed", target_distance=2500),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
-    # オブジェクト回避のライントレース
+
+    # ============= ライントレース =============
+
+    # オブジェクト回避前のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=70, pid_p=0.8, pid_i=0.001, pid_d=0.3,
+        power=70, pid_p=1.0, pid_i=0.001, pid_d=0.3,
         gs_min=0, gs_max=40,
         trace_side=TraceSide.NORMAL
     )
-    # ダブルループのライントレース
-    traceline_cam_for_loop = TraceLineCam(
-        name="camera_trace_for_loop",
-        power=50, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,
-        trace_side=TraceSide.NORMAL
-    )
     # オブジェクト回避とライントレース
-    obstacle_selector = Selector(name="obstacle_or_trace", memory=False)
-    obstacle_selector.add_children([
+    obstacle_Parallel = Parallel(name="obstacle_or_trace", policy=ParallelPolicy.SuccessOnOne())
+    obstacle_Parallel.add_children([
         avoid_seq, 
         traceline_cam_for_obstacle
     ])
-    # ダブルループ侵入
-    enter_circle = Sequence(name="enter_circle", memory=True)
-    enter_circle.add_children([
-        IsJunction(name="enter_junction", target_state=JState.FORKING),
-        ArcTurn(name="arc_into_circle", direction="right", degree=90, power=30, radius=200)
+    # オブジェクト回避後からLAP完了まで（LAP完了は青色検知）
+    traceline_cam_lapfinish_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
+    traceline_cam_lapfinish_Parallel.add_children([
+        DetectBlue(name="detect_blue"),
+        TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER,
+        # 距離ごとのPOWERとPID設定（本橋修正）
+        dynamic_pid_by_distance=[
+            {"start": 0, "end": 2500, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18},
+            {"start": 2500, "end": 4500, "power": 80, "p": 1.2,  "i": 0.001,  "d": 0.3},
+            {"start": 4500, "end": 9999, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18}
+        ]
+        ),
     ])
-    # ダブルループ処理
-    double_loop = Sequence(name="eight_loop", memory=True)
-    double_loop.add_children([
-        TraceLineCam(name="trace_outer",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-        IsJunction(name="cross_junction1", target_state=JState.JOINING),
-        ArcTurn(name="arc_to_small", direction="left", degree=45, power=30, radius=80),
-        TraceLineCam(name="trace_outer",power=60, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-        IsJunction(name="cross_junction2", target_state=JState.FORKING),
-        ArcTurn(name="arc_to_big", direction="right", degree=45, power=30, radius=200)
+
+    # ================ ダブルループ処理 ================
+
+    # ================ 黒線検知でライントレース ================
+
+    # 一定距離右周りに弧を描くように走る
+    distance_loop_Parallel = Parallel(name="distance_loop_Parallel", policy=ParallelPolicy.SuccessOnOne())
+    distance_loop_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=500),
+        # RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),#LEFT用
+        RunAsInstructed(name="go_straight_1", pwm_l=-50, pwm_r=-58),#RIGHT用
     ])
-    # ダブルループ侵入とダブルループ処理とライントレース
-    mid_selector = Selector(name="mid_selector", memory=False)
-    mid_selector.add_children([
-        Sequence(name="loop_seq", memory=True, children=[
-        enter_circle,
-        double_loop,
-        ]),
-        traceline_cam_for_loop
+    # part1_黒線を検知した場合ライントレース
+    double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
+    double_loop_black_selector_1.add_children([
+        IsOnBlackLine(name="detect_blackline_1", threshold=5),
+        # RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),
+        RunAsInstructed(name="go_straight_1", pwm_l=-50, pwm_r=-60),#RIGHT用
     ])
-    loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
-    loop_01.add_children([
-        obstacle_selector,
-        # mid_selector,
-        TraceLineCam(name="trace_clear_obstacle",power=50, pid_p=2.0, pid_i=0.001, pid_d=0.4,
+    # part2_黒線を検知した場合ライントレース
+    double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
+    double_loop_black_selector_2.add_children([
+        IsOnBlackLine(name="detect_blackline_2", threshold=5),
+        # RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=48),
+        RunAsInstructed(name="go_straight_2", pwm_l=-40, pwm_r=-45),#RIGHT用
+    ])
+    # part3_黒線を検知した場合ライントレース
+    double_loop_black_selector_3 = Selector(name="double_loop_black_selector3",memory=False)
+    double_loop_black_selector_3.add_children([
+        IsOnBlackLine(name="detect_blackline_3", threshold=5),
+        # RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=47),
+        RunAsInstructed(name="go_straight_3", pwm_l=-47, pwm_r=-40),#RIGHT用
+    ])
+    # part4_黒線を検知した場合ライントレース
+    double_loop_black_selector_4 = Selector(name="double_loop_black_selector4",memory=False)
+    double_loop_black_selector_4.add_children([
+        IsOnBlackLine(name="detect_blackline_4", threshold=5),
+        # RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),
+        RunAsInstructed(name="go_straight_4", pwm_l=-50, pwm_r=-50),#RIGHT用
+    ])
+
+    # ================ 青色検知するまでライントレース ================
+    
+    # part1_青色検知するまでライントレース
+    double_loop_blue_selector_1 = Selector(name="double_loop_blue_selector_1",memory=False)
+    double_loop_blue_selector_1.add_children([
+        DetectBlue_failure(name="detect_blue"),
+        TraceLineCam(name="Tracelinecam_DetectBlue_1",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
+    ])
+    # part2_青色検知するまでライントレース
+    double_loop_blue_selector_2 = Selector(name="double_loop_blue_selector_2",memory=False)
+    double_loop_blue_selector_2.add_children([
+        DetectBlue_failure(name="detect_blue"),
+        TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
+        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
+    ])
+    # part3_青色検知するまでライントレース
+    double_loop_blue_selector_3 = Selector(name="double_loop_blue_selector_3",memory=False)
+    double_loop_blue_selector_3.add_children([
+        DetectBlue_failure(name="detect_blue"),
+        TraceLineCam(name="Tracelinecam_DetectBlue_3",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
-        # IsDistanceEarned(name="check distance", delta_dist=40000)
     ])
+
+    loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
+    loop_01.add_children([
+        # Detectcolor(name="detectcolor"),#       色や明るさを検知できる
+        # --------直線とオブジェクト回避--------
+        obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
+        traceline_cam_lapfinish_Parallel,#        オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
+        # --------ここからダブルループ--------
+        distance_loop_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
+        double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
+        double_loop_blue_selector_1,#             ③ライントレースしながら青いラインを探す処理
+        # --------ここから下は上手くいかないかも---------
+        # 小円に移るときの処理
+        double_loop_black_selector_2,#            ④青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        # ArcTurn(name="arc_move1", direction="right", degree=45, power=45, radius=80),
+        double_loop_blue_selector_2,#             ⑤ライントレースしながら青いラインを探す処理
+        # 小円から大円に移るときの処理
+        double_loop_black_selector_3,#            ⑥青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        double_loop_blue_selector_3,#             ⑦ライントレースしながら青いラインを探す処理
+        TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    ])
+
     calibration = Sequence(name="calibration", memory=True)
     calibration.add_children([
         ArmUpDownFull(name="arm up", direction=ArmDirection.UP),
@@ -564,7 +744,7 @@ def build_behaviour_tree() -> BehaviourTree:
     start.add_children([
         IsTouchOn(name="touch start"),
     ])
-    # 各ノードの定義終了
+
     root = Sequence(name="loop by cam", memory=True)
     root.add_children([
         calibration,
