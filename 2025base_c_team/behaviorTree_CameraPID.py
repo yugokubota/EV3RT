@@ -642,7 +642,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # 距離ごとのPOWERとPID設定（本橋修正）
         dynamic_pid_by_distance=[
             {"start": 0, "end": 2500, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18},
-            {"start": 2500, "end": 5000, "power": 80, "p": 0.8,  "i": 0.002,  "d": 0.3},
+            {"start": 2500, "end": 5000, "power": 80, "p": 0.8,  "i": 0.003,  "d": 0.3},
             {"start": 4500, "end": 9999, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18}
         ]
         ),
