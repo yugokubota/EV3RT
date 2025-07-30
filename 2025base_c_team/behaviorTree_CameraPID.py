@@ -536,7 +536,7 @@ class AvoidObstacleArcFull(Behaviour):
         # ライン復帰
         g_left_motor.set_power(100)
         g_right_motor.set_power(80)
-        time.sleep(0.8)
+        time.sleep(0.7)
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
@@ -642,7 +642,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # 距離ごとのPOWERとPID設定（本橋修正）
         dynamic_pid_by_distance=[
             {"start": 0, "end": 2500, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18},
-            {"start": 2500, "end": 5000, "power": 80, "p": 0.8,  "i": 0.001,  "d": 0.3},
+            {"start": 2500, "end": 5000, "power": 80, "p": 0.8,  "i": 0.002,  "d": 0.3},
             {"start": 4500, "end": 9999, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18}
         ]
         ),
