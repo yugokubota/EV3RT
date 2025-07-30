@@ -521,7 +521,7 @@ class AvoidObstacleArcFull(Behaviour):
         # 右カーブ
         g_left_motor.set_power(100)
         g_right_motor.set_power(60)
-        time.sleep(0.6)  # 必要に応じて調整
+        time.sleep(0.7)  # 必要に応じて調整
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -529,7 +529,7 @@ class AvoidObstacleArcFull(Behaviour):
         # 左に戻す
         g_left_motor.set_power(60)
         g_right_motor.set_power(100)
-        time.sleep(0.90)  # 必要に応じて調整 
+        time.sleep(0.95)  # 必要に応じて調整 
         #g_left_motor.set_power(0)
         #g_right_motor.set_power(0)
 
@@ -642,7 +642,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # 距離ごとのPOWERとPID設定（本橋修正）
         dynamic_pid_by_distance=[
             {"start": 0, "end": 2500, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18},
-            {"start": 2500, "end": 4500, "power": 70, "p": 1.2,  "i": 0.001,  "d": 0.3},
+            {"start": 2500, "end": 4500, "power": 70, "p": 0.8,  "i": 0.001,  "d": 0.3},
             {"start": 4500, "end": 9999, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18}
         ]
         ),
