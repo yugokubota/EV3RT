@@ -518,6 +518,9 @@ class AvoidObstacleArcFull(Behaviour):
             return Status.SUCCESS
         self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (g_plotter.get_distance(), self.__class__.__name__))
         # --- 以下、単純な回避動作 ---
+        # 止める
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
         # 右カーブ
         g_left_motor.set_power(100)
         g_right_motor.set_power(60)
@@ -623,7 +626,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避前のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=80, pid_p=0.4, pid_i=0.002, pid_d=0.3,
+        power=90, pid_p=0.4, pid_i=0.002, pid_d=0.3,
         gs_min=0, gs_max=40,
         trace_side=TraceSide.NORMAL
     )
