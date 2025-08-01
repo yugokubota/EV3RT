@@ -644,7 +644,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL,
+        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL,
         # 距離ごとのPOWERとPID設定（本橋修正）
         dynamic_pid_by_distance=[
             {"start": 0, "end": 2700, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
