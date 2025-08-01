@@ -647,9 +647,9 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=80,trace_side=TraceSide.CENTER,
         # 距離ごとのPOWERとPID設定（本橋修正）
         dynamic_pid_by_distance=[
-            {"start": 0, "end": 2550, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
+            {"start": 0, "end": 2700, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
             # {"start": 2550, "end": 4800, "power": 80, "p": 0.4,  "i": 0.0035,  "d": 0.3},
-            {"start": 2550, "end": 4800, "power": 90, "p": 0.4,  "i": 0.002,  "d": 0.3},
+            {"start": 2700, "end": 4800, "power": 90, "p": 0.4,  "i": 0.002,  "d": 0.3},
             {"start": 4800, "end": 9999, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18}
         ]
         ),
