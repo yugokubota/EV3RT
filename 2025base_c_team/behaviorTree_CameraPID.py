@@ -649,7 +649,7 @@ def build_behaviour_tree() -> BehaviourTree:
         dynamic_pid_by_distance=[
             {"start": 0, "end": 2850, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
             # {"start": 2550, "end": 4800, "power": 80, "p": 0.4,  "i": 0.0035,  "d": 0.3},
-            {"start": 2850, "end": 4800, "power": 90, "p": 1.2, "i": 0.000, "d": 0.2},
+            {"start": 2850, "end": 4800, "power": 85, "p": 1.2, "i": 0.000, "d": 0.2},
             {"start": 4800, "end": 9999, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18}
         ]
         ),
