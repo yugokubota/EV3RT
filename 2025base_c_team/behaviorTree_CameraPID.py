@@ -319,7 +319,7 @@ class TraceLineCam(Behaviour):
                     break
         
         turn = (-1) * int(self.pid(g_video.get_theta()))
-        g_right_motor.set_power(self.power - turn + 1)
+        g_right_motor.set_power(self.power - turn - 1)
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
 
