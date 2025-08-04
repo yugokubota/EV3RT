@@ -57,6 +57,7 @@ g_sonar_sensor: SonarSensor = None
 g_video: Video = None
 g_video_thread: threading.Thread = None
 g_course: int = 0
+g_gate: int = 0
 
 
 class TheEnd(Behaviour):# ctl+cで処理を終了させるようにしている
@@ -235,18 +236,119 @@ class IsJunction(Behaviour):# 分岐チェックを知らせるだけのクラ�
 class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定のPWM（出力）を与えて動かす「行動ノード」
     def __init__(self, name: str, pwm_l: int, pwm_r: int) -> None:
         super(RunAsInstructed, self).__init__(name)
-        self.pwm_l = g_course * pwm_l
-        self.pwm_r = g_course * pwm_r
+        self.pwm_l = pwm_l
+        self.pwm_r = pwm_r
         self.running = False
 
     def update(self) -> Status:
         if not self.running:
             self.running = True
             self.logger.info("%+06d %s.started with pwm=(%s, %s)" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
-        g_right_motor.set_power(self.pwm_r)
-        g_left_motor.set_power(self.pwm_l)
+        g_right_motor.set_power(g_course * self.pwm_r)
+        g_left_motor.set_power(g_course * self.pwm_l)
         return Status.RUNNING
 
+class RunAS_Smartcarry_gate(Behaviour):
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
+        self.running = False
+
+    def update(self) -> Status:
+        if not self.running:
+            self.running = True
+            self.logger.info("%+06d %s.Smart_carry_twin_start!" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
+        if g_gate == front
+            if g_course = 1  #Leftコースの場合
+                # -----右カーブでゲートに入る（90°に曲がる方がいい？）
+                g_left_motor.set_power(80)
+                g_right_motor.set_power(50)
+                time.sleep(0.6)  # 必要に応じて調整
+                # -----ゲート内をまっすぐ進む
+                g_left_motor.set_power(70)
+                g_right_motor.set_power(70)
+                time.sleep(0.6)  # 必要に応じて調整
+                # -----ターゲットに向かって進む（90°に曲がる方がいい？）
+                g_left_motor.set_power(80)
+                g_right_motor.set_power(50)
+                time.sleep(0.6)  # 必要に応じて調整
+                # # -----ターゲットに向かってまっすぐ進む（90°の場合）
+                # g_left_motor.set_power(50)
+                # g_right_motor.set_power(50)
+                # time.sleep(0.6)  # 必要に応じて調整
+            else:           #Rightコースの場合
+                # -----左カーブでゲートに入る（90°に曲がる方がいい？）
+                g_left_motor.set_power(80)
+                g_right_motor.set_power(50)
+                time.sleep(0.6)  # 必要に応じて調整
+                # -----ゲート内をまっすぐ進む
+                g_left_motor.set_power(70)
+                g_right_motor.set_power(70)
+                time.sleep(0.6)  # 必要に応じて調整
+                # -----ターゲットに向かって進む（90°に曲がる方がいい？）
+                g_left_motor.set_power(80)
+                g_right_motor.set_power(50)
+                time.sleep(0.6)  # 必要に応じて調整
+                # # -----ターゲットに向かってまっすぐ進む（90°の場合）
+                # g_left_motor.set_power(50)
+                # g_right_motor.set_power(50)
+                # time.sleep(0.6)  # 必要に応じて調整
+        else: #g_gate = back
+            if g_course = 1  #Leftコースの場合
+                # -----右カーブでゲートに入る------
+                g_left_motor.set_power(80)
+                g_right_motor.set_power(50)
+                time.sleep(0.6)  # 必要に応じて調整
+                # -----ゲート内をまっすぐ進む-----
+                g_left_motor.set_power(70)
+                g_right_motor.set_power(70)
+                time.sleep(0.6)  # 必要に応じて調整
+                # -----ターゲットに向かって進む-----
+                g_left_motor.set_power(80)
+                g_right_motor.set_power(50)
+                time.sleep(0.6)  # 必要に応じて調整
+            else:           #Rightコースの場合
+                # -----左カーブでゲートに入る------
+                g_left_motor.set_power(80)
+                g_right_motor.set_power(50)
+                time.sleep(0.6)  # 必要に応じて調整
+                # -----ゲート内をまっすぐ進む-----
+                g_left_motor.set_power(70)
+                g_right_motor.set_power(70)
+                time.sleep(0.6)  # 必要に応じて調整
+                # -----ターゲットに向かって進む-----
+                g_left_motor.set_power(80)
+                g_right_motor.set_power(50)
+                time.sleep(0.6)  # 必要に応じて調整
+        return Status.RUNNING
+
+class RunAS_Smartcarry_secondtime(Behaviour):
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
+        self.running = False
+
+    def update(self) -> Status:
+        if not self.running:
+            self.running = True
+            self.logger.info("%+06d %s.Smart_carry_twin_secondtime!" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
+        if g_course = 1  #Leftコースの場合
+            # -----左に曲がる（90°に曲がる方がいい？）
+            g_left_motor.set_power(50)
+            g_right_motor.set_power(90)
+            time.sleep(0.6)  # 必要に応じて調整
+            # -----ターゲットに向かってまっすぐ進む
+            g_left_motor.set_power(70)
+            g_right_motor.set_power(70)
+            time.sleep(0.6)  # 必要に応じて調整
+        else:           #Rightコースの場合
+            # -----右に曲がる（90°に曲がる方がいい？）
+            g_left_motor.set_power(90)
+            g_right_motor.set_power(50)
+            time.sleep(0.6)  # 必要に応じて調整
+            # -----ターゲットに向かってまっすぐ進む
+            g_left_motor.set_power(70)
+            g_right_motor.set_power(70)
+            time.sleep(0.6)  # 必要に応じて調整
+        return Status.RUNNING
 
 class TraceLine_sensor(Behaviour):
     def __init__(self, name: str, target: int, power: int, pid_p: float, pid_i: float, pid_d: float,
@@ -330,6 +432,36 @@ class TraceLineSensor(Behaviour):# カラーセンサー用クラス
         g_right_motor.set_power(self.power - turn)
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
+
+class DetectRed(Behaviour):# 赤色検知用クラス
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.count = 0
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+        self.running = False
+
+    def update(self) -> Status:
+        r, g, b = g_color_sensor.get_raw_color()
+        # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
+        max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
+        r_norm = r / max_rgb
+        g_norm = g / max_rgb
+        b_norm = b / max_rgb
+        # colorsysで変換（返り値: h,s,vは0.0〜1.0）
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        # 色相Hだけ0〜360度に直す
+        h_deg = int(h * 360)
+        s_per = int(s * 100)
+        v_per = int(v * 100)
+        # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
+        if ((0 <= h_deg <= 20) or (340 <= h_deg <= 360)) and s_per > 50 and v_per > 30:
+            self.logger.info("%+06d %s.DetectRed!" % (g_plotter.get_distance(), self.__class__.__name__))
+            print(f"DetectRed: RED! h={h_deg} s={s_per} v={v_per}")
+            return Status.SUCCESS
+        else:
+            # print(f"DetectRed: Not RED h={h_deg} s={s_per} v={v_per}")
+            return Status.RUNNING
 
 class DetectBlue(Behaviour):# 青色検知用クラス
     def __init__(self, name: str):
@@ -435,7 +567,23 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
             # print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
             return Status.FAILURE
 
+class DetectBlackCount(Behaviour):
+    def __init__(self, name: str, threshold: int = 40, target_count: int = 3):
+        super().__init__(name)
+        self.threshold = threshold
+        self.target_count = target_count
+        self.count = 0
 
+    def update(self) -> Status:
+        brightness = g_color_sensor.get_brightness()
+        if brightness < self.threshold:
+            self.count += 1
+            print(f"黒検知回数: {self.count}")
+            if self.count >= self.target_count:
+                return Status.SUCCESS
+            else:
+                return Status.RUNNING
+        return Status.RUNNING
 
 class TraverseBehaviourTree(object):
     def __init__(self, tree: BehaviourTree) -> None:
@@ -489,6 +637,51 @@ class VideoThread(threading.Thread):
         while not self._stop_event.is_set():
             g_video.process(g_plotter, g_hub, g_arm_motor, g_right_motor, g_left_motor, g_color_sensor, g_sonar_sensor)
             time.sleep(VIDEO_INTERVAL)
+
+class TurnToObject(Behaviour):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.done = False
+        self.dist = None
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+
+    def update(self) -> Status:
+        if self.done:
+            return Status.SUCCESS
+        self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (g_plotter.get_distance(), self.__class__.__name__))
+        if g_course == 1 #LEFTコースの場合
+            # バック
+            g_left_motor.set_power(-50)
+            g_right_motor.set_power(-50)
+            time.sleep(0.6)  # 必要に応じて調整
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+
+            # 右周りに180°回転
+            g_left_motor.set_power(60)
+            g_right_motor.set_power(100)
+            time.sleep(0.85)  # 必要に応じて調整 
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+        else:           #RIGHTコースの場合
+            # バック
+            g_left_motor.set_power(-50)
+            g_right_motor.set_power(-50)
+            time.sleep(0.6)  # 必要に応じて調整
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+
+            # 左周りに180°回転
+            g_left_motor.set_power(100)
+            g_right_motor.set_power(60)
+            time.sleep(0.85)  # 必要に応じて調整 
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+
+        # フラグを立てて終了
+        self.done = True
+        self.logger.info("%+06d %s.TurnToObject_complete!" % (g_plotter.get_distance(), self.__class__.__name__))
+        return Status.SUCCESS
 
 class AvoidObstacleArcFull(Behaviour):
     def __init__(self, name: str):
@@ -600,7 +793,6 @@ def build_behaviour_tree() -> BehaviourTree:
         IsDistancePassed(name="distance_passed", target_distance=2500),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
-
     # ============= ライントレース =============
 
     # オブジェクト回避前のライントレース
@@ -621,7 +813,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
 
     # ================ ダブルループ処理 ================
@@ -633,35 +825,35 @@ def build_behaviour_tree() -> BehaviourTree:
     distance_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=500),
         # RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),#LEFT用
-        RunAsInstructed(name="go_straight_1", pwm_l=-50, pwm_r=-58),#RIGHT用
+        RunAsInstructed(name="go_straight_1", pwm_l=50, pwm_r=58),#RIGHT用
     ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
     double_loop_black_selector_1.add_children([
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
         # RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),
-        RunAsInstructed(name="go_straight_1", pwm_l=-50, pwm_r=-60),#RIGHT用
+        RunAsInstructed(name="go_straight_1", pwm_l=50, pwm_r=60),#RIGHT用
     ])
     # part2_黒線を検知した場合ライントレース
     double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
     double_loop_black_selector_2.add_children([
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
         # RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=48),
-        RunAsInstructed(name="go_straight_2", pwm_l=-40, pwm_r=-45),#RIGHT用
+        RunAsInstructed(name="go_straight_2", pwm_l=40, pwm_r=45),#RIGHT用
     ])
     # part3_黒線を検知した場合ライントレース
     double_loop_black_selector_3 = Selector(name="double_loop_black_selector3",memory=False)
     double_loop_black_selector_3.add_children([
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
         # RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=47),
-        RunAsInstructed(name="go_straight_3", pwm_l=-47, pwm_r=-40),#RIGHT用
+        RunAsInstructed(name="go_straight_3", pwm_l=47, pwm_r=40),#RIGHT用
     ])
     # part4_黒線を検知した場合ライントレース
     double_loop_black_selector_4 = Selector(name="double_loop_black_selector4",memory=False)
     double_loop_black_selector_4.add_children([
         IsOnBlackLine(name="detect_blackline_4", threshold=5),
         # RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),
-        RunAsInstructed(name="go_straight_4", pwm_l=-50, pwm_r=-50),#RIGHT用
+        RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),#RIGHT用
     ])
 
     # ================ 青色検知するまでライントレース ================
@@ -688,9 +880,56 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
 
+    # ================ スマートキャリー用のノード ================
+    # --------ダブルループ抜けてからオブジェクト下の青検知まで
+    traceline_cam_smacary_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
+    traceline_cam_smacary_Parallel.add_children([
+        DetectBlue(name="detect_blue"),
+        TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    ])
+    # --------引数でゲートの位置を見分けてゲートを通過するノード。サークルの黒を検知で抜ける。
+    smart_carry_gate_Parallel = Parallel(name="smart_carry_start", policy=ParallelPolicy.SuccessOnOne())
+    smart_carry_gate_Parallel.add_children([
+        # IsDistancePassed(name="distance_passed", target_distance=500),
+        IsOnBlackLine(name="detect_circle", threshold=5),#黒検知で終了させるのはアリ（サークルの黒が薄い？グレー？）
+        RunAS_Smartcarry_gate(name="smart_carry_start"),
+    ])
+    # --------3回サークルの黒を検知したら抜ける（オブジェクトを置く）
+    smart_carry_puton_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
+    smart_carry_puton_Parallel.add_children([
+        DetectBlackCount(name="black_count_three", threshold=5, target_count=3),
+        RunAsInstructed(name="put_on_target", pwm_l=50, pwm_r=50),
+    ])
+    # --------オブジェクト手前のラインまでを走る
+    detect_line_Parallel = Parallel(name="detect_line_Parallel", policy=ParallelPolicy.SuccessOnOne())
+    detect_line_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=500),
+        RunAsInstructed(name="go_straight_1", pwm_l=60, pwm_r=50),
+    ])
+    # --------赤検知するまでライントレース
+    detect_red_Parallel = Parallel(name="detect_red_Parallel", policy=ParallelPolicy.SuccessOnOne())
+    detect_red_Parallel.add_children([
+        DetectRed(name="detect_red"),
+        TraceLineCam(name="traceline_to_object",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    ])
+    # --------サークルの黒線検知で抜ける
+    smart_carry_close_target_Parallel = Parallel(name="smart_carry_close_target", policy=ParallelPolicy.SuccessOnOne())
+    smart_carry_close_target_Parallel.add_children([
+        IsOnBlackLine(name="detect_circle", threshold=5),#黒検知で終了させるのはアリ（サークルの黒が薄い？グレー？）
+        RunAS_Smartcarry_secondtime(name="go_to_target"),
+    ])
+    # --------2回サークルの黒を検知したら抜ける（オブジェクトを置く）
+    smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton_second", policy=ParallelPolicy.SuccessOnOne())
+    smart_carry_puton_second_Parallel.add_children([
+        DetectBlackCount(name="black_count_twice", threshold=5, target_count=2),
+        RunAsInstructed(name="put_on_target", pwm_l=50, pwm_r=50),
+    ])
+
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
-        # Detectcolor(name="detectcolor"),#       色や明るさを検知できる
+        # Detectcolor(name="detectcolor"),#       色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
         # --------直線とオブジェクト回避--------
         obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
         traceline_cam_lapfinish_Parallel,#        オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
@@ -698,7 +937,6 @@ def build_behaviour_tree() -> BehaviourTree:
         distance_loop_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
         double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
         double_loop_blue_selector_1,#             ③ライントレースしながら青いラインを探す処理
-        # --------ここから下は上手くいかないかも---------
         # 小円に移るときの処理
         double_loop_black_selector_2,#            ④青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         # ArcTurn(name="arc_move1", direction="right", degree=45, power=45, radius=80),
@@ -706,8 +944,27 @@ def build_behaviour_tree() -> BehaviourTree:
         # 小円から大円に移るときの処理
         double_loop_black_selector_3,#            ⑥青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         double_loop_blue_selector_3,#             ⑦ライントレースしながら青いラインを探す処理
-        TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    ])
+
+    loop_02 = Sequence(name="loop_02_with_smart_carry_twin", memory=True)
+    loop_02.add_children([
+        # --------オブジェクト下の青検知～ターゲットサークルの黒検知まで
+        traceline_cam_smacary_Parallel,
+        smart_carry_gate_Parallel,
+        # --------ターゲットにオブジェクトを置く
+        smart_carry_puton_Parallel,
+        # --------バックして180°回転して黒線検知でライントレース
+        TurnToObject(name="turn_to_object"),#-----バックして180°回転
+        detect_line_Parallel,
+        # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
+        detect_red_Parallel,#---------------------赤検知
+        smart_carry_close_target_Parallel,#-------ターゲットサークルの黒検知まで
+        # --------ターゲットにオブジェクトを置く
+        smart_carry_puton_second_Parallel,#-------オブジェクトを置く
+        # --------バックして黒線へ
+        # --------黒線検知で角度つける
+        # --------ライントレース
+        # --------青検知でストップ
     ])
 
     calibration = Sequence(name="calibration", memory=True)
@@ -721,11 +978,12 @@ def build_behaviour_tree() -> BehaviourTree:
         IsTouchOn(name="touch start"),
     ])
 
-    root = Sequence(name="loop by cam", memory=True)
+    root = Sequence(name="loop_by_camera", memory=True)
     root.add_children([
         calibration,
         start,
         loop_01,
+        loop_02,
         StopNow(name="stop"),
         TheEnd(name="end"),
     ])
@@ -763,6 +1021,7 @@ def sig_handler(signum, frame) -> None:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('course', choices=['right', 'left'], help='Course to run')
+    parser.add_argument('--gate', choices=['front', 'back'], default='front', help='Gate position to use')
     parser.add_argument('--logfile', type=str, default=None, help='Path to log file')
     args = parser.parse_args()
 
@@ -770,6 +1029,8 @@ if __name__ == '__main__':
         g_course = -1
     else:
         g_course = 1
+    
+    g_gate = args.gate
 
     setup_thread()
 
