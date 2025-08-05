@@ -518,6 +518,9 @@ class AvoidObstacleArcFull(Behaviour):
             return Status.SUCCESS
         self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (g_plotter.get_distance(), self.__class__.__name__))
         # --- 以下、単純な回避動作 ---
+        # 止める
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
         # 右カーブ
         g_left_motor.set_power(100)
         g_right_motor.set_power(60)
@@ -527,18 +530,19 @@ class AvoidObstacleArcFull(Behaviour):
         g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(60)
+        g_left_motor.set_power(65)
         g_right_motor.set_power(100)
-        time.sleep(1.1)  # 必要に応じて調整 
+        time.sleep(1.0)  # 必要に応じて調整 
         #g_left_motor.set_power(0)
         #g_right_motor.set_power(0)
 
         # ライン復帰
-        g_left_motor.set_power(100)
-        g_right_motor.set_power(60)
-        time.sleep(0.5)
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
+        #g_left_motor.set_power(100)
+        #g_right_motor.set_power(80)
+        #time.sleep(0.7)
+        # 止める
+        #g_left_motor.set_power(0)
+        #g_right_motor.set_power(0)
 
         # ライン復帰
         #g_left_motor.set_power(50)
@@ -623,7 +627,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避前のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=70, pid_p=1.0, pid_i=0.001, pid_d=0.3,
+        power=85, pid_p=0.4, pid_i=0.002, pid_d=0.3,
         gs_min=0, gs_max=40,
         trace_side=TraceSide.NORMAL
     )
@@ -638,12 +642,13 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL,
         # 距離ごとのPOWERとPID設定（本橋修正）
         dynamic_pid_by_distance=[
-            {"start": 0, "end": 2500, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18},
-            {"start": 2500, "end": 4500, "power": 80, "p": 1.2,  "i": 0.001,  "d": 0.3},
-            {"start": 4500, "end": 9999, "power": 48, "p": 2.2, "i": 0.0012, "d": 0.18}
+            {"start": 0, "end": 2850, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
+            # {"start": 2550, "end": 4800, "power": 80, "p": 0.4,  "i": 0.0035,  "d": 0.3},
+            {"start": 2850, "end": 4800, "power": 85, "p": 1.2, "i": 0.000, "d": 0.2},
+            {"start": 4800, "end": 9999, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18}
         ]
         ),
     ])
