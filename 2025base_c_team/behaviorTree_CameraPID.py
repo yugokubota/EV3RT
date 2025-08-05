@@ -665,7 +665,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # 小円に入るときの調整
     SmallCircleEntryTuning_selector = Selector(name="SmallCircleEntryTuning_selector",memory=False)
     SmallCircleEntryTuning_selector.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=200),  #200は適当なので要調整
+        IsDistancePassed(name="distance_passed", target_distance=3500),  #200は適当なので要調整
         #RunAsInstructed(name="SmallCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
         RunAsInstructed(name="SmallCircle_Entry", pwm_l=-50, pwm_r=-60),  #RIGHT用
     ])
@@ -714,7 +714,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # --------ここから下は上手くいかないかも---------
         # --------小円に移るときの処理--------
         SmallCircleEntryTuning_selector,#         ④青いラインを発見後に小円に入るときに左周りの弧を描き、黒線を迎えに行く
-        double_loop_black_selector_2,#            ④黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        # double_loop_black_selector_2,#            ④黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         # ArcTurn(name="arc_move1", direction="right", degree=45, power=45, radius=80),
         double_loop_blue_selector_2,#             ⑤ライントレースしながら青いラインを探す処理
         # --------小円から大円に移るときの処理--------
