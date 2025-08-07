@@ -665,9 +665,9 @@ def build_behaviour_tree() -> BehaviourTree:
     # 小円に入るときの調整
     SmallCircleEntryTuning_selector = Parallel(name="SmallCircleEntryTuning_selector", policy=ParallelPolicy.SuccessOnOne())
     SmallCircleEntryTuning_selector.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=5000),  #200は適当なので要調整
+        IsDistancePassed(name="distance_passed", target_distance=4000),  #200は適当なので要調整
         #RunAsInstructed(name="SmallCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="SmallCircle_Entry", pwm_l=-50, pwm_r=-60),  #RIGHT用
+        RunAsInstructed(name="SmallCircle_Entry", pwm_l=-60, pwm_r=-50),  #RIGHT用
     ])
     # 大円に入るときの調整
     BigCircleEntryTuning_selector = Selector(name="BigCircleEntryTuning_selector",memory=False)
