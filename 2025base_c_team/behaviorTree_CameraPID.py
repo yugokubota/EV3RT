@@ -680,16 +680,16 @@ def build_behaviour_tree() -> BehaviourTree:
     # ================ 青色検知するまでライントレース ================
     
     # part1_青色検知するまでライントレース
-    double_loop_blue_selector_1 = Selector(name="double_loop_blue_selector_1",memory=False)
-    double_loop_blue_selector_1.add_children([
-        DetectBlue_failure(name="detect_blue"),
+    double_loop_blue_parallel_1 = Parallel(name="double_loop_blue_parallel_1",policy=ParallelPolicy.SuccessOnOne())
+    double_loop_blue_parallel_1.add_children([
+        DetectBlue(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_1",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
     ])
     # part2_青色検知するまでライントレース
-    double_loop_blue_selector_2 = Selector(name="double_loop_blue_selector_2",memory=False)
-    double_loop_blue_selector_2.add_children([
-        DetectBlue_failure(name="detect_blue"),
+    double_loop_blue_parallel_2 = Parallel(name="double_loop_blue_parallel_2",policy=ParallelPolicy.SuccessOnOne())
+    double_loop_blue_parallel_2.add_children([
+        DetectBlue(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=50,trace_side=TraceSide.OPPOSITE),#小円は右のエッジをトレースしたいから"OPPOSITE"
     ])
