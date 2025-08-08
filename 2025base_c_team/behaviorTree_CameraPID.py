@@ -710,7 +710,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # --------ここからダブルループ--------
         distance_loop_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
         # double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
-        double_loop_blue_parallel_1,#             ③ライントレースしながら青いラインを探す処理
+        traceline_cam_lapfinish_Parallel,#             ③ライントレースしながら青いラインを探す処理
         # --------ここから下は上手くいかないかも---------
         # --------小円に移るときの処理--------
         SmallCircleEntryTuning_selector,#         ④青いラインを発見後に小円に入るときに左周りの弧を描き、黒線を迎えに行く
