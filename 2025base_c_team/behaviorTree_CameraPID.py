@@ -584,6 +584,7 @@ class IsDistancePassed(Behaviour):
         now_distance = g_plotter.get_distance()
         if now_distance - self.start_distance >= self.target_distance:
             print(f"[IsDistancePassed] Passed: {now_distance - self.start_distance}")
+            print("======================== end ========================")
             return Status.SUCCESS
         return Status.RUNNING
 
@@ -632,7 +633,7 @@ def build_behaviour_tree() -> BehaviourTree:
     distance_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=800),
         #RunAsInstructed(name="go_straight", pwm_l=58, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-54),  #RIGHT用
+        RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-56),  #RIGHT用
     ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
