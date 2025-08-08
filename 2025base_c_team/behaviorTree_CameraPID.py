@@ -631,7 +631,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # 一定距離右周りに弧を描くように走る
     distance_loop_Parallel = Parallel(name="distance_loop_Parallel", policy=ParallelPolicy.SuccessOnOne())
     distance_loop_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=750),
+        IsDistancePassed(name="distance_passed", target_distance=740),
         #RunAsInstructed(name="go_straight", pwm_l=58, pwm_r=50),      #LEFT用
         RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-56),  #RIGHT用
     ])
@@ -668,7 +668,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SmallCircleEntryTuning_selector.add_children([
         IsDistancePassed(name="distance_passed", target_distance=550),  #200は適当なので要調整
         #RunAsInstructed(name="SmallCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="SmallCircle_Entry", pwm_l=-50, pwm_r=-50),  #RIGHT用
+        RunAsInstructed(name="SmallCircle_Entry", pwm_l=-51, pwm_r=-50),  #RIGHT用
     ])
     # 大円に入るときの調整
     BigCircleEntryTuning_selector = Parallel(name="BigCircleEntryTuning_selector", policy=ParallelPolicy.SuccessOnOne())
