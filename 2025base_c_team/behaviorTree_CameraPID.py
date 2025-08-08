@@ -683,8 +683,8 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_parallel_1 = Parallel(name="double_loop_blue_parallel_1",policy=ParallelPolicy.SuccessOnOne())
     double_loop_blue_parallel_1.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="Tracelinecam_DetectBlue_1",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
+        TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
     # part2_青色検知するまでライントレース
     double_loop_blue_parallel_2 = Parallel(name="double_loop_blue_parallel_2",policy=ParallelPolicy.SuccessOnOne())
@@ -710,7 +710,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # --------ここからダブルループ--------
         distance_loop_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
         # double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
-        traceline_cam_lapfinish_Parallel,#             ③ライントレースしながら青いラインを探す処理
+        double_loop_blue_parallel_1,#             ③ライントレースしながら青いラインを探す処理
         # --------ここから下は上手くいかないかも---------
         # --------小円に移るときの処理--------
         SmallCircleEntryTuning_selector,#         ④青いラインを発見後に小円に入るときに左周りの弧を描き、黒線を迎えに行く
