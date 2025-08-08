@@ -684,7 +684,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_parallel_1.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
     # part2_青色検知するまでライントレース
     double_loop_blue_parallel_2 = Parallel(name="double_loop_blue_parallel_2",policy=ParallelPolicy.SuccessOnOne())
