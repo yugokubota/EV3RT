@@ -4,7 +4,7 @@ import math
 import threading
 import signal
 from enum import Enum, IntEnum, auto
-from etrobo_python import ETRobo, Hub, Motor, TouchSensor, ColorSensor, SonarSensor
+from etrobo_python import ETRobo, Hub, Motor, TouchSensor, ColorSensor, SonarSensor, GyroSensor
 from simple_pid import PID
 import py_trees.common
 from py_trees.trees import BehaviourTree
@@ -16,7 +16,7 @@ from py_trees import (
     display as display_tree,
     logging as log_tree
 )
-from py_etrobo_util import Video, TraceSide, Plotter
+from py_etrobo_util import Video, TraceSide, Plotter, SymmetricClamper
 from py_etrobo_util.plotter import TIRE_DIAMETER
 import colorsys#GRBをHSVに変える標準ライブラリ
 
@@ -25,10 +25,16 @@ VIDEO_INTERVAL: float = 0.02
 ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
 JUNCT_LOWER_THRESH = 30
+MAX_POWER = 100
+MIN_POWER = 40
 
 class ArmDirection(IntEnum):
     UP = -1
     DOWN = 1
+
+class HeadingType(Enum):
+    ABSOLUTE = "absolute"
+    RELATIVE = "relative"
 
 class JState(Enum):
     INITIAL = auto()
@@ -54,6 +60,7 @@ g_left_motor: Motor = None
 g_touch_sensor: TouchSensor = None
 g_color_sensor: ColorSensor = None
 g_sonar_sensor: SonarSensor = None
+g_gyro_sensor: GyroSensor = None
 g_video: Video = None
 g_video_thread: threading.Thread = None
 g_course: int = 0
@@ -248,6 +255,74 @@ class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定
         g_left_motor.set_power(g_course * self.pwm_l)
         return Status.RUNNING
 
+
+class SpinAround(Behaviour):
+    def __init__(self, name: str, target: int, max_power: int, min_power: int,
+                 pid_p: float, pid_i: float, pid_d: float, target_type: HeadingType) -> None:
+        super(SpinAround, self).__init__(name)
+        self.target = target
+        self.target_type = target_type
+        self.pid_p = pid_p
+        self.pid_i = pid_i
+        self.pid_d = pid_d
+        self.clamper = SymmetricClamper(min_power, max_power)
+        self.running = False
+
+    def update(self) -> Status:
+        current_heading = (-1) * g_course * g_gyro_sensor.get_angle()
+        if not self.running:
+            if self.target_type == HeadingType.RELATIVE:
+                self.target_heading = current_heading + self.target
+            else:
+                self.target_heading = self.target
+            self.pid = PID(self.pid_p, self.pid_i, self.pid_d, setpoint=self.target_heading, sample_time=EXEC_INTERVAL)
+            self.running = True
+            self.logger.info("%+06d %s.spin started at heading=%d for %d" % (g_plotter.get_distance(),
+                                                                             self.__class__.__name__, current_heading, self.target_heading))
+        error = float(self.target_heading) - current_heading
+        # normalize error to [-180, 180]
+        if error > 180.0:
+            error -= 360.0
+        if error < -180.0:
+            error += 360.0
+        if abs(error) < 2.0:
+            self.logger.info("%+06d %s.spin ended at heading=%d" % (g_plotter.get_distance(),
+                                                                    self.__class__.__name__, current_heading))
+            return Status.SUCCESS
+        power = int(self.clamper.clamp(self.pid(current_heading)))
+        g_right_motor.set_power(g_course * power)
+        g_left_motor.set_power((-1) * g_course * power)
+        return Status.RUNNING    
+
+
+class RunByGyro(Behaviour):
+    def __init__(self, name: str, target: int, power: int,
+                 pid_p: float, pid_i: float, pid_d: float, target_type: HeadingType) -> None:
+        super(RunByGyro, self).__init__(name)
+        self.target = target
+        self.target_type = target_type
+        self.power = power
+        self.pid_p = pid_p
+        self.pid_i = pid_i
+        self.pid_d = pid_d
+        self.running = False
+
+    def update(self) -> Status:
+        current_heading = (-1) * g_course * g_gyro_sensor.get_angle()
+        if not self.running:
+            if self.target_type == HeadingType.RELATIVE:
+                self.target_heading = current_heading + self.target
+            else:
+                self.target_heading = self.target
+            self.pid = PID(self.pid_p, self.pid_i, self.pid_d, setpoint=self.target_heading, sample_time=EXEC_INTERVAL, output_limits=(-self.power, self.power))
+            self.running = True
+            self.logger.info("%+06d %s.gyro run started toward heading=%d" % (g_plotter.get_distance(),
+                                                                              self.__class__.__name__, self.target_heading))
+        turn = int(self.pid(current_heading))
+        g_right_motor.set_power(self.power - turn)
+        g_left_motor.set_power(self.power + turn)
+        return Status.RUNNING
+
 class RunAS_Smartcarry_gate(Behaviour):
     def __init__(self, name: str) -> None:
         super().__init__(name)
@@ -277,8 +352,8 @@ class RunAS_Smartcarry_gate(Behaviour):
                 # time.sleep(0.6)  # 必要に応じて調整
             else:           #Rightコースの場合
                 # -----左カーブでゲートに入る（90°に曲がる方がいい？）
-                g_left_motor.set_power(80)
-                g_right_motor.set_power(50)
+                g_left_motor.set_power(60)
+                g_right_motor.set_power(40)
                 time.sleep(0.6)  # 必要に応じて調整
                 # -----ゲート内をまっすぐ進む
                 g_left_motor.set_power(70)
