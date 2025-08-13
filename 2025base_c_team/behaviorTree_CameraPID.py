@@ -258,7 +258,7 @@ class RunAS_Smartcarry_gate(Behaviour):
             self.running = True
             self.logger.info("%+06d %s.Smart_carry_twin_start!" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
         if g_gate == front:
-            if g_course = 1  #Leftコースの場合
+            if g_course == 1:  #Leftコースの場合
                 # -----右カーブでゲートに入る（90°に曲がる方がいい？）
                 g_left_motor.set_power(80)
                 g_right_motor.set_power(50)
@@ -293,7 +293,7 @@ class RunAS_Smartcarry_gate(Behaviour):
                 # g_right_motor.set_power(50)
                 # time.sleep(0.6)  # 必要に応じて調整
         else: #g_gate = back
-            if g_course = 1  #Leftコースの場合
+            if g_course == 1:  #Leftコースの場合
                 # -----右カーブでゲートに入る------
                 g_left_motor.set_power(80)
                 g_right_motor.set_power(50)
