@@ -330,7 +330,7 @@ class RunAS_Smartcarry_secondtime(Behaviour):
         if not self.running:
             self.running = True
             self.logger.info("%+06d %s.Smart_carry_twin_secondtime!" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
-        if g_course = 1  #Leftコースの場合
+        if g_course == 1:  #Leftコースの場合
             # -----左に曲がる（90°に曲がる方がいい？）
             g_left_motor.set_power(50)
             g_right_motor.set_power(90)
