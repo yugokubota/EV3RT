@@ -627,7 +627,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避前のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=80, pid_p=0.4, pid_i=0.002, pid_d=0.3,
+        power=70, pid_p=0.4, pid_i=0.002, pid_d=0.3,
         gs_min=0, gs_max=40,
         trace_side=TraceSide.NORMAL
     )
@@ -647,7 +647,7 @@ def build_behaviour_tree() -> BehaviourTree:
         dynamic_pid_by_distance=[
             {"start": 0, "end": 2750, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
             # {"start": 2550, "end": 4800, "power": 80, "p": 0.4,  "i": 0.0035,  "d": 0.3},
-            {"start": 2750, "end": 4800, "power": 80, "p": 0.4, "i": 0.002, "d": 0.3},
+            {"start": 2750, "end": 4800, "power": 70, "p": 0.4, "i": 0.002, "d": 0.3},
             {"start": 4800, "end": 9999, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18}
         ]
         ),
