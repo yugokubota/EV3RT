@@ -256,7 +256,7 @@ class RunAS_Smartcarry_gate(Behaviour):
     def update(self) -> Status:
         if not self.running:
             self.running = True
-            self.logger.info("%+06d %s.Smart_carry_twin_start!" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
+            self.logger.info("%+06d %s.Smart_carry_twin_start!" % (g_plotter.get_distance(), self.__class__.__name__))
         if g_gate == front:
             if g_course == 1:  #Leftコースの場合
                 # -----右カーブでゲートに入る（90°に曲がる方がいい？）
