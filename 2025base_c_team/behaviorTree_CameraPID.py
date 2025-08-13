@@ -451,8 +451,6 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
             # print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
             return Status.FAILURE
 
-
-
 class TraverseBehaviourTree(object):
     def __init__(self, tree: BehaviourTree) -> None:
         self.tree = tree
@@ -607,6 +605,7 @@ class IsDistancePassed(Behaviour):
         now_distance = g_plotter.get_distance()
         if now_distance - self.start_distance >= self.target_distance:
             print(f"[IsDistancePassed] Passed: {now_distance - self.start_distance}")
+            print("======================== end ========================")
             return Status.SUCCESS
         return Status.RUNNING
 
@@ -656,58 +655,73 @@ def build_behaviour_tree() -> BehaviourTree:
     # ================ ダブルループ処理 ================
 
     # ================ 黒線検知でライントレース ================
+    #※RunAsInstructedの曲がり具合は要調整
 
     # 一定距離右周りに弧を描くように走る
     distance_loop_Parallel = Parallel(name="distance_loop_Parallel", policy=ParallelPolicy.SuccessOnOne())
     distance_loop_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=500),
-        # RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),#LEFT用
-        RunAsInstructed(name="go_straight_1", pwm_l=-50, pwm_r=-58),#RIGHT用
+        IsDistancePassed(name="distance_passed", target_distance=750),
+        #RunAsInstructed(name="go_straight", pwm_l=58, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-56),  #RIGHT用
     ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
     double_loop_black_selector_1.add_children([
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        # RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),
-        RunAsInstructed(name="go_straight_1", pwm_l=-50, pwm_r=-60),#RIGHT用
+        #RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="go_straight_1", pwm_l=-40, pwm_r=-48),  #RIGHT用
     ])
     # part2_黒線を検知した場合ライントレース
     double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
     double_loop_black_selector_2.add_children([
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        # RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=48),
-        RunAsInstructed(name="go_straight_2", pwm_l=-40, pwm_r=-45),#RIGHT用
+        #RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=48),      #LEFT用
+        RunAsInstructed(name="go_straight_2", pwm_l=-42, pwm_r=-45),  #RIGHT用
     ])
     # part3_黒線を検知した場合ライントレース
     double_loop_black_selector_3 = Selector(name="double_loop_black_selector3",memory=False)
     double_loop_black_selector_3.add_children([
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        # RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=47),
-        RunAsInstructed(name="go_straight_3", pwm_l=-47, pwm_r=-40),#RIGHT用
+        #RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=47),      #LEFT用
+        RunAsInstructed(name="go_straight_3", pwm_l=-50, pwm_r=-60),  #RIGHT用
     ])
     # part4_黒線を検知した場合ライントレース
     double_loop_black_selector_4 = Selector(name="double_loop_black_selector4",memory=False)
     double_loop_black_selector_4.add_children([
         IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        # RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),
-        RunAsInstructed(name="go_straight_4", pwm_l=-50, pwm_r=-50),#RIGHT用
+        #RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="go_straight_4", pwm_l=-50, pwm_r=-50),  #RIGHT用
+    ])
+    # 小円に入るときの調整
+    SmallCircleEntryTuning_selector = Parallel(name="SmallCircleEntryTuning_selector", policy=ParallelPolicy.SuccessOnOne())
+    SmallCircleEntryTuning_selector.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=500),  #200は適当なので要調整
+        #RunAsInstructed(name="SmallCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="SmallCircle_Entry", pwm_l=-50, pwm_r=-50),  #RIGHT用
+    ])
+    # 大円に入るときの調整
+    BigCircleEntryTuning_selector = Parallel(name="BigCircleEntryTuning_selector", policy=ParallelPolicy.SuccessOnOne())
+    BigCircleEntryTuning_selector.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=550),  #200は適当なので要調整
+        #RunAsInstructed(name="BigCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="BigCircle_Entry", pwm_l=-60, pwm_r=-40),  #RIGHT用
     ])
 
     # ================ 青色検知するまでライントレース ================
     
     # part1_青色検知するまでライントレース
-    double_loop_blue_selector_1 = Selector(name="double_loop_blue_selector_1",memory=False)
-    double_loop_blue_selector_1.add_children([
-        DetectBlue_failure(name="detect_blue"),
-        TraceLineCam(name="Tracelinecam_DetectBlue_1",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
+    double_loop_blue_parallel_1 = Parallel(name="double_loop_blue_parallel_1",policy=ParallelPolicy.SuccessOnOne())
+    double_loop_blue_parallel_1.add_children([
+        DetectBlue(name="detect_blue"),
+        TraceLineCam(name="traceline_cam_lapfinish",power=44, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
     # part2_青色検知するまでライントレース
-    double_loop_blue_selector_2 = Selector(name="double_loop_blue_selector_2",memory=False)
-    double_loop_blue_selector_2.add_children([
-        DetectBlue_failure(name="detect_blue"),
+    double_loop_blue_parallel_2 = Parallel(name="double_loop_blue_parallel_2",policy=ParallelPolicy.SuccessOnOne())
+    double_loop_blue_parallel_2.add_children([
+        DetectBlue(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
-        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=50,trace_side=TraceSide.OPPOSITE),#小円は右のエッジをトレースしたいから"OPPOSITE"
     ])
     # part3_青色検知するまでライントレース
     double_loop_blue_selector_3 = Selector(name="double_loop_blue_selector_3",memory=False)
@@ -721,21 +735,23 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         # Detectcolor(name="detectcolor"),#       色や明るさを検知できる
         # --------直線とオブジェクト回避--------
-        obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
+        #obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
         traceline_cam_lapfinish_Parallel,#        オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
         distance_loop_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
-        double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
-        double_loop_blue_selector_1,#             ③ライントレースしながら青いラインを探す処理
+        # double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
+        double_loop_blue_parallel_1,#             ③ライントレースしながら青いラインを探す処理
         # --------ここから下は上手くいかないかも---------
-        # 小円に移るときの処理
-        double_loop_black_selector_2,#            ④青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        # --------小円に移るときの処理--------
+        SmallCircleEntryTuning_selector,#         ④青いラインを発見後に小円に入るときに左周りの弧を描き、黒線を迎えに行く
+        # double_loop_black_selector_2,#            ④黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         # ArcTurn(name="arc_move1", direction="right", degree=45, power=45, radius=80),
-        double_loop_blue_selector_2,#             ⑤ライントレースしながら青いラインを探す処理
-        # 小円から大円に移るときの処理
-        double_loop_black_selector_3,#            ⑥青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        double_loop_blue_parallel_2,#             ⑤ライントレースしながら青いラインを探す処理
+        # --------小円から大円に移るときの処理--------
+        BigCircleEntryTuning_selector,#           ⑥青いラインを発見後に大円に入るときに右周りの弧を描き、黒線を迎えに行く
+        # double_loop_black_selector_3,#            ⑥黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         double_loop_blue_selector_3,#             ⑦ライントレースしながら青いラインを探す処理
-        TraceLineCam(name="とりあえず走る",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="Linetrace_start",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
 
