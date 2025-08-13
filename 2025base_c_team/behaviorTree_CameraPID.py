@@ -649,7 +649,7 @@ class TurnToObject(Behaviour):
         if self.done:
             return Status.SUCCESS
         self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (g_plotter.get_distance(), self.__class__.__name__))
-        if g_course == 1 #LEFTコースの場合
+        if g_course == 1: #LEFTコースの場合
             # バック
             g_left_motor.set_power(-50)
             g_right_motor.set_power(-50)
