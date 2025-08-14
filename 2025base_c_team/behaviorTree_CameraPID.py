@@ -323,108 +323,6 @@ class RunByGyro(Behaviour):
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
 
-class RunAS_Smartcarry_gate(Behaviour):
-    def __init__(self, name: str) -> None:
-        super().__init__(name)
-        self.running = False
-
-    def update(self) -> Status:
-        if not self.running:
-            self.running = True
-            self.logger.info("%+06d %s.Smart_carry_twin_start!" % (g_plotter.get_distance(), self.__class__.__name__))
-        if g_gate == 'front':
-            if g_course == 1:  #Leftコースの場合
-                # -----右カーブでゲートに入る（90°に曲がる方がいい？）
-                g_left_motor.set_power(80)
-                g_right_motor.set_power(50)
-                time.sleep(0.6)  # 必要に応じて調整
-                # -----ゲート内をまっすぐ進む
-                g_left_motor.set_power(70)
-                g_right_motor.set_power(70)
-                time.sleep(0.6)  # 必要に応じて調整
-                # -----ターゲットに向かって進む（90°に曲がる方がいい？）
-                g_left_motor.set_power(80)
-                g_right_motor.set_power(50)
-                time.sleep(0.6)  # 必要に応じて調整
-                # # -----ターゲットに向かってまっすぐ進む（90°の場合）
-                # g_left_motor.set_power(50)
-                # g_right_motor.set_power(50)
-                # time.sleep(0.6)  # 必要に応じて調整
-            else:           #Rightコースの場合
-                # -----左カーブでゲートに入る（90°に曲がる方がいい？）
-                g_left_motor.set_power(60)
-                g_right_motor.set_power(40)
-                time.sleep(0.6)  # 必要に応じて調整
-                # -----ゲート内をまっすぐ進む
-                g_left_motor.set_power(70)
-                g_right_motor.set_power(70)
-                time.sleep(0.6)  # 必要に応じて調整
-                # -----ターゲットに向かって進む（90°に曲がる方がいい？）
-                g_left_motor.set_power(80)
-                g_right_motor.set_power(50)
-                time.sleep(0.6)  # 必要に応じて調整
-                # # -----ターゲットに向かってまっすぐ進む（90°の場合）
-                # g_left_motor.set_power(50)
-                # g_right_motor.set_power(50)
-                # time.sleep(0.6)  # 必要に応じて調整
-        else: #g_gate = back
-            if g_course == 1:  #Leftコースの場合
-                # -----右カーブでゲートに入る------
-                g_left_motor.set_power(80)
-                g_right_motor.set_power(50)
-                time.sleep(0.6)  # 必要に応じて調整
-                # -----ゲート内をまっすぐ進む-----
-                g_left_motor.set_power(70)
-                g_right_motor.set_power(70)
-                time.sleep(0.6)  # 必要に応じて調整
-                # -----ターゲットに向かって進む-----
-                g_left_motor.set_power(80)
-                g_right_motor.set_power(50)
-                time.sleep(0.6)  # 必要に応じて調整
-            else:           #Rightコースの場合
-                # -----左カーブでゲートに入る------
-                g_left_motor.set_power(80)
-                g_right_motor.set_power(50)
-                time.sleep(0.6)  # 必要に応じて調整
-                # -----ゲート内をまっすぐ進む-----
-                g_left_motor.set_power(70)
-                g_right_motor.set_power(70)
-                time.sleep(0.6)  # 必要に応じて調整
-                # -----ターゲットに向かって進む-----
-                g_left_motor.set_power(80)
-                g_right_motor.set_power(50)
-                time.sleep(0.6)  # 必要に応じて調整
-        return Status.RUNNING
-
-class RunAS_Smartcarry_secondtime(Behaviour):
-    def __init__(self, name: str) -> None:
-        super().__init__(name)
-        self.running = False
-
-    def update(self) -> Status:
-        if not self.running:
-            self.running = True
-            self.logger.info("%+06d %s.Smart_carry_twin_secondtime!" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
-        if g_course == 1:  #Leftコースの場合
-            # -----左に曲がる（90°に曲がる方がいい？）
-            g_left_motor.set_power(50)
-            g_right_motor.set_power(90)
-            time.sleep(0.6)  # 必要に応じて調整
-            # -----ターゲットに向かってまっすぐ進む
-            g_left_motor.set_power(70)
-            g_right_motor.set_power(70)
-            time.sleep(0.6)  # 必要に応じて調整
-        else:           #Rightコースの場合
-            # -----右に曲がる（90°に曲がる方がいい？）
-            g_left_motor.set_power(90)
-            g_right_motor.set_power(50)
-            time.sleep(0.6)  # 必要に応じて調整
-            # -----ターゲットに向かってまっすぐ進む
-            g_left_motor.set_power(70)
-            g_right_motor.set_power(70)
-            time.sleep(0.6)  # 必要に応じて調整
-        return Status.RUNNING
-
 class TraceLine_sensor(Behaviour):
     def __init__(self, name: str, target: int, power: int, pid_p: float, pid_i: float, pid_d: float,
                  trace_side: TraceSide) -> None:
@@ -857,6 +755,17 @@ class IsDistancePassed(Behaviour):
             return Status.SUCCESS
         return Status.RUNNING
 
+def gate_value(front_val: int, back_val: int) -> int:
+    """
+    --gate の指定に応じて値を切り替えるユーティリティ。
+    front/back 以外は来ない想定だが、万が一に備えて front をデフォルト。
+    """
+    try:
+        return front_val if g_gate == 'front' else back_val
+    except NameError:
+        # 念のため g_gate 未設定でも落ちないように
+        return front_val
+
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
 
@@ -963,44 +872,95 @@ def build_behaviour_tree() -> BehaviourTree:
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
-    # --------引数でゲートの位置を見分けてゲートを通過するノード。サークルの黒を検知で抜ける。
-    smart_carry_gate_Parallel = Parallel(name="smart_carry_start", policy=ParallelPolicy.SuccessOnOne())
-    smart_carry_gate_Parallel.add_children([
-        # IsDistancePassed(name="distance_passed", target_distance=500),
-        IsOnBlackLine(name="detect_circle", threshold=5),#黒検知で終了させるのはアリ（サークルの黒が薄い？グレー？）
-        RunAS_Smartcarry_gate(name="smart_carry_start"),
+    # --------ゲートの位置までまっすぐ進む（ゲートの位置で進む距離が変わる）
+    BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
+    BringObject_to_Gate_Parallel.add_children([
+        # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(300, 500)),
+        RunByGyro(name="run straight", target=360, power=55,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
-    # --------3回サークルの黒を検知したら抜ける（オブジェクトを置く）
-    smart_carry_puton_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
-    smart_carry_puton_Parallel.add_children([
+    # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。ゲート位置によって進む距離は変わる）
+    SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
+    SpinAndRun_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(1300, 1600)),#90度回転してからゲートを抜けるまで
+        RunByGyro(name="run straight", target=360, power=55,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --------ジャイロでターゲットまでまっすぐ進む（3回黒を検知したら止まる）
+    smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
+    smart_carry_puton_first_Parallel.add_children([
         DetectBlackCount(name="black_count_three", threshold=5, target_count=3),
-        RunAsInstructed(name="put_on_target", pwm_l=50, pwm_r=50),
+        RunByGyro(name="run straight", target=360, power=55,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
-    # --------オブジェクト手前のラインまでを走る
-    detect_line_Parallel = Parallel(name="detect_line_Parallel", policy=ParallelPolicy.SuccessOnOne())
-    detect_line_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=500),
-        RunAsInstructed(name="go_straight_1", pwm_l=60, pwm_r=50),
+    # --------ジャイロでバック（距離で制御）
+    After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
+    After_puton_back_first_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=2500),
+        RunByGyro(name="run_back", target=360, power=-55,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
-    # --------赤検知するまでライントレース
+    # --------次のオブジェクトの黒線に赤検知するまでライントレース
     detect_red_Parallel = Parallel(name="detect_red_Parallel", policy=ParallelPolicy.SuccessOnOne())
     detect_red_Parallel.add_children([
         DetectRed(name="detect_red"),
         TraceLineCam(name="traceline_to_object",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
-    # --------サークルの黒線検知で抜ける
-    smart_carry_close_target_Parallel = Parallel(name="smart_carry_close_target", policy=ParallelPolicy.SuccessOnOne())
-    smart_carry_close_target_Parallel.add_children([
-        IsOnBlackLine(name="detect_circle", threshold=5),#黒検知で終了させるのはアリ（サークルの黒が薄い？グレー？）
-        RunAS_Smartcarry_secondtime(name="go_to_target"),
-    ])
-    # --------2回サークルの黒を検知したら抜ける（オブジェクトを置く）
-    smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton_second", policy=ParallelPolicy.SuccessOnOne())
+    # --------ジャイロでターゲットまでまっすぐ進む（2回黒を検知したら止まる）
+    smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
-        DetectBlackCount(name="black_count_twice", threshold=5, target_count=2),
-        RunAsInstructed(name="put_on_target", pwm_l=50, pwm_r=50),
+        DetectBlackCount(name="black_count_three", threshold=5, target_count=2),
+        RunByGyro(name="run straight", target=360, power=55,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
+    # --------ジャイロでバック（距離で制御）
+    After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
+    After_puton_back_second_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=2500),
+        RunByGyro(name="run_back", target=360, power=-55,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # --------ジャイロで黒線に向かう処理
+    GoBlackLine_Parallel = Parallel(name="GoBlackLine", policy=ParallelPolicy.SuccessOnOne())
+    GoBlackLine_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=1500),
+        RunByGyro(name="run_back", target=360, power=55,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    GoBlackLine2_Parallel = Parallel(name="GoBlackLine", policy=ParallelPolicy.SuccessOnOne())
+    GoBlackLine2_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=1500),
+        RunByGyro(name="run_back", target=360, power=55,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    DetectBlackLine_Parallel = Parallel(name="DetectBlackLine", policy=ParallelPolicy.SuccessOnOne())
+    DetectBlackLine_Parallel.add_children([
+        IsOnBlackLine(name="detect_blackline", threshold=5),
+        RunByGyro(name="run_back", target=360, power=55,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # --------ジャイロで90°回転して青ライン検知するまでライントレース
+    traceline_cam_DetectBlue_GOAL_Parallel = Parallel(name="traceline_cam_DetectBlue_GOAL", policy=ParallelPolicy.SuccessOnOne())
+    traceline_cam_DetectBlue_GOAL_Parallel.add_children([
+        DetectBlue(name="detect_blue"),
+        TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    ])
+    # --------青色検知からゲート通過までをノード化したもの
+    SpinAndRun_Sequence = Sequence(name="SpinAndRun_Sequence", memory=True)
+    SpinAndRun_Sequence.add_children([
+        BringObject_to_Gate_Parallel,#-----ゲート位置までオブジェクトを運ぶ（ゲート位置によって距離制御あり）
+        SpinAround(name="spin by 90 degrees", target=90, max_power=55, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        SpinAndRun_Parallel,#--------------ゲートを通過する（ゲート位置によって距離制御あり）
+        # ---------------------------------ゲート位置によって角度が変わるのでtargetをgate_valueで制御。
+        SpinAround(name="spin by 45or90 degrees", target=gate_value(45, 90), max_power=55, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
 
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
@@ -1025,21 +985,35 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_02.add_children([
         # --------オブジェクト下の青検知～ターゲットサークルの黒検知まで
         traceline_cam_smacary_Parallel,
-        smart_carry_gate_Parallel,
+        SpinAndRun_Sequence,
         # --------ターゲットにオブジェクトを置く
-        smart_carry_puton_Parallel,
-        # --------バックして180°回転して黒線検知でライントレース
-        TurnToObject(name="turn_to_object"),#-----バックして180°回転
-        detect_line_Parallel,
+        smart_carry_puton_first_Parallel,
+        # --------バックして黒線に向かって回転
+        After_puton_back_first_Parallel,
+        SpinAround(name="spin by 90 degrees", target=135, max_power=55, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
         detect_red_Parallel,#---------------------赤検知
-        smart_carry_close_target_Parallel,#-------ターゲットサークルの黒検知まで
+        SpinAround(name="spin by 90 degrees", target=90, max_power=55, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ターゲットにオブジェクトを置く
         smart_carry_puton_second_Parallel,#-------オブジェクトを置く
         # --------バックして黒線へ
-        # --------黒線検知で角度つける
-        # --------ライントレース
-        # --------青検知でストップ
+        After_puton_back_second_Parallel,#--------バック
+        SpinAround(name="spin by 90 degrees", target=90, max_power=55, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        GoBlackLine_Parallel,#--------------------90度回転して一定距離ジャイロで進む
+        SpinAround(name="spin by 90 degrees", target=45, max_power=55, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        GoBlackLine2_Parallel,#-------------------45度回転して一定距離ジャイロで進む
+        SpinAround(name="spin by 90 degrees", target=45, max_power=55, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # --------黒線検知で90度回転する
+        DetectBlackLine_Parallel,#----------------黒線を見つけるまでジャイロで進む
+        SpinAround(name="spin by 90 degrees", target=90, max_power=55, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # --------青線検知するまでライントレース
+        traceline_cam_DetectBlue_GOAL_Parallel,
     ])
 
     calibration = Sequence(name="calibration", memory=True)
