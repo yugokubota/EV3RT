@@ -588,6 +588,7 @@ class ExposeDevices(object):
         touch_sensor: TouchSensor,
         color_sensor: ColorSensor,
         sonar_sensor: SonarSensor,
+        gyro_sensor: GyroSensor, 
     ) -> None:
         global g_hub, g_arm_motor, g_right_motor, g_left_motor, g_touch_sensor, g_color_sensor, g_sonar_sensor
         g_hub = hub
@@ -597,6 +598,7 @@ class ExposeDevices(object):
         g_touch_sensor = touch_sensor
         g_color_sensor = color_sensor
         g_sonar_sensor = sonar_sensor
+        g_gyro_sensor = gyro_sensor 
 
 class VideoThread(threading.Thread):
     def __init__(self):
@@ -1047,6 +1049,7 @@ def initialize_etrobo(backend: str) -> ETRobo:
             .add_device('touch_sensor', device_type=TouchSensor, port='D')
             .add_device('color_sensor', device_type=ColorSensor, port='E')
             .add_device('sonar_sensor', device_type=SonarSensor, port='F'))
+            .add_device('gyro_sensor',  device_type=GyroSensor)
 
 def setup_thread():
     global g_video, g_video_thread
