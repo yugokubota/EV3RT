@@ -590,7 +590,7 @@ class ExposeDevices(object):
         sonar_sensor: SonarSensor,
         gyro_sensor: GyroSensor, 
     ) -> None:
-        global g_hub, g_arm_motor, g_right_motor, g_left_motor, g_touch_sensor, g_color_sensor, g_sonar_sensor
+        global g_hub, g_arm_motor, g_right_motor, g_left_motor, g_touch_sensor, g_color_sensor, g_sonar_sensor, g_gyro_sensor
         g_hub = hub
         g_arm_motor = arm_motor
         g_right_motor = right_motor
