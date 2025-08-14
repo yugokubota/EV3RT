@@ -1049,7 +1049,11 @@ def initialize_etrobo(backend: str) -> ETRobo:
             .add_device('touch_sensor', device_type=TouchSensor, port='D')
             .add_device('color_sensor', device_type=ColorSensor, port='E')
             .add_device('sonar_sensor', device_type=SonarSensor, port='F')
-            .add_device('gyro_sensor',  device_type=GyroSensor))
+            .add_device('gyro_sensor', device_type=GyroSensor, port='',
+                        config=[2.0, 2500.0,
+                        [-1.61239, -1.485107, -0.2945677], [360.4545, 356.9208, 363.781],
+                        [10016.18, -9657.935, 9823.967, -9957.187, 9766.231, -9970.058]])
+            )
 
 def setup_thread():
     global g_video, g_video_thread
