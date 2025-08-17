@@ -65,6 +65,7 @@ g_video: Video = None
 g_video_thread: threading.Thread = None
 g_course: int = 0
 g_gate: int = 0
+g_is_distance_to_gate = None
 
 
 class TheEnd(Behaviour):# ctl+cで処理を終了させるようにしている
@@ -443,6 +444,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         self.count = 0
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
         self.running = False
+        self._did_reset = False
 
     def update(self) -> Status:
         r, g, b = g_color_sensor.get_raw_color()
@@ -462,7 +464,9 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
             self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
             print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
-            is_distance_node.reset_start() 
+            if not self._did_reset and g_is_distance_to_gate is not None:
+                g_is_distance_to_gate.reset_start()
+                self._did_reset = True
             return Status.SUCCESS
         else:
             # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
@@ -759,9 +763,9 @@ class IsDistancePassed(Behaviour):
             return Status.SUCCESS
         return Status.RUNNING
 
-    def reset_start(self):
-        self.start_distance = g_plotter.get_distance()
-        print(f"[IsDistancePassed] Reset start to {self.start_distance}")
+def reset_start(self):
+    """次回の update() で start_distance を取り直す"""
+    self.running = False
 
 def gate_value(front_val: int, back_val: int) -> int:
     """
@@ -873,6 +877,8 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
 
     # ================ スマートキャリー用のノード ================
+    # --------グローバル変数の代入
+    g_is_distance_to_gate = IsDistancePassed(name="distance_passed_to_gate",target_distance=gate_value(300, 500))
     # --------ダブルループ抜けてからオブジェクト下の青検知まで
     traceline_cam_smacary_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_smacary_Parallel.add_children([
@@ -884,7 +890,8 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(300, 500)),
+        g_is_distance_to_gate,
+        # IsDistancePassed(name="distance_passed", target_distance=gate_value(300, 500)),
         RunByGyro(name="run straight", target=0, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.RELATIVE),
     ])
