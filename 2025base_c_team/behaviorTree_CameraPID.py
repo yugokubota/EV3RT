@@ -462,6 +462,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
             self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
             print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+            is_distance_node.reset_start() 
             return Status.SUCCESS
         else:
             # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
@@ -758,6 +759,10 @@ class IsDistancePassed(Behaviour):
             return Status.SUCCESS
         return Status.RUNNING
 
+    def reset_start(self):
+        self.start_distance = g_plotter.get_distance()
+        print(f"[IsDistancePassed] Reset start to {self.start_distance}")
+
 def gate_value(front_val: int, back_val: int) -> int:
     """
     --gate の指定に応じて値を切り替えるユーティリティ。
@@ -880,8 +885,8 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
         IsDistancePassed(name="distance_passed", target_distance=gate_value(300, 500)),
-        TraceLineCam(name="BringObject_to_Gate",power=55, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        RunByGyro(name="run straight", target=0, power=70,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.RELATIVE),
     ])
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。ゲート位置によって進む距離は変わる）
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
