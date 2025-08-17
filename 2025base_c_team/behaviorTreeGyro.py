@@ -17,7 +17,7 @@ from py_etrobo_util import TraceSide, Plotter, SymmetricClamper
 EXEC_INTERVAL: float = 0.04
 ARM_SHIFT_PWM = 30
 MAX_POWER = 100
-MIN_POWER = 40
+MIN_POWER = 60
 
 class ArmDirection(IntEnum):
     UP = -1
@@ -328,28 +328,28 @@ def build_behaviour_tree() -> BehaviourTree:
     )
     edge_01.add_children(
         [
-            RunByGyro(name="run straight", target=90, power=55,
+            RunByGyro(name="run straight", target=90, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
             IsDistanceEarned(name="check distance", delta_dist = 1500),
         ]
     )
     edge_02.add_children(
         [
-            RunByGyro(name="run straight", target=180, power=55,
+            RunByGyro(name="run straight", target=180, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
             IsDistanceEarned(name="check distance", delta_dist = 1500),
         ]
     )
     edge_03.add_children(
         [
-            RunByGyro(name="run straight", target=270, power=55,
+            RunByGyro(name="run straight", target=270, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
             IsDistanceEarned(name="check distance", delta_dist = 1500),
         ]
     )
     edge_04.add_children(
         [
-            RunByGyro(name="run straight", target=360, power=55,
+            RunByGyro(name="run straight", target=360, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
             IsDistanceEarned(name="check distance", delta_dist = 1500),
         ]
