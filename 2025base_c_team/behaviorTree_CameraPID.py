@@ -627,10 +627,10 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避前のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=60, pid_p=1.0, pid_i=0.0015, pid_d=0.2,
+        power=60, pid_p=1.5, pid_i=0.0015, pid_d=0.25,
         #power=60, pid_p=1.4, pid_i=0.0015, pid_d=0.3,
         gs_min=0, gs_max=40,
-        trace_side=TraceSide.NORMAL
+        trace_side=TraceSide.LEFT
     )
     # オブジェクト回避とライントレース
     obstacle_Parallel = Parallel(name="obstacle_or_trace", policy=ParallelPolicy.SuccessOnOne())
