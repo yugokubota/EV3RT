@@ -302,6 +302,10 @@ class TraceLineCam(Behaviour):
                     g_video.set_trace_side(TraceSide.LEFT)
                 else:
                     g_video.set_trace_side(TraceSide.RIGHT)
+            elif self.trace_side == TraceSide.RIGHT: 
+                g_video.set_trace_side(TraceSide.RIGHT)
+            elif self.trace_side == TraceSide.LEFT: 
+                g_video.set_trace_side(TraceSide.LEFT)
             else: # TraceSide.CENTER
                 g_video.set_trace_side(TraceSide.CENTER)
             self.logger.info("%+06d %s.trace started with TS=%s" % (g_plotter.get_distance(), self.__class__.__name__, self.trace_side.name))
@@ -630,7 +634,7 @@ def build_behaviour_tree() -> BehaviourTree:
         power=60, pid_p=1.5, pid_i=0.0015, pid_d=0.25,
         #power=60, pid_p=1.4, pid_i=0.0015, pid_d=0.3,
         gs_min=0, gs_max=40,
-        trace_side=TraceSide.LEFT
+        trace_side=TraceSide.RIGHT
     )
     # オブジェクト回避とライントレース
     obstacle_Parallel = Parallel(name="obstacle_or_trace", policy=ParallelPolicy.SuccessOnOne())
