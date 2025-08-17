@@ -356,19 +356,19 @@ def build_behaviour_tree() -> BehaviourTree:
     )
     square.add_children(
         [
-            SpinAround(name="spin by 90 degrees", target=90, max_power=55, min_power=MIN_POWER,
+            SpinAround(name="spin by 90 degrees", target=90, max_power=70, min_power=MIN_POWER,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
             edge_01,
-            SpinAround(name="spin by 90 degrees", target=180, max_power=55, min_power=MIN_POWER,
+            SpinAround(name="spin by 90 degrees", target=180, max_power=70, min_power=MIN_POWER,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
             edge_02,
-            SpinAround(name="spin by 90 degrees", target=270, max_power=55, min_power=MIN_POWER,
+            SpinAround(name="spin by 90 degrees", target=270, max_power=70, min_power=MIN_POWER,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
             edge_03,
-            SpinAround(name="spin by 90 degrees", target=360, max_power=55, min_power=MIN_POWER,
+            SpinAround(name="spin by 90 degrees", target=360, max_power=70, min_power=MIN_POWER,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
             edge_04,
-            SpinAround(name="spin by 90 degrees", target=450, max_power=55, min_power=MIN_POWER,
+            SpinAround(name="spin by 90 degrees", target=450, max_power=70, min_power=MIN_POWER,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         ]
     )
