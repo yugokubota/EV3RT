@@ -26,7 +26,7 @@ ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
 JUNCT_LOWER_THRESH = 30
 MAX_POWER = 100
-MIN_POWER = 60
+MIN_POWER = 45
 
 class ArmDirection(IntEnum):
     UP = -1
@@ -464,9 +464,6 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
             self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
             print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
-            if not self._did_reset and g_is_distance_to_gate is not None:
-                g_is_distance_to_gate.reset_start()
-                self._did_reset = True
             return Status.SUCCESS
         else:
             # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
@@ -763,10 +760,6 @@ class IsDistancePassed(Behaviour):
             return Status.SUCCESS
         return Status.RUNNING
 
-def reset_start(self):
-    """次回の update() で start_distance を取り直す"""
-    self.running = False
-
 def gate_value(front_val: int, back_val: int) -> int:
     """
     --gate の指定に応じて値を切り替えるユーティリティ。
@@ -968,15 +961,15 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Sequence = Sequence(name="SpinAndRun_Sequence", memory=True)
     SpinAndRun_Sequence.add_children([
         BringObject_to_Gate_Parallel,#-----ゲート位置までオブジェクトを運ぶ（ゲート位置によって距離制御あり）
-        SpinAround(name="spin by 90 degrees", target=-90, max_power=70, min_power=MIN_POWER,
-                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=90, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees", target=-90, max_power=45, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.RELATIVE),
+        # SpinAround(name="spin by 90 degrees", target=90, max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         SpinAndRun_Parallel,#--------------ゲートを通過する（ゲート位置によって距離制御あり）
         # ---------------------------------ゲート位置によって角度が変わるのでtargetをgate_valueで制御。
-        SpinAround(name="spin by 45or90 degrees", target=gate_value(-45, -90), max_power=70, min_power=MIN_POWER,
-                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 45or90 degrees", target=gate_value(45, 90), max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 45or90 degrees", target=gate_value(-45, -90), max_power=45, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.RELATIVE),
+        # SpinAround(name="spin by 45or90 degrees", target=gate_value(45, 90), max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1009,39 +1002,39 @@ def build_behaviour_tree() -> BehaviourTree:
         smart_carry_puton_first_Parallel,
         # --------バックして黒線に向かって回転
         After_puton_back_first_Parallel,
-        SpinAround(name="spin by 90 degrees", target=-135, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees", target=-135, max_power=45, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=-135, max_power=70, min_power=MIN_POWER,
+        # SpinAround(name="spin by 90 degrees", target=-135, max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
         detect_red_Parallel,#---------------------赤検知
-        SpinAround(name="spin by 90 degrees", target=-90, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees", target=-90, max_power=45, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=90, max_power=70, min_power=MIN_POWER,
+        # SpinAround(name="spin by 90 degrees", target=90, max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ターゲットにオブジェクトを置く
         smart_carry_puton_second_Parallel,#-------オブジェクトを置く
         # --------バックして黒線へ
         After_puton_back_second_Parallel,#--------バック
-        SpinAround(name="spin by 90 degrees", target=-90, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees", target=-90, max_power=45, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=90, max_power=70, min_power=MIN_POWER,
+        # SpinAround(name="spin by 90 degrees", target=90, max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         GoBlackLine_Parallel,#--------------------90度回転して一定距離ジャイロで進む
-        SpinAround(name="spin by 90 degrees", target=-45, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees", target=-45, max_power=45, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=45, max_power=70, min_power=MIN_POWER,
+        # SpinAround(name="spin by 90 degrees", target=45, max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         GoBlackLine2_Parallel,#-------------------45度回転して一定距離ジャイロで進む
-        SpinAround(name="spin by 90 degrees", target=-45, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees", target=-45, max_power=45, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=45, max_power=70, min_power=MIN_POWER,
+        # SpinAround(name="spin by 90 degrees", target=45, max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------黒線検知で90度回転する
         DetectBlackLine_Parallel,#----------------黒線を見つけるまでジャイロで進む
-        SpinAround(name="spin by 90 degrees", target=-90, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees", target=-90, max_power=45, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=90, max_power=70, min_power=MIN_POWER,
+        # SpinAround(name="spin by 90 degrees", target=90, max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------青線検知するまでライントレース
         traceline_cam_DetectBlue_GOAL_Parallel,
