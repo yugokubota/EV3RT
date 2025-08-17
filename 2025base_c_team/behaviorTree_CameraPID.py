@@ -91,6 +91,7 @@ class ResetDevice(Behaviour):# ロボットのモーターの回転数をリセ�
             g_arm_motor.reset_count()
             g_right_motor.reset_count()
             g_left_motor.reset_count()
+            g_gyro_sensor.reset()
             self.logger.info("%+06d %s.resetting..." % (g_plotter.get_distance(), self.__class__.__name__))
         elif self.count > 3:
             self.logger.info("%+06d %s.complete" % (g_plotter.get_distance(), self.__class__.__name__))
@@ -1051,8 +1052,8 @@ def initialize_etrobo(backend: str) -> ETRobo:
             .add_device('sonar_sensor', device_type=SonarSensor, port='F')
             .add_device('gyro_sensor', device_type=GyroSensor, port='',
                         config=[2.0, 2500.0,
-                        [-1.61239, -1.485107, -0.2945677], [360.4545, 356.9208, 363.781],
-                        [10016.18, -9657.935, 9823.967, -9957.187, 9766.231, -9970.058]])
+                        [-0.239569, -2.50881, 0.6617843], [361.9036, 355.9302, 361.8885],
+                        [10089.76, -9720.13, 9931.442, -9704.719, 9522.367, -10210.74]])
             )
 
 def setup_thread():
