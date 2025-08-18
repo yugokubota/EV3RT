@@ -895,7 +895,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_smacary_Parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="detectblue_or_trace",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
     # --------ゲートの位置までまっすぐ進む（ゲートの位置で進む距離が変わる）
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
@@ -928,7 +928,7 @@ def build_behaviour_tree() -> BehaviourTree:
     After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_first_Parallel.add_children([
         IsDistancePassed(name="distance_passed_back", target_distance=2500),
-        RunByGyro(name="run_back_After_puton_back_first", target=-180, power=-70,
+        RunByGyro(name="run_back_After_puton_back_first", target=-135, power=-70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # RunByGyro(name="run_back_After_puton_back_first", target=180, power=-70,
         #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
