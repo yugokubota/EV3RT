@@ -911,7 +911,7 @@ def build_behaviour_tree() -> BehaviourTree:
     smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_first_Parallel.add_children([
         DetectBlackCount(name="black_count_three", threshold=5, target_count=3),
-        RunByGyro(name="run straight_smart_carry_puton", target=-180, power=70,
+        RunByGyro(name="run straight_smart_carry_puton", target=-135, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # RunByGyro(name="run straight_smart_carry_puton", target=180, power=70,
         #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
@@ -984,7 +984,7 @@ def build_behaviour_tree() -> BehaviourTree:
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         SpinAndRun_Parallel,#--------------ゲートを通過する（ゲート位置によって距離制御あり）
         # ---------------------------------ゲート位置によって角度が変わるのでtargetをgate_valueで制御。
-        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=gate_value(-45, -90), max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=gate_value(-135, -90), max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # SpinAround(name="spin by 45or90 degrees", target=gate_value(45, 90), max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
