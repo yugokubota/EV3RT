@@ -929,7 +929,7 @@ def build_behaviour_tree() -> BehaviourTree:
     After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_first_Parallel.add_children([
         IsDistancePassed(name="distance_passed_back", target_distance=300),
-        RunByGyro(name="run_back_After_puton_back_first", target=-45, power=60,
+        RunByGyro(name="run_back_After_puton_back_first", target=0, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # RunByGyro(name="run_back_After_puton_back_first", target=180, power=-60,
         #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
@@ -1028,8 +1028,8 @@ def build_behaviour_tree() -> BehaviourTree:
         smart_carry_puton_first_Parallel,
         # --------バックして黒線に向かって回転
         After_puton_back_first_Parallel,
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-135, max_power=60, min_power=MIN_POWER,
-                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-135, max_power=60, min_power=MIN_POWER,
+        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # SpinAround(name="spin by 90 degrees", target=-135, max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
