@@ -919,7 +919,7 @@ def build_behaviour_tree() -> BehaviourTree:
     smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_first_Parallel.add_children([
         # DetectBlackCount(name="black_count_three", black_thresh=5, gray_thresh=30, target_count=3),
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(200, 230)),#90度回転してからゲートを抜けるまで
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(300, 330)),#90度回転してからゲートを抜けるまで
         RunByGyro(name="run straight_smart_carry_puton", target=-120, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # RunByGyro(name="run straight_smart_carry_puton", target=120, power=60,
