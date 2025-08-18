@@ -299,7 +299,10 @@ class SpinAround(Behaviour):
 
 class RunByGyro(Behaviour):
     def __init__(self, name: str, target: int, power: int,
-                 pid_p: float, pid_i: float, pid_d: float, target_type: HeadingType) -> None:
+                pid_p: float,
+                pid_i: float,
+                pid_d: float,
+                target_type: HeadingType) -> None:
         super(RunByGyro, self).__init__(name)
         self.target = target
         self.target_type = target_type
@@ -308,21 +311,30 @@ class RunByGyro(Behaviour):
         self.pid_i = pid_i
         self.pid_d = pid_d
         self.running = False
+        self.target_heading = 0.0
 
     def update(self) -> Status:
         current_heading = (-1) * g_course * g_gyro_sensor.get_angle()
         if not self.running:
             if self.target_type == HeadingType.RELATIVE:
-                self.target_heading = current_heading + self.target
+                desired_heading = current_heading + self.target
             else:
-                self.target_heading = self.target
-            self.pid = PID(self.pid_p, self.pid_i, self.pid_d, setpoint=self.target_heading, sample_time=EXEC_INTERVAL, output_limits=(-self.power, self.power))
+                desired_heading = self.target
+            k = round((current_heading - desired_heading) / 360.0)
+            self.target_heading = desired_heading + 360.0 * k    
+            self.pid = PID( self.pid_p, 
+                            self.pid_i, 
+                            self.pid_d, 
+                            setpoint=self.target_heading,
+                            sample_time=EXEC_INTERVAL, 
+                            output_limits=(-self.power, self.power))
             self.running = True
-            self.logger.info("%+06d %s.gyro run started toward heading=%d" % (g_plotter.get_distance(),
-                                                                              self.__class__.__name__, self.target_heading))
-        turn = int(self.pid(current_heading))
-        g_right_motor.set_power(self.power - turn)
-        g_left_motor.set_power(self.power + turn)
+            self.logger.info("%+06d %s.gyro run started toward heading=%.1f" % (g_plotter.get_distance(),self.__class__.__name__, self.target_heading))
+        steer = round(self.pid(current_heading))
+        right = max(-100, min(100, self.power - steer))
+        left  = max(-100, min(100, self.power + steer))
+        g_right_motor.set_power(right)
+        g_left_motor.set_power(left)
         return Status.RUNNING
 
 class TraceLine_sensor(Behaviour):
