@@ -901,7 +901,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(300, 500)),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(500, 700)),
         RunByGyro(name="run straight_BringObject_to_Gate", target=0, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -918,16 +918,17 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ジャイロでターゲットまでまっすぐ進む（3回黒を検知したら止まる）
     smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_first_Parallel.add_children([
-        DetectBlackCount(name="black_count_three", black_thresh=5, gray_thresh=30, target_count=3),
-        RunByGyro(name="run straight_smart_carry_puton", target=-135, power=60,
+        # DetectBlackCount(name="black_count_three", black_thresh=5, gray_thresh=30, target_count=3),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(200, 230)),#90度回転してからゲートを抜けるまで
+        RunByGyro(name="run straight_smart_carry_puton", target=-120, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # RunByGyro(name="run straight_smart_carry_puton", target=180, power=60,
+        # RunByGyro(name="run straight_smart_carry_puton", target=120, power=60,
         #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでバック（距離で制御）
     After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_first_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_back", target_distance=2500),
+        IsDistancePassed(name="distance_passed_back", target_distance=300),
         RunByGyro(name="run_back_After_puton_back_first", target=-135, power=-60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # RunByGyro(name="run_back_After_puton_back_first", target=180, power=-60,
