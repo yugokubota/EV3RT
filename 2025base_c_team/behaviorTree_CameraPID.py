@@ -919,7 +919,7 @@ def build_behaviour_tree() -> BehaviourTree:
     smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_first_Parallel.add_children([
         # DetectBlackCount(name="black_count_three", black_thresh=5, gray_thresh=30, target_count=3),
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(300, 330)),#90度回転してからゲートを抜けるまで
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(350, 380)),#90度回転してからゲートを抜けるまで
         RunByGyro(name="run straight_smart_carry_puton", target=-120, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # RunByGyro(name="run straight_smart_carry_puton", target=120, power=60,
@@ -928,7 +928,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ジャイロでバック（距離で制御）
     After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_first_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_back", target_distance=300),
+        IsDistancePassed(name="distance_passed_back", target_distance=200),
         RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
         # RunByGyro(name="run_back_After_puton_back_first", target=30, power=60,
         #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
@@ -988,7 +988,7 @@ def build_behaviour_tree() -> BehaviourTree:
         BringObject_to_Gate_Parallel,#-----ゲート位置までオブジェクトを運ぶ（ゲート位置によって距離制御あり）
         # SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=90, max_power=60, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=-90, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=-90, max_power=55, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # SpinAround(name="spin by 90 degrees", target=90, max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
