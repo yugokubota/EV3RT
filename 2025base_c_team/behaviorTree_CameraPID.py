@@ -984,9 +984,9 @@ def build_behaviour_tree() -> BehaviourTree:
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         SpinAndRun_Parallel,#--------------ゲートを通過する（ゲート位置によって距離制御あり）
         # ---------------------------------ゲート位置によって角度が変わるのでtargetをgate_valueで制御。
-        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=gate_value(45, 90), max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=gate_value(-45, -90), max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 45or90 degrees", target=gate_value(-45, -90), max_power=45, min_power=MIN_POWER,
+        # SpinAround(name="spin by 45or90 degrees", target=gate_value(45, 90), max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
