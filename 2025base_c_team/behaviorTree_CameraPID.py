@@ -902,16 +902,16 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
         IsDistancePassed(name="distance_passed", target_distance=gate_value(300, 500)),
-        RunByGyro(name="run straight_BringObject_to_Gate", target=0, power=70,
+        RunByGyro(name="run straight_BringObject_to_Gate", target=0, power=55,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。ゲート位置によって進む距離は変わる）
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2000, 2300)),#90度回転してからゲートを抜けるまで
-        RunByGyro(name="run straight_SpinAndRun", target=-90, power=70,
+        RunByGyro(name="run straight_SpinAndRun", target=-90, power=55,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # RunByGyro(name="run straight_SpinAndRun", target=90, power=70,
+        # RunByGyro(name="run straight_SpinAndRun", target=90, power=55,
         #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -919,18 +919,18 @@ def build_behaviour_tree() -> BehaviourTree:
     smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_first_Parallel.add_children([
         DetectBlackCount(name="black_count_three", black_thresh=5, gray_thresh=30, target_count=3),
-        RunByGyro(name="run straight_smart_carry_puton", target=-135, power=70,
+        RunByGyro(name="run straight_smart_carry_puton", target=-135, power=55,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # RunByGyro(name="run straight_smart_carry_puton", target=180, power=70,
+        # RunByGyro(name="run straight_smart_carry_puton", target=180, power=55,
         #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでバック（距離で制御）
     After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_first_Parallel.add_children([
         IsDistancePassed(name="distance_passed_back", target_distance=2500),
-        RunByGyro(name="run_back_After_puton_back_first", target=-135, power=-70,
+        RunByGyro(name="run_back_After_puton_back_first", target=-135, power=-55,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # RunByGyro(name="run_back_After_puton_back_first", target=180, power=-70,
+        # RunByGyro(name="run_back_After_puton_back_first", target=180, power=-55,
         #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------次のオブジェクトの黒線に赤検知するまでライントレース
@@ -944,33 +944,33 @@ def build_behaviour_tree() -> BehaviourTree:
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
         DetectBlackCount(name="black_count_three", black_thresh=5, gray_thresh=30, target_count=2),
-        RunByGyro(name="run straight_smart_carry_puton_second", target=-270, power=70,
+        RunByGyro(name="run straight_smart_carry_puton_second", target=-270, power=55,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでバック（距離で制御）
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_second_Parallel.add_children([
         IsDistancePassed(name="distance_passed_After_puton", target_distance=2500),
-        RunByGyro(name="run_back_After_puton_back_second", target=-270, power=-70,
+        RunByGyro(name="run_back_After_puton_back_second", target=-270, power=-55,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロで黒線に向かう処理
     GoBlackLine_Parallel = Parallel(name="GoBlackLine", policy=ParallelPolicy.SuccessOnOne())
     GoBlackLine_Parallel.add_children([
         IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=1500),
-        RunByGyro(name="run_back_GoBlackLine", target=-180, power=70,
+        RunByGyro(name="run_back_GoBlackLine", target=-180, power=55,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     GoBlackLine2_Parallel = Parallel(name="GoBlackLine_2", policy=ParallelPolicy.SuccessOnOne())
     GoBlackLine2_Parallel.add_children([
         IsDistancePassed(name="distance_passed_GoBlackLine_2", target_distance=1500),
-        RunByGyro(name="run_back_GoBlackLine_2", target=-300, power=70,
+        RunByGyro(name="run_back_GoBlackLine_2", target=-300, power=55,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     DetectBlackLine_Parallel = Parallel(name="DetectBlackLine", policy=ParallelPolicy.SuccessOnOne())
     DetectBlackLine_Parallel.add_children([
         IsOnBlackLine(name="detect_blackline", threshold=5),
-        RunByGyro(name="run_back_DetectBlackLine", target=-270, power=70,
+        RunByGyro(name="run_back_DetectBlackLine", target=-270, power=55,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロで90°回転して青ライン検知するまでライントレース
