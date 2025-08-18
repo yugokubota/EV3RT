@@ -901,14 +901,14 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(550, 750)),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(550, 850)),
         RunByGyro(name="run straight_BringObject_to_Gate", target=0, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。ゲート位置によって進む距離は変わる）
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2000, 2300)),#90度回転してからゲートを抜けるまで
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2000, 2400)),#90度回転してからゲートを抜けるまで
         RunByGyro(name="run straight_SpinAndRun", target=-90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
@@ -944,7 +944,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ジャイロでターゲットまでまっすぐ進む（2回黒を検知したら止まる）
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
-        DetectBlackCount(name="black_count_three", black_thresh=5, gray_thresh=30, target_count=2),
+        # DetectBlackCount(name="black_count_three", black_thresh=5, gray_thresh=30, target_count=2),
         RunByGyro(name="run straight_smart_carry_puton_second", target=-270, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
