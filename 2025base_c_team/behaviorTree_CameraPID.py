@@ -556,17 +556,25 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
             return Status.FAILURE
 
 class DetectBlackCount(Behaviour):
-    def __init__(self, name: str, threshold: int = 40, target_count: int = 3):
+    def __init__(self, name: str, black_thresh: int = 5, gray_thresh: int = 30, target_count: int = 3):
         super().__init__(name)
-        self.threshold = threshold
+        self.black_thresh = black_thresh
+        self.gray_thresh = gray_thresh
         self.target_count = target_count
         self.count = 0
 
     def update(self) -> Status:
         brightness = g_color_sensor.get_brightness()
-        if brightness < self.threshold:
+        if brightness < self.black_thresh:
             self.count += 1
             print(f"黒検知回数: {self.count}")
+            if self.count >= self.target_count:
+                return Status.SUCCESS
+            else:
+                return Status.RUNNING
+        if brightness < self.gray_thresh:
+            self.count += 1
+            print(f"黒/グレー検知回数: {self.count} (brightness={brightness})")
             if self.count >= self.target_count:
                 return Status.SUCCESS
             else:
