@@ -901,23 +901,29 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(1300, 1600)),#90度回転してからゲートを抜けるまで
-        RunByGyro(name="run straight_SpinAndRun", target=-90, power=70,
+        RunByGyro(name="run straight_SpinAndRun", target=90, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # RunByGyro(name="run straight_SpinAndRun", target=-90, power=70,
+        #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
     # --------ジャイロでターゲットまでまっすぐ進む（3回黒を検知したら止まる）
     smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_first_Parallel.add_children([
         DetectBlackCount(name="black_count_three", threshold=5, target_count=3),
-        RunByGyro(name="run straight_smart_carry_puton", target=-180, power=70,
+        RunByGyro(name="run straight_smart_carry_puton", target=180, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # RunByGyro(name="run straight_smart_carry_puton", target=-180, power=70,
+        #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでバック（距離で制御）
     After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_first_Parallel.add_children([
         IsDistancePassed(name="distance_passed_back", target_distance=2500),
-        RunByGyro(name="run_back_After_puton_back_first", target=-180, power=-70,
+        RunByGyro(name="run_back_After_puton_back_first", target=180, power=-70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # RunByGyro(name="run_back_After_puton_back_first", target=-180, power=-70,
+        #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------次のオブジェクトの黒線に赤検知するまでライントレース
     detect_red_Parallel = Parallel(name="detect_red_Parallel", policy=ParallelPolicy.SuccessOnOne())
@@ -970,15 +976,17 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Sequence = Sequence(name="SpinAndRun_Sequence", memory=True)
     SpinAndRun_Sequence.add_children([
         BringObject_to_Gate_Parallel,#-----ゲート位置までオブジェクトを運ぶ（ゲート位置によって距離制御あり）
-        SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=-90, max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=90, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=-90, max_power=60, min_power=MIN_POWER,
+        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # SpinAround(name="spin by 90 degrees", target=90, max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         SpinAndRun_Parallel,#--------------ゲートを通過する（ゲート位置によって距離制御あり）
         # ---------------------------------ゲート位置によって角度が変わるのでtargetをgate_valueで制御。
-        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=gate_value(-45, -90), max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=gate_value(45, 90), max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 45or90 degrees", target=gate_value(45, 90), max_power=45, min_power=MIN_POWER,
+        # SpinAround(name="spin by 45or90 degrees", target=gate_value(-45, -90), max_power=45, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
