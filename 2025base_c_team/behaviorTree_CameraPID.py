@@ -901,7 +901,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(550, 850)),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(525, 850)),
         RunAsInstructed(name="go_gate", pwm_l=-50, pwm_r=-65),
         # RunByGyro(name="run straight_BringObject_to_Gate", target=180, power=60,
         #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
@@ -1011,7 +1011,7 @@ def build_behaviour_tree() -> BehaviourTree:
         smart_carry_puton_first_Parallel,
         # --------バックして黒線に向かって回転
         After_puton_back_first_Parallel,
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=160, max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-135, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
         detect_red_Parallel,#---------------------赤検知
