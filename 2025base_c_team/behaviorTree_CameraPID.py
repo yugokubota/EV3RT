@@ -1015,7 +1015,7 @@ def build_behaviour_tree() -> BehaviourTree:
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
         detect_red_Parallel,#---------------------赤検知
-        SpinAround(name="spin by 90 degrees_detect_red", target=-90, max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_detect_red", target=-90, max_power=65, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ターゲットにオブジェクトを置く
         smart_carry_puton_second_Parallel,#-------オブジェクトを置く
