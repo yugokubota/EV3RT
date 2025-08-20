@@ -909,14 +909,14 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2400),
-        RunByGyro(name="run straight_SpinAndRun", target=-270, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------青色検知からゲート通過までをノード化したもの
     SpinAndRun_Sequence = Sequence(name="SpinAndRun_Sequence", memory=True)
     SpinAndRun_Sequence.add_children([
         BringObject_to_Gate_Parallel,#-----ゲート位置までオブジェクトを運ぶ（ゲート位置によって距離制御あり）
-        SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=-270, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=90, max_power=70, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         SpinAndRun_Parallel,#--------------ゲートを通過する
         SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=0, max_power=70, min_power=MIN_POWER,
