@@ -908,32 +908,32 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。ゲート位置によって進む距離は変わる）
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2000, 2400)),#90度回転してからゲートを抜けるまで
-        RunByGyro(name="run straight_SpinAndRun", target=-90, power=60,
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2400),
+        RunByGyro(name="run straight_SpinAndRun", target=-270, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
-        #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
-
-    # --------ジャイロでターゲットまでまっすぐ進む（3回黒を検知したら止まる）
+    # --------青色検知からゲート通過までをノード化したもの
+    SpinAndRun_Sequence = Sequence(name="SpinAndRun_Sequence", memory=True)
+    SpinAndRun_Sequence.add_children([
+        BringObject_to_Gate_Parallel,#-----ゲート位置までオブジェクトを運ぶ（ゲート位置によって距離制御あり）
+        SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=-270, max_power=70, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        SpinAndRun_Parallel,#--------------ゲートを通過する
+        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=0, max_power=70, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # --------ジャイロでターゲットまでまっすぐ進む（距離制御でオブジェクトを置く）
     smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_first_Parallel.add_children([
-        # DetectBlackCount(name="black_count_three", black_thresh=5, gray_thresh=30, target_count=3),
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(350, 380)),#90度回転してからゲートを抜けるまで
-        RunByGyro(name="run straight_smart_carry_puton", target=-120, power=60,
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(400, 600)),
+        RunByGyro(name="run straight_smart_carry_puton", target=0, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # RunByGyro(name="run straight_smart_carry_puton", target=120, power=60,
-        #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでバック（距離で制御）
     After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_first_Parallel.add_children([
         IsDistancePassed(name="distance_passed_back", target_distance=200),
         RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
-        # RunByGyro(name="run_back_After_puton_back_first", target=30, power=60,
-        #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # RunByGyro(name="run_back_After_puton_back_first", target=180, power=-60,
-        #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------次のオブジェクトの黒線に赤検知するまでライントレース
     detect_red_Parallel = Parallel(name="detect_red_Parallel", policy=ParallelPolicy.SuccessOnOne())
@@ -942,37 +942,36 @@ def build_behaviour_tree() -> BehaviourTree:
         TraceLineCam(name="traceline_to_object",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
-    # --------ジャイロでターゲットまでまっすぐ進む（2回黒を検知したら止まる）
+    # --------ジャイロでターゲットまでまっすぐ進む（距離で制御）
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
-        # DetectBlackCount(name="black_count_three", black_thresh=5, gray_thresh=30, target_count=2),
-        RunByGyro(name="run straight_smart_carry_puton_second", target=-270, power=60,
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2000),
+        RunByGyro(name="run straight_smart_carry_puton_second", target=-90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでバック（距離で制御）
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_second_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_After_puton", target_distance=2500),
-        RunByGyro(name="run_back_After_puton_back_second", target=-270, power=-60,
-                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        IsDistancePassed(name="distance_passed_back", target_distance=200),
+        RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
     ])
     # --------ジャイロで黒線に向かう処理
     GoBlackLine_Parallel = Parallel(name="GoBlackLine", policy=ParallelPolicy.SuccessOnOne())
     GoBlackLine_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=1500),
-        RunByGyro(name="run_back_GoBlackLine", target=-180, power=60,
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=800),
+        RunByGyro(name="run_back_GoBlackLine", target=-45, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
-    GoBlackLine2_Parallel = Parallel(name="GoBlackLine_2", policy=ParallelPolicy.SuccessOnOne())
-    GoBlackLine2_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_GoBlackLine_2", target_distance=1500),
-        RunByGyro(name="run_back_GoBlackLine_2", target=-300, power=60,
-                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-    ])
+    # GoBlackLine2_Parallel = Parallel(name="GoBlackLine_2", policy=ParallelPolicy.SuccessOnOne())
+    # GoBlackLine2_Parallel.add_children([
+    #     IsDistancePassed(name="distance_passed_GoBlackLine_2", target_distance=200),
+    #     RunByGyro(name="run_back_GoBlackLine_2", target=-90, power=60,
+    #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    # ])
     DetectBlackLine_Parallel = Parallel(name="DetectBlackLine", policy=ParallelPolicy.SuccessOnOne())
     DetectBlackLine_Parallel.add_children([
         IsOnBlackLine(name="detect_blackline", threshold=5),
-        RunByGyro(name="run_back_DetectBlackLine", target=-270, power=60,
+        RunByGyro(name="run_back_DetectBlackLine", target=-90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロで90°回転して青ライン検知するまでライントレース
@@ -986,18 +985,12 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Sequence = Sequence(name="SpinAndRun_Sequence", memory=True)
     SpinAndRun_Sequence.add_children([
         BringObject_to_Gate_Parallel,#-----ゲート位置までオブジェクトを運ぶ（ゲート位置によって距離制御あり）
-        # SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=90, max_power=60, min_power=MIN_POWER,
-        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=-90, max_power=55, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=-270, max_power=70, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=90, max_power=45, min_power=MIN_POWER,
-        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         SpinAndRun_Parallel,#--------------ゲートを通過する（ゲート位置によって距離制御あり）
         # ---------------------------------ゲート位置によって角度が変わるのでtargetをgate_valueで制御。
-        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=gate_value(-135, -90), max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=gate_value(-360), max_power=70, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 45or90 degrees", target=gate_value(45, 90), max_power=45, min_power=MIN_POWER,
-        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
 
@@ -1029,40 +1022,28 @@ def build_behaviour_tree() -> BehaviourTree:
         smart_carry_puton_first_Parallel,
         # --------バックして黒線に向かって回転
         After_puton_back_first_Parallel,
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=0, max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=160, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=-135, max_power=45, min_power=MIN_POWER,
-        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
         detect_red_Parallel,#---------------------赤検知
         SpinAround(name="spin by 90 degrees_detect_red", target=-90, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=90, max_power=45, min_power=MIN_POWER,
-        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ターゲットにオブジェクトを置く
         smart_carry_puton_second_Parallel,#-------オブジェクトを置く
         # --------バックして黒線へ
         After_puton_back_second_Parallel,#--------バック
-        SpinAround(name="spin by 90 degrees_After_puton_back_second", target=-90, max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_After_puton_back_second", target=-45, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=90, max_power=45, min_power=MIN_POWER,
-        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        GoBlackLine_Parallel,#--------------------90度回転して一定距離ジャイロで進む
-        SpinAround(name="spin by 90 degrees_GoBlackLine_1", target=-45, max_power=60, min_power=MIN_POWER,
+        GoBlackLine_Parallel,#--------------------45度回転して一定距離ジャイロで進む
+        SpinAround(name="spin by 90 degrees_GoBlackLine_1", target=-90, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=45, max_power=45, min_power=MIN_POWER,
-        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        GoBlackLine2_Parallel,#-------------------45度回転して一定距離ジャイロで進む
-        SpinAround(name="spin by 90 degrees_GoBlackLine_2", target=-45, max_power=60, min_power=MIN_POWER,
-                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=45, max_power=45, min_power=MIN_POWER,
+        # GoBlackLine2_Parallel,#-------------------45度回転して一定距離ジャイロで進む
+        # SpinAround(name="spin by 90 degrees_GoBlackLine_2", target=-45, max_power=60, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------黒線検知で90度回転する
         DetectBlackLine_Parallel,#----------------黒線を見つけるまでジャイロで進む
-        SpinAround(name="spin by 90 degrees_DetectBlackLine", target=-90, max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_DetectBlackLine", target=-180, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        # SpinAround(name="spin by 90 degrees", target=90, max_power=45, min_power=MIN_POWER,
-        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------青線検知するまでライントレース
         traceline_cam_DetectBlue_GOAL_Parallel,
     ])
