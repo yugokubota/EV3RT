@@ -946,7 +946,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ジャイロでターゲットまでまっすぐ進む（距離で制御）
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2000),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1700),
         RunByGyro(name="run straight_smart_carry_puton_second", target=-90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
