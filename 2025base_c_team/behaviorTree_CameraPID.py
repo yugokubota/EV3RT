@@ -920,7 +920,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=90, max_power=70, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         SpinAndRun_Parallel,#--------------ゲートを通過する
-        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=0, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=0, max_power=75, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでターゲットまでまっすぐ進む（距離制御でオブジェクトを置く）
@@ -933,7 +933,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ジャイロでバック（距離で制御）
     After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_first_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_back", target_distance=200),
+        IsDistancePassed(name="distance_passed_back", target_distance=190),
         RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
     ])
     # --------次のオブジェクトの黒線に赤検知するまでライントレース
@@ -1011,7 +1011,7 @@ def build_behaviour_tree() -> BehaviourTree:
         smart_carry_puton_first_Parallel,
         # --------バックして黒線に向かって回転
         After_puton_back_first_Parallel,
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-160, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-155, max_power=70, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
         detect_red_Parallel,#---------------------赤検知
