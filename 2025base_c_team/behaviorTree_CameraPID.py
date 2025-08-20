@@ -981,18 +981,6 @@ def build_behaviour_tree() -> BehaviourTree:
         TraceLineCam(name="traceline_cam_DetectBlue_GOAL",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
-    # --------青色検知からゲート通過までをノード化したもの
-    SpinAndRun_Sequence = Sequence(name="SpinAndRun_Sequence", memory=True)
-    SpinAndRun_Sequence.add_children([
-        BringObject_to_Gate_Parallel,#-----ゲート位置までオブジェクトを運ぶ（ゲート位置によって距離制御あり）
-        SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=-270, max_power=70, min_power=MIN_POWER,
-                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-        SpinAndRun_Parallel,#--------------ゲートを通過する（ゲート位置によって距離制御あり）
-        # ---------------------------------ゲート位置によって角度が変わるのでtargetをgate_valueで制御。
-        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=0, max_power=70, min_power=MIN_POWER,
-                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
-    ])
-
 
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
