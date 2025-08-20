@@ -902,10 +902,10 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
         IsDistancePassed(name="distance_passed", target_distance=gate_value(550, 850)),
-        RunByGyro(name="run straight_BringObject_to_Gate", target=0, power=60,
+        RunByGyro(name="run straight_BringObject_to_Gate", target=180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
-    # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。ゲート位置によって進む距離は変わる）
+    # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2400),
