@@ -963,7 +963,7 @@ def build_behaviour_tree() -> BehaviourTree:
     escape_double_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=400),
         TraceLineCam(name="detectblue_or_trace",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
 
     # ================ スマートキャリー用のノード ================
