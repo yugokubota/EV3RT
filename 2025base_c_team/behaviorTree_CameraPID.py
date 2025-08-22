@@ -957,6 +957,13 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
 
+    escape_double_loop_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
+    escape_double_loop_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=400),
+        TraceLineCam(name="detectblue_or_trace",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
+    ])
+
     # ================ スマートキャリー用のノード ================
     # --------ダブルループ抜けてからオブジェクト下の青検知まで
     traceline_cam_smacary_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
@@ -1079,6 +1086,7 @@ def build_behaviour_tree() -> BehaviourTree:
         BigCircleEntryTuning_selector,#           ⑥青いラインを発見後に大円に入るときに右周りの弧を描き、黒線を迎えに行く
         # double_loop_black_selector_3,#            ⑥黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         double_loop_blue_selector_3,#             ⑦ライントレースしながら青いラインを探す処理
+        escape_double_loop_Parallel,#             ⑧ダブルループを抜ける処理
     ])
 
     loop_02 = Sequence(name="loop_02_with_smart_carry_twin", memory=True)
