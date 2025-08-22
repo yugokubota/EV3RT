@@ -946,7 +946,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ターゲットまでまっすぐ進む_puton後（距離で制御）
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_second_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_back", target_distance=950),
+        IsDistancePassed(name="distance_passed_back", target_distance=1000),
         RunAsInstructed(name="go_straight_4", pwm_l=-60, pwm_r=-60),
     ])
 
@@ -979,7 +979,7 @@ def build_behaviour_tree() -> BehaviourTree:
     DetectBlackLine_Parallel = Parallel(name="DetectBlackLine", policy=ParallelPolicy.SuccessOnOne())
     DetectBlackLine_Parallel.add_children([
         IsOnBlackLine(name="detect_blackline", threshold=5),
-        RunByGyro(name="run_back_DetectBlackLine", target=-110, power=30,
+        RunByGyro(name="run_back_DetectBlackLine", target=-110, power=40,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロで90°回転して青ライン検知するまでライントレース
