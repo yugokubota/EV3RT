@@ -909,7 +909,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2400),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2300),
         RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -943,6 +943,13 @@ def build_behaviour_tree() -> BehaviourTree:
         TraceLineCam(name="traceline_to_object",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
+    # --------ターゲットまでまっすぐ進む_puton後（距離で制御）
+    After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
+    After_puton_back_second_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_back", target_distance=600),
+        RunAsInstructed(name="go_straight_4", pwm_l=60, pwm_r=60),
+    ])
+
     # --------ジャイロでターゲットまでまっすぐ進む（距離で制御）
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
@@ -951,8 +958,8 @@ def build_behaviour_tree() -> BehaviourTree:
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでバック（距離で制御）
-    After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
-    After_puton_back_second_Parallel.add_children([
+    After_puton_back_third_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
+    After_puton_back_third_Parallel.add_children([
         IsDistancePassed(name="distance_passed_back", target_distance=200),
         RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
     ])
@@ -1011,16 +1018,17 @@ def build_behaviour_tree() -> BehaviourTree:
         smart_carry_puton_first_Parallel,
         # --------バックして黒線に向かって回転
         After_puton_back_first_Parallel,
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-155, max_power=70, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-180, max_power=70, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
-        detect_red_Parallel,#---------------------赤検知
-        SpinAround(name="spin by 90 degrees_detect_red", target=-90, max_power=65, min_power=MIN_POWER,
+        #detect_red_Parallel,#---------------------赤検知
+        After_puton_back_second_Parallel,
+        SpinAround(name="spin by 90 degrees_detect_red", target=90, max_power=65, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ターゲットにオブジェクトを置く
         smart_carry_puton_second_Parallel,#-------オブジェクトを置く
         # --------バックして黒線へ
-        After_puton_back_second_Parallel,#--------バック
+        After_puton_back_third_Parallel,#--------バック
         SpinAround(name="spin by 90 degrees_After_puton_back_second", target=-45, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         GoBlackLine_Parallel,#--------------------45度回転して一定距離ジャイロで進む
