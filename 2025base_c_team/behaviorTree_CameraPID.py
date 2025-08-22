@@ -553,7 +553,7 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
         else:
             # self.logger.info("%+06d %s.NotDetected..." % (g_plotter.get_distance(), self.__class__.__name__))
             # print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
-            return Status.FAILURE
+            return Status.RUNNING
 
 class DetectBlackCount(Behaviour):
     def __init__(self, name: str, black_thresh: int = 5, gray_thresh: int = 30, target_count: int = 3):
