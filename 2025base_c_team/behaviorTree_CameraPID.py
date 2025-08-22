@@ -844,6 +844,8 @@ def build_behaviour_tree() -> BehaviourTree:
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
         IsDistancePassed(name="distance_passed", target_distance=2500),
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=0, max_power=60, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
     # ============= ライントレース =============
