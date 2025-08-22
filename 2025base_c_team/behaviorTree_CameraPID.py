@@ -979,7 +979,7 @@ def build_behaviour_tree() -> BehaviourTree:
     DetectBlackLine_Parallel = Parallel(name="DetectBlackLine", policy=ParallelPolicy.SuccessOnOne())
     DetectBlackLine_Parallel.add_children([
         IsOnBlackLine(name="detect_blackline", threshold=5),
-        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=800),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=400),
         RunByGyro(name="run_back_DetectBlackLine", target=-90, power=40,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
