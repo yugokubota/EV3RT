@@ -365,13 +365,16 @@ class TraceLine_sensor(Behaviour):
 
 class TraceLineCam(Behaviour):
     def __init__(self, name: str, power: int, pid_p: float, pid_i: float, pid_d: float,
-                 gs_min: int, gs_max: int, trace_side: TraceSide) -> None:
+                 gs_min: int, gs_max: int, trace_side: TraceSide,
+                 dynamic_pid_by_distance: list = None # ← 本橋追加
+                 ) -> None: 
         super(TraceLineCam, self).__init__(name)
         self.power = power
         self.pid = PID(pid_p, pid_i, pid_d, setpoint=0, sample_time=EXEC_INTERVAL, output_limits=(-power, power))
         self.gs_min = gs_min
         self.gs_max = gs_max
         self.trace_side = trace_side
+        self.dynamic_pid_by_distance = dynamic_pid_by_distance if dynamic_pid_by_distance else [] # ← 本橋追加
         self.running = False
 
     def update(self) -> Status:
@@ -388,9 +391,26 @@ class TraceLineCam(Behaviour):
                     g_video.set_trace_side(TraceSide.LEFT)
                 else:
                     g_video.set_trace_side(TraceSide.RIGHT)
+            elif self.trace_side == TraceSide.RIGHT: 
+                g_video.set_trace_side(TraceSide.RIGHT)
+            elif self.trace_side == TraceSide.LEFT: 
+                g_video.set_trace_side(TraceSide.LEFT)
             else: # TraceSide.CENTER
                 g_video.set_trace_side(TraceSide.CENTER)
             self.logger.info("%+06d %s.trace started with TS=%s" % (g_plotter.get_distance(), self.__class__.__name__, self.trace_side.name))
+        
+        #距離に応じたPIDの動的切り替え （本橋追記）
+        if self.dynamic_pid_by_distance:
+            current_distance = g_plotter.get_distance() - 2500
+            for entry in self.dynamic_pid_by_distance:
+                if entry["start"] <= current_distance < entry["end"]:
+                    self.power = entry["power"]
+                    self.pid.p = entry["p"]
+                    self.pid.i = entry["i"]
+                    self.pid.d = entry["d"]
+                    print(f"[TraceLineCam] Distance={current_distance}, Power={self.power}, PID={self.pid.p}, {self.pid.i}, {self.pid.d}")
+                    break
+        
         turn = (-1) * int(self.pid(g_video.get_theta()))
         g_right_motor.set_power(self.power - turn - 1)
         g_left_motor.set_power(self.power + turn)
@@ -598,6 +618,7 @@ class DetectBlackCount(Behaviour):
                 return Status.RUNNING
         return Status.RUNNING
 
+
 class TraverseBehaviourTree(object):
     def __init__(self, tree: BehaviourTree) -> None:
         self.tree = tree
@@ -710,9 +731,12 @@ class AvoidObstacleArcFull(Behaviour):
             return Status.SUCCESS
         self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (g_plotter.get_distance(), self.__class__.__name__))
         # --- 以下、単純な回避動作 ---
+        # 止める
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
         # 右カーブ
         g_left_motor.set_power(100)
-        g_right_motor.set_power(60)
+        g_right_motor.set_power(50)
         time.sleep(0.6)  # 必要に応じて調整
         # 止める
         g_left_motor.set_power(0)
@@ -721,16 +745,17 @@ class AvoidObstacleArcFull(Behaviour):
         # 左に戻す
         g_left_motor.set_power(60)
         g_right_motor.set_power(100)
-        time.sleep(0.85)  # 必要に応じて調整 
+        time.sleep(1.1)  # 必要に応じて調整 
         #g_left_motor.set_power(0)
         #g_right_motor.set_power(0)
 
         # ライン復帰
-        g_left_motor.set_power(100)
-        g_right_motor.set_power(60)
-        time.sleep(0.5)
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
+        #g_left_motor.set_power(100)
+        #g_right_motor.set_power(80)
+        #time.sleep(0.7)
+        # 止める
+        #g_left_motor.set_power(0)
+        #g_right_motor.set_power(0)
 
         # ライン復帰
         #g_left_motor.set_power(50)
@@ -742,6 +767,7 @@ class AvoidObstacleArcFull(Behaviour):
         # フラグを立てて終了
         self.done = True
         self.logger.info("%+06d %s.AvoidObstacleArcFull_complete!" % (g_plotter.get_distance(), self.__class__.__name__))
+        
         return Status.SUCCESS
 
 class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブクラスの追加
@@ -794,6 +820,7 @@ class IsDistancePassed(Behaviour):
         now_distance = g_plotter.get_distance()
         if now_distance - self.start_distance >= self.target_distance:
             print(f"[IsDistancePassed] Passed: {now_distance - self.start_distance}")
+            print("======================== end ========================")
             return Status.SUCCESS
         return Status.RUNNING
 
@@ -824,9 +851,10 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避前のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=70, pid_p=1.0, pid_i=0.001, pid_d=0.3,
+        power=60, pid_p=1.8, pid_i=0.0015, pid_d=0.23,
+        #power=60, pid_p=1.4, pid_i=0.0015, pid_d=0.3,
         gs_min=0, gs_max=40,
-        trace_side=TraceSide.NORMAL
+        trace_side=TraceSide.RIGHT
     )
     # オブジェクト回避とライントレース
     obstacle_Parallel = Parallel(name="obstacle_or_trace", policy=ParallelPolicy.SuccessOnOne())
@@ -839,64 +867,87 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_lapfinish_Parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER,
+        # 距離ごとのPOWERとPID設定（本橋修正）
+        dynamic_pid_by_distance=[
+            {"start": 0, "end": 2650, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
+            # {"start": 2550, "end": 4800, "power": 80, "p": 0.4,  "i": 0.0035,  "d": 0.3},
+            {"start": 2650, "end": 4700, "power": 70, "p": 1.2, "i": 0.0015, "d": 0.25},
+            {"start": 4700, "end": 9999, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18}
+        ]
+        ),
     ])
 
     # ================ ダブルループ処理 ================
 
     # ================ 黒線検知でライントレース ================
+    #※RunAsInstructedの曲がり具合は要調整
 
     # 一定距離右周りに弧を描くように走る
     distance_loop_Parallel = Parallel(name="distance_loop_Parallel", policy=ParallelPolicy.SuccessOnOne())
     distance_loop_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=500),
-        # RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),#LEFT用
-        RunAsInstructed(name="go_straight_1", pwm_l=50, pwm_r=58),#RIGHT用
+        IsDistancePassed(name="distance_passed", target_distance=750),
+        #RunAsInstructed(name="go_straight", pwm_l=58, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-54),  #RIGHT用
     ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
     double_loop_black_selector_1.add_children([
         IsOnBlackLine(name="detect_blackline_1", threshold=5),
-        # RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),
-        RunAsInstructed(name="go_straight_1", pwm_l=50, pwm_r=60),#RIGHT用
+        #RunAsInstructed(name="go_straight_1", pwm_l=58, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="go_straight_1", pwm_l=-40, pwm_r=-48),  #RIGHT用
     ])
     # part2_黒線を検知した場合ライントレース
     double_loop_black_selector_2 = Selector(name="double_loop_black_selector2",memory=False)
     double_loop_black_selector_2.add_children([
         IsOnBlackLine(name="detect_blackline_2", threshold=5),
-        # RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=48),
-        RunAsInstructed(name="go_straight_2", pwm_l=40, pwm_r=45),#RIGHT用
+        #RunAsInstructed(name="go_straight_2", pwm_l=45, pwm_r=48),      #LEFT用
+        RunAsInstructed(name="go_straight_2", pwm_l=-42, pwm_r=-45),  #RIGHT用
     ])
     # part3_黒線を検知した場合ライントレース
     double_loop_black_selector_3 = Selector(name="double_loop_black_selector3",memory=False)
     double_loop_black_selector_3.add_children([
         IsOnBlackLine(name="detect_blackline_3", threshold=5),
-        # RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=47),
-        RunAsInstructed(name="go_straight_3", pwm_l=47, pwm_r=40),#RIGHT用
+        #RunAsInstructed(name="go_straight_3", pwm_l=40, pwm_r=47),      #LEFT用
+        RunAsInstructed(name="go_straight_3", pwm_l=-50, pwm_r=-60),  #RIGHT用
     ])
     # part4_黒線を検知した場合ライントレース
     double_loop_black_selector_4 = Selector(name="double_loop_black_selector4",memory=False)
     double_loop_black_selector_4.add_children([
         IsOnBlackLine(name="detect_blackline_4", threshold=5),
-        # RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),
-        RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),#RIGHT用
+        #RunAsInstructed(name="go_straight_4", pwm_l=50, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="go_straight_4", pwm_l=-50, pwm_r=-50),  #RIGHT用
+    ])
+    # 小円に入るときの調整
+    SmallCircleEntryTuning_selector = Parallel(name="SmallCircleEntryTuning_selector", policy=ParallelPolicy.SuccessOnOne())
+    SmallCircleEntryTuning_selector.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=500),  #200は適当なので要調整
+        #RunAsInstructed(name="SmallCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="SmallCircle_Entry", pwm_l=-50, pwm_r=-50),  #RIGHT用
+    ])
+    # 大円に入るときの調整
+    BigCircleEntryTuning_selector = Parallel(name="BigCircleEntryTuning_selector", policy=ParallelPolicy.SuccessOnOne())
+    BigCircleEntryTuning_selector.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=550),  #200は適当なので要調整
+        #RunAsInstructed(name="BigCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
+        RunAsInstructed(name="BigCircle_Entry", pwm_l=-60, pwm_r=-40),  #RIGHT用
     ])
 
     # ================ 青色検知するまでライントレース ================
     
     # part1_青色検知するまでライントレース
-    double_loop_blue_selector_1 = Selector(name="double_loop_blue_selector_1",memory=False)
-    double_loop_blue_selector_1.add_children([
-        DetectBlue_failure(name="detect_blue"),
-        TraceLineCam(name="Tracelinecam_DetectBlue_1",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
+    double_loop_blue_parallel_1 = Parallel(name="double_loop_blue_parallel_1",policy=ParallelPolicy.SuccessOnOne())
+    double_loop_blue_parallel_1.add_children([
+        DetectBlue(name="detect_blue"),
+        TraceLineCam(name="traceline_cam_lapfinish",power=44, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
     # part2_青色検知するまでライントレース
-    double_loop_blue_selector_2 = Selector(name="double_loop_blue_selector_2",memory=False)
-    double_loop_blue_selector_2.add_children([
-        DetectBlue_failure(name="detect_blue"),
+    double_loop_blue_parallel_2 = Parallel(name="double_loop_blue_parallel_2",policy=ParallelPolicy.SuccessOnOne())
+    double_loop_blue_parallel_2.add_children([
+        DetectBlue(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
-        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=50,trace_side=TraceSide.OPPOSITE),#小円は右のエッジをトレースしたいから"OPPOSITE"
     ])
     # part3_青色検知するまでライントレース
     double_loop_blue_selector_3 = Selector(name="double_loop_blue_selector_3",memory=False)
@@ -1016,14 +1067,17 @@ def build_behaviour_tree() -> BehaviourTree:
         traceline_cam_lapfinish_Parallel,#        オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
         distance_loop_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
-        double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
-        double_loop_blue_selector_1,#             ③ライントレースしながら青いラインを探す処理
-        # 小円に移るときの処理
-        double_loop_black_selector_2,#            ④青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        # double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
+        double_loop_blue_parallel_1,#             ③ライントレースしながら青いラインを探す処理
+        # --------ここから下は上手くいかないかも---------
+        # --------小円に移るときの処理--------
+        SmallCircleEntryTuning_selector,#         ④青いラインを発見後に小円に入るときに左周りの弧を描き、黒線を迎えに行く
+        # double_loop_black_selector_2,#            ④黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         # ArcTurn(name="arc_move1", direction="right", degree=45, power=45, radius=80),
-        double_loop_blue_selector_2,#             ⑤ライントレースしながら青いラインを探す処理
-        # 小円から大円に移るときの処理
-        double_loop_black_selector_3,#            ⑥青いラインを発見後に黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
+        double_loop_blue_parallel_2,#             ⑤ライントレースしながら青いラインを探す処理
+        # --------小円から大円に移るときの処理--------
+        BigCircleEntryTuning_selector,#           ⑥青いラインを発見後に大円に入るときに右周りの弧を描き、黒線を迎えに行く
+        # double_loop_black_selector_3,#            ⑥黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         double_loop_blue_selector_3,#             ⑦ライントレースしながら青いラインを探す処理
     ])
 
