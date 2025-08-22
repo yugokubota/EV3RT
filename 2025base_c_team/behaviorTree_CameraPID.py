@@ -302,6 +302,10 @@ class TraceLineCam(Behaviour):
                     g_video.set_trace_side(TraceSide.LEFT)
                 else:
                     g_video.set_trace_side(TraceSide.RIGHT)
+            elif self.trace_side == TraceSide.RIGHT: 
+                g_video.set_trace_side(TraceSide.RIGHT)
+            elif self.trace_side == TraceSide.LEFT: 
+                g_video.set_trace_side(TraceSide.LEFT)
             else: # TraceSide.CENTER
                 g_video.set_trace_side(TraceSide.CENTER)
             self.logger.info("%+06d %s.trace started with TS=%s" % (g_plotter.get_distance(), self.__class__.__name__, self.trace_side.name))
@@ -521,16 +525,16 @@ class AvoidObstacleArcFull(Behaviour):
         g_right_motor.set_power(0)
         # 右カーブ
         g_left_motor.set_power(100)
-        g_right_motor.set_power(60)
+        g_right_motor.set_power(50)
         time.sleep(0.6)  # 必要に応じて調整
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(65)
+        g_left_motor.set_power(60)
         g_right_motor.set_power(100)
-        time.sleep(1.0)  # 必要に応じて調整 
+        time.sleep(1.1)  # 必要に応じて調整 
         #g_left_motor.set_power(0)
         #g_right_motor.set_power(0)
 
@@ -626,9 +630,10 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクト回避前のライントレース
     traceline_cam_for_obstacle = TraceLineCam(
         name="camera_trace_for_obstacle",
-        power=85, pid_p=0.4, pid_i=0.002, pid_d=0.3,
+        power=70, pid_p=1.5, pid_i=0.0015, pid_d=0.25,
+        #power=60, pid_p=1.4, pid_i=0.0015, pid_d=0.3,
         gs_min=0, gs_max=40,
-        trace_side=TraceSide.NORMAL
+        trace_side=TraceSide.RIGHT
     )
     # オブジェクト回避とライントレース
     obstacle_Parallel = Parallel(name="obstacle_or_trace", policy=ParallelPolicy.SuccessOnOne())
@@ -644,10 +649,10 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL,
         # 距離ごとのPOWERとPID設定（本橋修正）
         dynamic_pid_by_distance=[
-            {"start": 0, "end": 2850, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
+            {"start": 0, "end": 2650, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
             # {"start": 2550, "end": 4800, "power": 80, "p": 0.4,  "i": 0.0035,  "d": 0.3},
-            {"start": 2850, "end": 4800, "power": 85, "p": 1.2, "i": 0.000, "d": 0.2},
-            {"start": 4800, "end": 9999, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18}
+            {"start": 2650, "end": 4700, "power": 70, "p": 1.2, "i": 0.0015, "d": 0.25},
+            {"start": 4700, "end": 9999, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18}
         ]
         ),
     ])
