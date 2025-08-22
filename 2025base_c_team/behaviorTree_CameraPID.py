@@ -875,8 +875,8 @@ def build_behaviour_tree() -> BehaviourTree:
             {"start": 0, "end": 2650, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
             # {"start": 2550, "end": 4800, "power": 80, "p": 0.4,  "i": 0.0035,  "d": 0.3},
             {"start": 2650, "end": 4700, "power": 70, "p": 1.2, "i": 0.0015, "d": 0.25},
-            {"start": 4700, "end": 5200, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
-            {"start": 5200, "end": 9999, "power": 40, "p": 1.75, "i": 0.0012, "d": 0.18}
+            {"start": 4700, "end": 5700, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
+            {"start": 5700, "end": 9999, "power": 40, "p": 1.75, "i": 0.0012, "d": 0.18}
         ]
         ),
     ])
@@ -891,7 +891,7 @@ def build_behaviour_tree() -> BehaviourTree:
     distance_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=750),
         #RunAsInstructed(name="go_straight", pwm_l=58, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-54),  #RIGHT用
+        RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-52),  #RIGHT用
     ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
