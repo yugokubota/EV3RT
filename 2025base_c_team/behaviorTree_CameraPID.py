@@ -901,7 +901,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(525, 850)),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(500, 850)),
         RunAsInstructed(name="go_gate", pwm_l=-50, pwm_r=-65),
         # RunByGyro(name="run straight_BringObject_to_Gate", target=180, power=60,
         #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
