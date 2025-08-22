@@ -946,7 +946,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ターゲットまでまっすぐ進む_puton後（距離で制御）
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_second_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_back", target_distance=900),
+        IsDistancePassed(name="distance_passed_back", target_distance=1000),
         RunAsInstructed(name="go_straight_4", pwm_l=-60, pwm_r=-60),
     ])
 
