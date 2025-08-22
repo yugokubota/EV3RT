@@ -1087,8 +1087,8 @@ def build_behaviour_tree() -> BehaviourTree:
         # ArcTurn(name="arc_move1", direction="right", degree=45, power=45, radius=80),
         double_loop_blue_parallel_2,#             ⑤ライントレースしながら青いラインを探す処理
         # --------小円から大円に移るときの処理--------
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=300, max_power=60, min_power=MIN_POWER,
-                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # SpinAround(name="spin by 90 degrees_After_puton_back_first", target=300, max_power=60, min_power=MIN_POWER,
+        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         BigCircleEntryTuning_selector,#           ⑥青いラインを発見後に大円に入るときに右周りの弧を描き、黒線を迎えに行く
         # double_loop_black_selector_3,#            ⑥黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         double_loop_blue_selector_3,#             ⑦ライントレースしながら青いラインを探す処理
