@@ -1075,7 +1075,7 @@ def build_behaviour_tree() -> BehaviourTree:
         obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
         traceline_cam_lapfinish_Parallel,#        オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-185, max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=175, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         distance_loop_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
         # double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
