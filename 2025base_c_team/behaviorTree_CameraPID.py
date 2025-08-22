@@ -26,7 +26,7 @@ ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
 JUNCT_LOWER_THRESH = 30
 MAX_POWER = 100
-MIN_POWER = 45
+MIN_POWER = 60
 
 class ArmDirection(IntEnum):
     UP = -1
@@ -1018,12 +1018,12 @@ def build_behaviour_tree() -> BehaviourTree:
         smart_carry_puton_first_Parallel,
         # --------バックして黒線に向かって回転
         After_puton_back_first_Parallel,
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-180, max_power=80, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-180, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
         #detect_red_Parallel,#---------------------赤検知
         After_puton_back_second_Parallel,
-        SpinAround(name="spin by 90 degrees_detect_red", target=90, max_power=80, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_detect_red", target=-90, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         # --------ターゲットにオブジェクトを置く
         smart_carry_puton_second_Parallel,#-------オブジェクトを置く
