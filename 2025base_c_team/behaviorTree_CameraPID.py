@@ -933,7 +933,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ジャイロでバック（距離で制御）
     After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_first_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_back", target_distance=190),
+        IsDistancePassed(name="distance_passed_back", target_distance=250),
         RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
     ])
     # --------次のオブジェクトの黒線に赤検知するまでライントレース
