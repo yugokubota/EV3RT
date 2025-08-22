@@ -408,7 +408,7 @@ class TraceLineCam(Behaviour):
                     self.pid.p = entry["p"]
                     self.pid.i = entry["i"]
                     self.pid.d = entry["d"]
-                    print(f"[TraceLineCam] Distance={current_distance}, Power={self.power}, PID={self.pid.p}, {self.pid.i}, {self.pid.d}")
+                    # print(f"[TraceLineCam] Distance={current_distance}, Power={self.power}, PID={self.pid.p}, {self.pid.i}, {self.pid.d}")
                     break
         
         turn = (-1) * int(self.pid(g_video.get_theta()))
