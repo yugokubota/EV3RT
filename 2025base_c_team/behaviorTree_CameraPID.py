@@ -4,7 +4,7 @@ import math
 import threading
 import signal
 from enum import Enum, IntEnum, auto
-from etrobo_python import ETRobo, Hub, Motor, TouchSensor, ColorSensor, SonarSensor
+from etrobo_python import ETRobo, Hub, Motor, TouchSensor, ColorSensor, SonarSensor, GyroSensor
 from simple_pid import PID
 import py_trees.common
 from py_trees.trees import BehaviourTree
@@ -16,7 +16,7 @@ from py_trees import (
     display as display_tree,
     logging as log_tree
 )
-from py_etrobo_util import Video, TraceSide, Plotter
+from py_etrobo_util import Video, TraceSide, Plotter, SymmetricClamper
 from py_etrobo_util.plotter import TIRE_DIAMETER
 import colorsys#GRBをHSVに変える標準ライブラリ
 
@@ -25,10 +25,16 @@ VIDEO_INTERVAL: float = 0.02
 ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
 JUNCT_LOWER_THRESH = 30
+MAX_POWER = 100
+MIN_POWER = 60
 
 class ArmDirection(IntEnum):
     UP = -1
     DOWN = 1
+
+class HeadingType(Enum):
+    ABSOLUTE = "absolute"
+    RELATIVE = "relative"
 
 class JState(Enum):
     INITIAL = auto()
@@ -54,9 +60,12 @@ g_left_motor: Motor = None
 g_touch_sensor: TouchSensor = None
 g_color_sensor: ColorSensor = None
 g_sonar_sensor: SonarSensor = None
+g_gyro_sensor: GyroSensor = None
 g_video: Video = None
 g_video_thread: threading.Thread = None
 g_course: int = 0
+g_gate: int = 0
+g_is_distance_to_gate = None
 
 
 class TheEnd(Behaviour):# ctl+cで処理を終了させるようにしている
@@ -83,6 +92,7 @@ class ResetDevice(Behaviour):# ロボットのモーターの回転数をリセ�
             g_arm_motor.reset_count()
             g_right_motor.reset_count()
             g_left_motor.reset_count()
+            g_gyro_sensor.reset()
             self.logger.info("%+06d %s.resetting..." % (g_plotter.get_distance(), self.__class__.__name__))
         elif self.count > 3:
             self.logger.info("%+06d %s.complete" % (g_plotter.get_distance(), self.__class__.__name__))
@@ -235,18 +245,97 @@ class IsJunction(Behaviour):# 分岐チェックを知らせるだけのクラ�
 class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定のPWM（出力）を与えて動かす「行動ノード」
     def __init__(self, name: str, pwm_l: int, pwm_r: int) -> None:
         super(RunAsInstructed, self).__init__(name)
-        self.pwm_l = g_course * pwm_l
-        self.pwm_r = g_course * pwm_r
+        self.pwm_l = pwm_l
+        self.pwm_r = pwm_r
         self.running = False
 
     def update(self) -> Status:
         if not self.running:
             self.running = True
             self.logger.info("%+06d %s.started with pwm=(%s, %s)" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
-        g_right_motor.set_power(self.pwm_r)
-        g_left_motor.set_power(self.pwm_l)
+        g_right_motor.set_power(g_course * self.pwm_r)
+        g_left_motor.set_power(g_course * self.pwm_l)
         return Status.RUNNING
 
+
+class SpinAround(Behaviour):
+    def __init__(self, name: str, target: int, max_power: int, min_power: int,
+                 pid_p: float, pid_i: float, pid_d: float, target_type: HeadingType) -> None:
+        super(SpinAround, self).__init__(name)
+        self.target = target
+        self.target_type = target_type
+        self.pid_p = pid_p
+        self.pid_i = pid_i
+        self.pid_d = pid_d
+        self.clamper = SymmetricClamper(min_power, max_power)
+        self.running = False
+
+    def update(self) -> Status:
+        current_heading = (-1) * g_course * g_gyro_sensor.get_angle()
+        if not self.running:
+            if self.target_type == HeadingType.RELATIVE:
+                self.target_heading = current_heading + self.target
+            else:
+                self.target_heading = self.target
+            self.pid = PID(self.pid_p, self.pid_i, self.pid_d, setpoint=self.target_heading, sample_time=EXEC_INTERVAL)
+            self.running = True
+            self.logger.info("%+06d %s.spin started at heading=%d for %d" % (g_plotter.get_distance(),
+                                                                             self.__class__.__name__, current_heading, self.target_heading))
+        error = float(self.target_heading) - current_heading
+        # normalize error to [-180, 180]
+        if error > 180.0:
+            error -= 360.0
+        if error < -180.0:
+            error += 360.0
+        if abs(error) < 2.0:
+            self.logger.info("%+06d %s.spin ended at heading=%d" % (g_plotter.get_distance(),
+                                                                    self.__class__.__name__, current_heading))
+            return Status.SUCCESS
+        power = int(self.clamper.clamp(self.pid(current_heading)))
+        g_right_motor.set_power(g_course * power)
+        g_left_motor.set_power((-1) * g_course * power)
+        return Status.RUNNING    
+
+
+class RunByGyro(Behaviour):
+    def __init__(self, name: str, target: int, power: int,
+                pid_p: float,
+                pid_i: float,
+                pid_d: float,
+                target_type: HeadingType) -> None:
+        super(RunByGyro, self).__init__(name)
+        self.target = target
+        self.target_type = target_type
+        self.power = power
+        self.pid_p = pid_p
+        self.pid_i = pid_i
+        self.pid_d = pid_d
+        self.running = False
+        self.target_heading = 0.0
+
+    def update(self) -> Status:
+        current_heading = (-1) * g_course * g_gyro_sensor.get_angle()
+        if not self.running:
+            if self.target_type == HeadingType.RELATIVE:
+                desired_heading = current_heading + self.target
+            else:
+                desired_heading = self.target
+            k = round((current_heading - desired_heading) / 360.0)
+            self.target_heading = desired_heading + 360.0 * k    
+            self.pid = PID( self.pid_p, 
+                            self.pid_i, 
+                            self.pid_d, 
+                            setpoint=self.target_heading,
+                            sample_time=EXEC_INTERVAL, 
+                            output_limits=(-self.power, self.power))
+            self.running = True
+            self.logger.info("%+06d %s.gyro run started toward heading=%.1f" % (g_plotter.get_distance(),self.__class__.__name__, self.target_heading))
+        steer = round(self.pid(current_heading))
+        right = max(-100, min(100, self.power - steer))
+        left  = max(-100, min(100, self.power + steer))
+        g_right_motor.set_power(right)
+        g_left_motor.set_power(left)
+        return Status.RUNNING
 
 class TraceLine_sensor(Behaviour):
     def __init__(self, name: str, target: int, power: int, pid_p: float, pid_i: float, pid_d: float,
@@ -351,12 +440,43 @@ class TraceLineSensor(Behaviour):# カラーセンサー用クラス
         g_left_motor.set_power(self.power + turn)
         return Status.RUNNING
 
+class DetectRed(Behaviour):# 赤色検知用クラス
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.count = 0
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+        self.running = False
+
+    def update(self) -> Status:
+        r, g, b = g_color_sensor.get_raw_color()
+        # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
+        max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
+        r_norm = r / max_rgb
+        g_norm = g / max_rgb
+        b_norm = b / max_rgb
+        # colorsysで変換（返り値: h,s,vは0.0〜1.0）
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        # 色相Hだけ0〜360度に直す
+        h_deg = int(h * 360)
+        s_per = int(s * 100)
+        v_per = int(v * 100)
+        # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
+        if ((0 <= h_deg <= 20) or (340 <= h_deg <= 360)) and s_per > 50 and v_per > 30:
+            self.logger.info("%+06d %s.DetectRed!" % (g_plotter.get_distance(), self.__class__.__name__))
+            print(f"DetectRed: RED! h={h_deg} s={s_per} v={v_per}")
+            return Status.SUCCESS
+        else:
+            # print(f"DetectRed: Not RED h={h_deg} s={s_per} v={v_per}")
+            return Status.RUNNING
+
 class DetectBlue(Behaviour):# 青色検知用クラス
     def __init__(self, name: str):
         super().__init__(name)
         self.count = 0
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
         self.running = False
+        self._did_reset = False
 
     def update(self) -> Status:
         r, g, b = g_color_sensor.get_raw_color()
@@ -455,6 +575,50 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
             # print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
             return Status.FAILURE
 
+class IsOnBlackLine_running(Behaviour):#黒色を明るさで検知
+    def __init__(self, name: str, threshold: int = 40):
+        super().__init__(name)
+        self.threshold = threshold
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+
+    def update(self) -> Status:
+        brightness = g_color_sensor.get_brightness()
+        if brightness < self.threshold:  # 明るさがthreshold未満=黒い
+            self.logger.info("%+06d %s.DetectBlack!" % (g_plotter.get_distance(), self.__class__.__name__))
+            print(f"[IsOnBlackLine] Detected! brightness={brightness}")
+            return Status.SUCCESS
+        else:
+            # self.logger.info("%+06d %s.NotDetected..." % (g_plotter.get_distance(), self.__class__.__name__))
+            # print(f"[IsOnBlackLine] NotDetected... brightness={brightness}")
+            return Status.RUNNING
+
+class DetectBlackCount(Behaviour):
+    def __init__(self, name: str, black_thresh: int = 5, gray_thresh: int = 30, target_count: int = 3):
+        super().__init__(name)
+        self.black_thresh = black_thresh
+        self.gray_thresh = gray_thresh
+        self.target_count = target_count
+        self.count = 0
+
+    def update(self) -> Status:
+        brightness = g_color_sensor.get_brightness()
+        if brightness < self.black_thresh:
+            self.count += 1
+            print(f"黒検知回数: {self.count}")
+            if self.count >= self.target_count:
+                return Status.SUCCESS
+            else:
+                return Status.RUNNING
+        if brightness < self.gray_thresh:
+            self.count += 1
+            print(f"黒/グレー検知回数: {self.count} (brightness={brightness})")
+            if self.count >= self.target_count:
+                return Status.SUCCESS
+            else:
+                return Status.RUNNING
+        return Status.RUNNING
+
+
 class TraverseBehaviourTree(object):
     def __init__(self, tree: BehaviourTree) -> None:
         self.tree = tree
@@ -485,8 +649,9 @@ class ExposeDevices(object):
         touch_sensor: TouchSensor,
         color_sensor: ColorSensor,
         sonar_sensor: SonarSensor,
+        gyro_sensor: GyroSensor, 
     ) -> None:
-        global g_hub, g_arm_motor, g_right_motor, g_left_motor, g_touch_sensor, g_color_sensor, g_sonar_sensor
+        global g_hub, g_arm_motor, g_right_motor, g_left_motor, g_touch_sensor, g_color_sensor, g_sonar_sensor, g_gyro_sensor
         g_hub = hub
         g_arm_motor = arm_motor
         g_right_motor = right_motor
@@ -494,6 +659,7 @@ class ExposeDevices(object):
         g_touch_sensor = touch_sensor
         g_color_sensor = color_sensor
         g_sonar_sensor = sonar_sensor
+        g_gyro_sensor = gyro_sensor 
 
 class VideoThread(threading.Thread):
     def __init__(self):
@@ -507,6 +673,51 @@ class VideoThread(threading.Thread):
         while not self._stop_event.is_set():
             g_video.process(g_plotter, g_hub, g_arm_motor, g_right_motor, g_left_motor, g_color_sensor, g_sonar_sensor)
             time.sleep(VIDEO_INTERVAL)
+
+class TurnToObject(Behaviour):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.done = False
+        self.dist = None
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+
+    def update(self) -> Status:
+        if self.done:
+            return Status.SUCCESS
+        self.logger.info("%+06d %s.AvoidObstacleArcFull_start!" % (g_plotter.get_distance(), self.__class__.__name__))
+        if g_course == 1: #LEFTコースの場合
+            # バック
+            g_left_motor.set_power(-50)
+            g_right_motor.set_power(-50)
+            time.sleep(0.6)  # 必要に応じて調整
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+
+            # 右周りに180°回転
+            g_left_motor.set_power(60)
+            g_right_motor.set_power(100)
+            time.sleep(0.85)  # 必要に応じて調整 
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+        else:           #RIGHTコースの場合
+            # バック
+            g_left_motor.set_power(-50)
+            g_right_motor.set_power(-50)
+            time.sleep(0.6)  # 必要に応じて調整
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+
+            # 左周りに180°回転
+            g_left_motor.set_power(100)
+            g_right_motor.set_power(60)
+            time.sleep(0.85)  # 必要に応じて調整 
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+
+        # フラグを立てて終了
+        self.done = True
+        self.logger.info("%+06d %s.TurnToObject_complete!" % (g_plotter.get_distance(), self.__class__.__name__))
+        return Status.SUCCESS
 
 class AvoidObstacleArcFull(Behaviour):
     def __init__(self, name: str):
@@ -613,6 +824,17 @@ class IsDistancePassed(Behaviour):
             return Status.SUCCESS
         return Status.RUNNING
 
+def gate_value(front_val: int, back_val: int) -> int:
+    """
+    --gate の指定に応じて値を切り替えるユーティリティ。
+    front/back 以外は来ない想定だが、万が一に備えて front をデフォルト。
+    """
+    try:
+        return front_val if g_gate == 'front' else back_val
+    except NameError:
+        # 念のため g_gate 未設定でも落ちないように
+        return front_val
+
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
 
@@ -624,7 +846,6 @@ def build_behaviour_tree() -> BehaviourTree:
         IsDistancePassed(name="distance_passed", target_distance=2500),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
-
     # ============= ライントレース =============
 
     # オブジェクト回避前のライントレース
@@ -736,9 +957,111 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
 
+    # ================ スマートキャリー用のノード ================
+    # --------ダブルループ抜けてからオブジェクト下の青検知まで
+    traceline_cam_smacary_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
+    traceline_cam_smacary_Parallel.add_children([
+        DetectBlue(name="detect_blue"),
+        TraceLineCam(name="detectblue_or_trace",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
+    ])
+    # --------ゲートの位置までまっすぐ進む（ゲートの位置で進む距離が変わる）
+    BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
+    BringObject_to_Gate_Parallel.add_children([
+        # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(500, 850)),
+        RunAsInstructed(name="go_gate", pwm_l=-50, pwm_r=-65),
+        # RunByGyro(name="run straight_BringObject_to_Gate", target=180, power=60,
+        #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
+    SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
+    SpinAndRun_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2400),
+        RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # --------青色検知からゲート通過までをノード化したもの
+    SpinAndRun_Sequence = Sequence(name="SpinAndRun_Sequence", memory=True)
+    SpinAndRun_Sequence.add_children([
+        BringObject_to_Gate_Parallel,#-----ゲート位置までオブジェクトを運ぶ（ゲート位置によって距離制御あり）
+        # SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=90, max_power=70, min_power=MIN_POWER,
+        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        SpinAndRun_Parallel,#--------------ゲートを通過する
+        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=0, max_power=75, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # --------ジャイロでターゲットまでまっすぐ進む（距離制御でオブジェクトを置く）
+    smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
+    smart_carry_puton_first_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(380, 600)),
+        RunByGyro(name="run straight_smart_carry_puton", target=0, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # --------ジャイロでバック（距離で制御）
+    After_puton_back_first_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
+    After_puton_back_first_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_back", target_distance=250),
+        RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
+    ])
+    # --------次のオブジェクトの黒線に赤検知するまでライントレース
+    detect_red_Parallel = Parallel(name="detect_red_Parallel", policy=ParallelPolicy.SuccessOnOne())
+    detect_red_Parallel.add_children([
+        DetectRed(name="detect_red"),
+        TraceLineCam(name="traceline_to_object",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    ])
+    # --------ターゲットまでまっすぐ進む_puton後（距離で制御）
+    After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
+    After_puton_back_second_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_back", target_distance=1000),
+        RunAsInstructed(name="go_straight_4", pwm_l=-60, pwm_r=-60),
+    ])
+
+    # --------ジャイロでターゲットまでまっすぐ進む（距離で制御）
+    smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
+    smart_carry_puton_second_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1700),
+        RunByGyro(name="run straight_smart_carry_puton_second", target=-90, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # --------ジャイロでバック（距離で制御）
+    After_puton_back_third_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
+    After_puton_back_third_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_back", target_distance=200),
+        RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
+    ])
+    # --------ジャイロで黒線に向かう処理
+    GoBlackLine_Parallel = Parallel(name="GoBlackLine", policy=ParallelPolicy.SuccessOnOne())
+    GoBlackLine_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=800),
+        RunByGyro(name="run_back_GoBlackLine", target=-45, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # GoBlackLine2_Parallel = Parallel(name="GoBlackLine_2", policy=ParallelPolicy.SuccessOnOne())
+    # GoBlackLine2_Parallel.add_children([
+    #     IsDistancePassed(name="distance_passed_GoBlackLine_2", target_distance=200),
+    #     RunByGyro(name="run_back_GoBlackLine_2", target=-90, power=60,
+    #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    # ])
+    DetectBlackLine_Parallel = Parallel(name="DetectBlackLine", policy=ParallelPolicy.SuccessOnOne())
+    DetectBlackLine_Parallel.add_children([
+        IsOnBlackLine_running(name="detect_blackline", threshold=5),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=400),
+        RunByGyro(name="run_back_DetectBlackLine", target=-90, power=40,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # --------ジャイロで90°回転して青ライン検知するまでライントレース
+    traceline_cam_DetectBlue_GOAL_Parallel = Parallel(name="traceline_cam_DetectBlue_GOAL", policy=ParallelPolicy.SuccessOnOne())
+    traceline_cam_DetectBlue_GOAL_Parallel.add_children([
+        DetectBlue(name="detect_blue"),
+        TraceLineCam(name="traceline_cam_DetectBlue_GOAL",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    ])
+
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
-        # Detectcolor(name="detectcolor"),#       色や明るさを検知できる
+        # Detectcolor(name="detectcolor"),#       色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
         # --------直線とオブジェクト回避--------
         obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
         traceline_cam_lapfinish_Parallel,#        オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
@@ -756,8 +1079,42 @@ def build_behaviour_tree() -> BehaviourTree:
         BigCircleEntryTuning_selector,#           ⑥青いラインを発見後に大円に入るときに右周りの弧を描き、黒線を迎えに行く
         # double_loop_black_selector_3,#            ⑥黒い線を探しながら弧を描く処理（重なってる黒いラインを無視する処理が必要かも）
         double_loop_blue_selector_3,#             ⑦ライントレースしながら青いラインを探す処理
-        TraceLineCam(name="Linetrace_start",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    ])
+
+    loop_02 = Sequence(name="loop_02_with_smart_carry_twin", memory=True)
+    loop_02.add_children([
+        # --------オブジェクト下の青検知～ターゲットサークルの黒検知まで
+        traceline_cam_smacary_Parallel,
+        SpinAndRun_Sequence,
+        # --------ターゲットにオブジェクトを置く
+        smart_carry_puton_first_Parallel,
+        # --------バックして黒線に向かって回転
+        After_puton_back_first_Parallel,
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-180, max_power=60, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
+        #detect_red_Parallel,#---------------------赤検知
+        After_puton_back_second_Parallel,
+        SpinAround(name="spin by 90 degrees_detect_red", target=-90, max_power=60, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # --------ターゲットにオブジェクトを置く
+        smart_carry_puton_second_Parallel,#-------オブジェクトを置く
+        # --------バックして黒線へ
+        After_puton_back_third_Parallel,#--------バック
+        SpinAround(name="spin by 90 degrees_After_puton_back_second", target=-45, max_power=80, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        GoBlackLine_Parallel,#--------------------45度回転して一定距離ジャイロで進む
+        SpinAround(name="spin by 90 degrees_GoBlackLine_1", target=-90, max_power=80, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # GoBlackLine2_Parallel,#-------------------45度回転して一定距離ジャイロで進む
+        # SpinAround(name="spin by 90 degrees_GoBlackLine_2", target=-45, max_power=60, min_power=MIN_POWER,
+        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # --------黒線検知で90度回転する
+        DetectBlackLine_Parallel,#----------------黒線を見つけるまでジャイロで進む
+        SpinAround(name="spin by 90 degrees_DetectBlackLine", target=-180, max_power=80, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        # --------青線検知するまでライントレース
+        traceline_cam_DetectBlue_GOAL_Parallel,
     ])
 
     calibration = Sequence(name="calibration", memory=True)
@@ -771,11 +1128,12 @@ def build_behaviour_tree() -> BehaviourTree:
         IsTouchOn(name="touch start"),
     ])
 
-    root = Sequence(name="loop by cam", memory=True)
+    root = Sequence(name="loop_by_camera", memory=True)
     root.add_children([
         calibration,
         start,
-        loop_01,
+        # loop_01,
+        loop_02,
         StopNow(name="stop"),
         TheEnd(name="end"),
     ])
@@ -789,7 +1147,12 @@ def initialize_etrobo(backend: str) -> ETRobo:
             .add_device('left_motor', device_type=Motor, port='B')
             .add_device('touch_sensor', device_type=TouchSensor, port='D')
             .add_device('color_sensor', device_type=ColorSensor, port='E')
-            .add_device('sonar_sensor', device_type=SonarSensor, port='F'))
+            .add_device('sonar_sensor', device_type=SonarSensor, port='F')
+            .add_device('gyro_sensor', device_type=GyroSensor, port='',
+                        config=[2.0, 2500.0,
+                        [-0.239569, -2.50881, 0.6617843], [361.9036, 355.9302, 361.8885],
+                        [10089.76, -9720.13, 9931.442, -9704.719, 9522.367, -10210.74]])
+            )
 
 def setup_thread():
     global g_video, g_video_thread
@@ -813,6 +1176,7 @@ def sig_handler(signum, frame) -> None:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('course', choices=['right', 'left'], help='Course to run')
+    parser.add_argument('--gate', choices=['front', 'back'], default='front', help='Gate position to use')
     parser.add_argument('--logfile', type=str, default=None, help='Path to log file')
     args = parser.parse_args()
 
@@ -820,6 +1184,8 @@ if __name__ == '__main__':
         g_course = -1
     else:
         g_course = 1
+    
+    g_gate = args.gate
 
     setup_thread()
 

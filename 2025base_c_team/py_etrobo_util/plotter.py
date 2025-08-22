@@ -1,5 +1,5 @@
 import math
-from etrobo_python import ETRobo, Hub, Motor, TouchSensor, ColorSensor, SonarSensor
+from etrobo_python import ETRobo, Hub, Motor, TouchSensor, ColorSensor, SonarSensor, GyroSensor
 
 TIRE_DIAMETER: float = 56.0
 WHEEL_TREAD: float = 120.0
@@ -21,6 +21,7 @@ class Plotter(object):
         touch_sensor: TouchSensor,
         color_sensor: ColorSensor,
         sonar_sensor: SonarSensor,
+        gyro_sensor: GyroSensor,
     ) -> None:
         if not self.running:
             self.running = True
