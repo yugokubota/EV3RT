@@ -974,7 +974,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_smacary_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_smacary_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="detectblue_or_trace",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="detectblue_or_trace",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
     # --------ゲートの位置までまっすぐ進む（ゲートの位置で進む距離が変わる）
