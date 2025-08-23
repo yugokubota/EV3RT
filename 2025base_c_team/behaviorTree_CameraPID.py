@@ -1150,7 +1150,7 @@ def build_behaviour_tree() -> BehaviourTree:
     root.add_children([
         calibration,
         start,
-        # loop_01,
+        loop_01,
         loop_02,
         StopNow(name="stop"),
         TheEnd(name="end"),
