@@ -866,21 +866,48 @@ def build_behaviour_tree() -> BehaviourTree:
         RunByGyro(name="run_back_GoBlackLine", target=0, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
-    # オブジェクト回避後からLAP完了まで（LAP完了は青色検知）
-    traceline_cam_lapfinish_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
-    traceline_cam_lapfinish_Parallel.add_children([
+    # オブジェクトを無視してジャイロで真っ直ぐ
+    gyro_obstacle_ignore_Parallel = Parallel(name="gyro_obstacle_ignore", policy=ParallelPolicy.SuccessOnOne())
+    gyro_obstacle_ignore_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=3000),#カーブまで
+        RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    #向正面をジャイロで真っ直ぐ
+    gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
+    gyro_mukoujoumen_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=2000),#カーブまで
+        RunByGyro(name="run_back_GoBlackLine", target=-90, power=100,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    gyro_gotolap_Parallel = Parallel(name="gyro_gotolap", policy=ParallelPolicy.SuccessOnOne())
+    gyro_gotolap_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=500),#カーブまで
+        RunByGyro(name="run_back_GoBlackLine", target=-180, power=100,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    # # オブジェクト回避後からLAP完了まで（LAP完了は青色検知）
+    # traceline_cam_lapfinish_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
+    # traceline_cam_lapfinish_Parallel.add_children([
+    #     DetectBlue(name="detect_blue"),
+    #     TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+    #     gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL,
+    #     # 距離ごとのPOWERとPID設定（本橋修正）
+    #     dynamic_pid_by_distance=[
+    #         {"start": 0, "end": 2650, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
+    #         # {"start": 2550, "end": 4800, "power": 80, "p": 0.4,  "i": 0.0035,  "d": 0.3},
+    #         {"start": 2650, "end": 4700, "power": 70, "p": 1.2, "i": 0.0015, "d": 0.25},
+    #         {"start": 4700, "end": 5700, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
+    #         {"start": 5700, "end": 9999, "power": 40, "p": 1.75, "i": 0.0012, "d": 0.18}
+    #     ]
+    #     ),
+    # ])
+    # オブジェクト回避後からLAP完了まで（LAP完了は青色検知）※ジャイロ用
+    traceline_cam_start_doubleloop_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
+    traceline_cam_start_doubleloop_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL,
-        # 距離ごとのPOWERとPID設定（本橋修正）
-        dynamic_pid_by_distance=[
-            {"start": 0, "end": 2650, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
-            # {"start": 2550, "end": 4800, "power": 80, "p": 0.4,  "i": 0.0035,  "d": 0.3},
-            {"start": 2650, "end": 4700, "power": 70, "p": 1.2, "i": 0.0015, "d": 0.25},
-            {"start": 4700, "end": 5700, "power": 45, "p": 2.2, "i": 0.0012, "d": 0.18},
-            {"start": 5700, "end": 9999, "power": 40, "p": 1.75, "i": 0.0012, "d": 0.18}
-        ]
-        ),
+        TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER)
     ])
 
     # ================ ダブルループ処理 ================
@@ -1076,8 +1103,12 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         # Detectcolor(name="detectcolor"),#       色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
         # --------直線とオブジェクト回避--------
-        obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
-        traceline_cam_lapfinish_Parallel,#        オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
+        # obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
+        # traceline_cam_lapfinish_Parallel,#      オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
+        gyro_obstacle_ignore_Parallel,#           最初の直線（オブジェクト無視）
+        gyro_mukoujoumen_Parallel,#               向正面の直線
+        gyro_gotolap_Parallel,#                   LAPまで進む
+        traceline_cam_start_doubleloop_Parallel,# LAPからダブルループまでのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
         SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-180, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
