@@ -869,14 +869,14 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクトを無視してジャイロで真っ直ぐ
     gyro_obstacle_ignore_Parallel = Parallel(name="gyro_obstacle_ignore", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_ignore_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=4650),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=4675),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     #向正面をジャイロで真っ直ぐ
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2850),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=2875),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=-90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1010,14 +1010,12 @@ def build_behaviour_tree() -> BehaviourTree:
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
         IsDistancePassed(name="distance_passed", target_distance=gate_value(500, 850)),
         RunAsInstructed(name="go_gate", pwm_l=-50, pwm_r=-65),
-        # RunByGyro(name="run straight_BringObject_to_Gate", target=180, power=60,
-        #         pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2400),
-        RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=90, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------青色検知からゲート通過までをノード化したもの
