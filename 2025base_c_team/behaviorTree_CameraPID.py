@@ -869,14 +869,14 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクトを無視してジャイロで真っ直ぐ
     gyro_obstacle_ignore_Parallel = Parallel(name="gyro_obstacle_ignore", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_ignore_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=4300),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=4350),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     #向正面をジャイロで真っ直ぐ
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2900),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=2850),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=-90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1106,7 +1106,11 @@ def build_behaviour_tree() -> BehaviourTree:
         # obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
         # traceline_cam_lapfinish_Parallel,#      オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
         gyro_obstacle_ignore_Parallel,#           最初の直線（オブジェクト無視）
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-90, max_power=60, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         gyro_mukoujoumen_Parallel,#               向正面の直線
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-180, max_power=60, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         gyro_gotolap_Parallel,#                   LAPまで進む
         traceline_cam_start_doubleloop_Parallel,# LAPからダブルループまでのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
