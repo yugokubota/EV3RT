@@ -869,14 +869,14 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクトを無視してジャイロで真っ直ぐ
     gyro_obstacle_ignore_Parallel = Parallel(name="gyro_obstacle_ignore", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_ignore_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=3000),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=4000),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     #向正面をジャイロで真っ直ぐ
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2000),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=3000),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=-90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
