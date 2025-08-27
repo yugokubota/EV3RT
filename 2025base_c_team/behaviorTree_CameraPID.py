@@ -1107,7 +1107,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
         # traceline_cam_lapfinish_Parallel,#      オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
         gyro_obstacle_ignore_Parallel,#           最初の直線（オブジェクト無視）
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-90, max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-87, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         gyro_mukoujoumen_Parallel,#               向正面の直線
         SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-180, max_power=60, min_power=MIN_POWER,
