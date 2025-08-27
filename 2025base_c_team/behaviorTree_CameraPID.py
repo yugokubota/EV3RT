@@ -989,7 +989,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_selector_3.add_children([
         DetectBlue_failure(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_3",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
-        gs_min=0, gs_max=40,trace_side=TraceSide.OPPOSITE),
+        gs_min=0, gs_max=40,trace_side=TraceSide.CENTER),
     ])
 
     escape_double_loop_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
