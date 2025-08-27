@@ -972,7 +972,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_parallel_1 = Parallel(name="double_loop_blue_parallel_1",policy=ParallelPolicy.SuccessOnOne())
     double_loop_blue_parallel_1.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed", target_distance=1550),      #青検知しなかったとき用
+        IsDistancePassed(name="distance_passed", target_distance=1700),      #青検知しなかったとき用
         TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
@@ -982,14 +982,14 @@ def build_behaviour_tree() -> BehaviourTree:
         DetectBlue(name="detect_blue"),
         IsDistancePassed(name="distance_passed", target_distance=1500),      #青検知しなかったとき用
         TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
-        gs_min=0, gs_max=50,trace_side=TraceSide.OPPOSITE),#小円は右のエッジをトレースしたいから"OPPOSITE"
+        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),#小円は右のエッジをトレースしたいから"OPPOSITE"
     ])
     # part3_青色検知するまでライントレース
     double_loop_blue_selector_3 = Selector(name="double_loop_blue_selector_3",memory=False)
     double_loop_blue_selector_3.add_children([
         DetectBlue_failure(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_3",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
-        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=40,trace_side=TraceSide.OPPOSITE),
     ])
 
     escape_double_loop_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
