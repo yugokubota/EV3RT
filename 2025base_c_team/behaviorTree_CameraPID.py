@@ -1018,7 +1018,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2400),
-        RunByGyro(name="run straight_SpinAndRun", target=90, power=80,
+        RunByGyro(name="run straight_SpinAndRun", target=88, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------青色検知からゲート通過までをノード化したもの
@@ -1028,7 +1028,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=90, max_power=70, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         SpinAndRun_Parallel,#--------------ゲートを通過する
-        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=-360, max_power=75, min_power=MIN_POWER,
+        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=-360, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでターゲットまでまっすぐ進む（距離制御でオブジェクトを置く）
