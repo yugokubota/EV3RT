@@ -972,7 +972,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_parallel_1 = Parallel(name="double_loop_blue_parallel_1",policy=ParallelPolicy.SuccessOnOne())
     double_loop_blue_parallel_1.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed", target_distance=1900),      #青検知しなかったとき用
+        IsDistancePassed(name="distance_passed", target_distance=2000),      #青検知しなかったとき用
         TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
@@ -980,7 +980,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_parallel_2 = Parallel(name="double_loop_blue_parallel_2",policy=ParallelPolicy.SuccessOnOne())
     double_loop_blue_parallel_2.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed", target_distance=1900),      #青検知しなかったとき用
+        IsDistancePassed(name="distance_passed", target_distance=2000),      #青検知しなかったとき用
         TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),#小円は右のエッジをトレースしたいから"OPPOSITE"
     ])
