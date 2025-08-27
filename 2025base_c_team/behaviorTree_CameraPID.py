@@ -921,7 +921,7 @@ def build_behaviour_tree() -> BehaviourTree:
     distance_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=750),
         #RunAsInstructed(name="go_straight", pwm_l=58, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-60),  #RIGHT用
+        RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-55),  #RIGHT用
     ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
@@ -974,7 +974,7 @@ def build_behaviour_tree() -> BehaviourTree:
         DetectBlue(name="detect_blue"),
         IsDistancePassed(name="distance_passed", target_distance=1550),      #青検知しなかったとき用
         TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
     # part2_青色検知するまでライントレース
     double_loop_blue_parallel_2 = Parallel(name="double_loop_blue_parallel_2",policy=ParallelPolicy.SuccessOnOne())
