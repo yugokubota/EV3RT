@@ -1110,7 +1110,7 @@ def build_behaviour_tree() -> BehaviourTree:
         SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-87, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         gyro_mukoujoumen_Parallel,#               向正面の直線
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-180, max_power=60, min_power=MIN_POWER,
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-177, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         gyro_gotolap_Parallel,#                   LAPまで進む
         traceline_cam_start_doubleloop_Parallel,# LAPからダブルループまでのライントレース（青いライン検知で抜ける）
