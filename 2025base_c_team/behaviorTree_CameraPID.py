@@ -20,7 +20,7 @@ from py_etrobo_util import Video, TraceSide, Plotter, SymmetricClamper
 from py_etrobo_util.plotter import TIRE_DIAMETER
 import colorsys#GRBをHSVに変える標準ライブラリ
 
-EXEC_INTERVAL: float = 0.01
+EXEC_INTERVAL: float = 0.02
 VIDEO_INTERVAL: float = 0.02
 ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
@@ -843,7 +843,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2450),
+        IsDistancePassed(name="distance_passed", target_distance=2400),
         SpinAround(name="spin by 90 degrees_After_puton_back_first", target=0, max_power=60, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         AvoidObstacleArcFull(name="arc_avoid")
