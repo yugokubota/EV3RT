@@ -752,7 +752,7 @@ class AvoidObstacleArcFull(Behaviour):
         # ライン復帰
         g_left_motor.set_power(100)
         g_right_motor.set_power(100)
-        time.sleep(1)
+        time.sleep(0.5)
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -863,7 +863,7 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_Parallel.add_children([
         avoid_seq, 
         # traceline_cam_for_obstacle
-        RunByGyro(name="run_back_GoBlackLine", target=0, power=80,
+        RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # オブジェクトを無視してジャイロで真っ直ぐ
