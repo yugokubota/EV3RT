@@ -638,9 +638,9 @@ class TraverseBehaviourTree(object):
         else:
             self.tree.tick_once()
             g_plotter.plot(**kwargs)
-            voltage = g_hub.get_battery_voltage()
-            current = g_hub.get_battery_current()
-            print(f"[Battery] Voltage={voltage} mV, Current={current} mA")
+            # voltage = g_hub.get_battery_voltage()
+            # current = g_hub.get_battery_current()
+            # print(f"[Battery] Voltage={voltage} mV, Current={current} mA")
 
 class ExposeDevices(object):
     def __call__(
