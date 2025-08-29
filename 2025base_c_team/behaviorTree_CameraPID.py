@@ -1018,7 +1018,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=2400),
-        RunByGyro(name="run straight_SpinAndRun", target=90, power=80,
+        RunByGyro(name="run straight_SpinAndRun", target=92, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------青色検知からゲート通過までをノード化したもの
