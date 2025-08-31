@@ -258,17 +258,6 @@ class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定
         left_power  = g_course * self.pwm_l
         g_right_motor.set_power(right_power)
         g_left_motor.set_power(left_power)
-        # --- デバッグ出力（10tickだけ） ---
-        if self.debug_count < 10:
-            actual_r = g_right_motor.get_power()
-            actual_l = g_left_motor.get_power()
-            count_r  = g_right_motor.get_count()
-            count_l  = g_left_motor.get_count()
-            print(f"[RunAsInstructed] tick={self.debug_count+1} "
-                f"Set(L={left_power}, R={right_power}) "
-                f"→ Actual(L={actual_l}, R={actual_r}), "
-                f"Count(L={count_l}, R={count_r})")
-            self.debug_count += 1
         return Status.RUNNING
 
 
