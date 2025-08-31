@@ -248,6 +248,7 @@ class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定
         self.pwm_l = pwm_l
         self.pwm_r = pwm_r
         self.running = False
+        self.debug_count = 0
 
     def update(self) -> Status:
         if not self.running:
@@ -255,6 +256,12 @@ class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定
             self.logger.info("%+06d %s.started with pwm=(%s, %s)" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
         g_right_motor.set_power(g_course * self.pwm_r)
         g_left_motor.set_power(g_course * self.pwm_l)
+        # --- デバッグ出力（10tickだけ） ---
+        if self.debug_count < 10:
+            print(f"[RunAsInstructed] tick={self.debug_count+1} "
+                f"L={left_power}, R={right_power} "
+                f"(orig L={self.pwm_l}, R={self.pwm_r}, course={g_course})")
+            self.debug_count += 1
         return Status.RUNNING
 
 
