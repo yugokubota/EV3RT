@@ -318,6 +318,8 @@ class RunByGyro(Behaviour):
         self._turn_cap_init = 10       # 初期上限（お好みで 5〜15）
         self._turn_cap_step = 10       # 1tickごとに増やす量
         self._deadband_deg = 2.0       # 微小誤差は無視（1.5〜3.0推奨）
+        self._min_turn = 3             # ← 追加: 最小舵（3〜5推奨）
+        self._trim_r = 0               # ← 追加: 右モータ微トリム（必要時のみ 2〜4 など）
         # ← デバッグ用カウンタ追加
         self.debug_count = 0
 
@@ -350,6 +352,15 @@ class RunByGyro(Behaviour):
             steer = 0
         else:
             steer = round(self.pid(current_heading))
+        if abs(err) < self._deadband_deg:
+            steer = 0
+        else:
+            # PIDはfloatで受けて最小舵を保証
+            steer_f = float(self.pid(current_heading))
+            if abs(steer_f) < self._min_turn:
+                steer = self._min_turn if steer_f >= 0.0 else -self._min_turn
+            else:
+                steer = int(steer_f)
 
         # ソフトスタート：最初の数tickは turn を段階解放
         if self._just_started:
@@ -362,6 +373,9 @@ class RunByGyro(Behaviour):
             if self._turn_cap >= self.power:
                 self._just_started = False
         right = max(-100, min(100, self.power - steer))
+        left  = max(-100, min(100, self.power + steer))
+        # （必要なら右モータに微トリムを掛けて直進癖を補正）
+        right = max(-100, min(100, self.power - steer - self._trim_r))
         left  = max(-100, min(100, self.power + steer))
         g_right_motor.set_power(right)
         g_left_motor.set_power(left)
