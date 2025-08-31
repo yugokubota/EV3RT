@@ -248,13 +248,16 @@ class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定
         self.pwm_l = pwm_l
         self.pwm_r = pwm_r
         self.running = False
+        self.debug_count = 0
 
     def update(self) -> Status:
         if not self.running:
             self.running = True
             self.logger.info("%+06d %s.started with pwm=(%s, %s)" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
-        g_right_motor.set_power(g_course * self.pwm_r)
-        g_left_motor.set_power(g_course * self.pwm_l)
+        right_power = g_course * self.pwm_r
+        left_power  = g_course * self.pwm_l
+        g_right_motor.set_power(right_power)
+        g_left_motor.set_power(left_power)
         return Status.RUNNING
 
 
@@ -312,6 +315,16 @@ class RunByGyro(Behaviour):
         self.pid_d = pid_d
         self.running = False
         self.target_heading = 0.0
+        # --- 追加: 初期スパイク抑制 ---
+        self._just_started = False
+        self._turn_cap = 0             # 現在のturn上限
+        self._turn_cap_init = 10       # 初期上限（お好みで 5〜15）
+        self._turn_cap_step = 10       # 1tickごとに増やす量
+        self._deadband_deg = 1.5       # 微小誤差は無視（1.5〜3.0推奨）
+        self._min_turn = 4             # ← 追加: 最小舵（3〜5推奨）
+        self._trim_r = 0               # ← 追加: 右モータ微トリム（必要時のみ 2〜4 など）
+        # ← デバッグ用カウンタ追加
+        self.debug_count = 0
 
     def update(self) -> Status:
         current_heading = (-1) * g_course * g_gyro_sensor.get_angle()
@@ -328,13 +341,56 @@ class RunByGyro(Behaviour):
                             setpoint=self.target_heading,
                             sample_time=EXEC_INTERVAL, 
                             output_limits=(-self.power, self.power))
+            # 初期化時にPID内部状態を完全リセット
+            self.pid.reset()
             self.running = True
+            self._just_started = True
+            self._turn_cap = self._turn_cap_init
             self.logger.info("%+06d %s.gyro run started toward heading=%.1f" % (g_plotter.get_distance(),self.__class__.__name__, self.target_heading))
-        steer = round(self.pid(current_heading))
+        # 誤差（[-180,180]へ正規化してからデッドバンド適用）
+        err = float(self.target_heading) - current_heading
+        if err > 180.0:  err -= 360.0
+        if err < -180.0: err += 360.0
+        if abs(err) < self._deadband_deg:
+            steer = 0
+        else:
+            # PIDはfloatで受けて最小舵を保証
+            steer_f = float(self.pid(current_heading))
+            if abs(steer_f) < self._min_turn:
+                steer = self._min_turn if steer_f >= 0.0 else -self._min_turn
+            else:
+                steer = int(steer_f)
+
+        # ソフトスタート：最初の数tickは turn を段階解放
+        if self._just_started:
+            if steer > 0:
+                steer = min(steer, self._turn_cap)
+            else:
+                steer = max(steer, -self._turn_cap)
+            # 上限を拡大していき、十分大きくなったら解除
+            self._turn_cap = min(self.power, self._turn_cap + self._turn_cap_step)
+            if self._turn_cap >= self.power:
+                self._just_started = False
         right = max(-100, min(100, self.power - steer))
         left  = max(-100, min(100, self.power + steer))
+        # （必要なら右モータに微トリムを掛けて直進癖を補正）
+        right = max(-100, min(100, self.power - steer - self._trim_r))
+        left  = max(-100, min(100, self.power + steer))
+        # --- クリッピングしない操舵（スケーリング）---
+        left_cmd  = self.power + steer
+        right_cmd = self.power - steer - self._trim_r   # 右微トリム（必要時のみ作用）
+        maxmag = max(100.0, abs(left_cmd), abs(right_cmd))
+        scale = 100.0 / maxmag           # maxmag<=100ならscale=1.0
+        left  = int(left_cmd  * scale)
+        right = int(right_cmd * scale)
         g_right_motor.set_power(right)
         g_left_motor.set_power(left)
+        # ---- デバッグ出力を10回だけ ----
+        if self.debug_count < 20:
+            print(f"[RunByGyro] hdg={current_heading:.1f} tgt={self.target_heading:.1f} "
+            f"err={err:.1f} steer={steer} L={left} R={right}")
+            self.debug_count += 1
+        # --------------------------------
         return Status.RUNNING
 
 class TraceLine_sensor(Behaviour):
@@ -739,14 +795,17 @@ class AvoidObstacleArcFull(Behaviour):
         g_right_motor.set_power(0)
         # 右カーブ
         g_left_motor.set_power(100)
-        g_right_motor.set_power(60)
+        g_right_motor.set_power(40)
         time.sleep(0.6)  # 必要に応じて調整
-        # 止める
-        g_left_motor.set_power(0)
-        g_right_motor.set_power(0)
+        g_left_motor.set_power(80)
+        g_right_motor.set_power(100)
+        time.sleep(0.6)
+        # # 止める
+        # g_left_motor.set_power(0)
+        # g_right_motor.set_power(0)
 
         # 左に戻す
-        g_left_motor.set_power(60)
+        g_left_motor.set_power(55)
         g_right_motor.set_power(100)
         time.sleep(1.1)  # 必要に応じて調整 
         # g_left_motor.set_power(0)
@@ -755,7 +814,7 @@ class AvoidObstacleArcFull(Behaviour):
         # ライン復帰
         g_left_motor.set_power(100)
         g_right_motor.set_power(100)
-        time.sleep(0.5)
+        time.sleep(0.6)
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -838,6 +897,19 @@ def gate_value(front_val: int, back_val: int) -> int:
         # 念のため g_gate 未設定でも落ちないように
         return front_val
 
+class ResetGyroPID(Behaviour):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.done = False
+
+    def update(self) -> Status:
+        if not self.done:
+            g_gyro_sensor.reset()
+            print("[ResetGyroPID] gyro reset done")
+            self.done = True
+            return Status.SUCCESS
+        return Status.SUCCESS
+
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
 
@@ -846,9 +918,9 @@ def build_behaviour_tree() -> BehaviourTree:
     # オブジェクトを回避するためのノード
     avoid_seq = Sequence(name="avoid_seq", memory=True)
     avoid_seq.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2400),
-        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=0, max_power=60, min_power=MIN_POWER,
-                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        IsDistancePassed(name="distance_passed", target_distance=2430),
+        # SpinAround(name="spin by 90 degrees_After_puton_back_first", target=0, max_power=60, min_power=MIN_POWER,
+        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         AvoidObstacleArcFull(name="arc_avoid")
     ])
     # ============= ライントレース =============
@@ -861,12 +933,13 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=40,
         trace_side=TraceSide.RIGHT
     )
+
     # オブジェクト回避とライントレース
     obstacle_Parallel = Parallel(name="obstacle_or_trace", policy=ParallelPolicy.SuccessOnOne())
     obstacle_Parallel.add_children([
         avoid_seq, 
         # traceline_cam_for_obstacle
-        RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
+        RunByGyro(name="object_avoid_gyro", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # オブジェクトを無視してジャイロで真っ直ぐ
@@ -878,14 +951,14 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
     gyro_obstacle_avoid_Parallel = Parallel(name="gyro_obstacle_avoid", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_avoid_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=900),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=1050),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     #向正面をジャイロで真っ直ぐ
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=3100),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=3050),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=-90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -930,7 +1003,9 @@ def build_behaviour_tree() -> BehaviourTree:
     distance_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=750),
         #RunAsInstructed(name="go_straight", pwm_l=58, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="go_straight", pwm_l=-50, pwm_r=-58),  #RIGHT用
+        # RunAsInstructed(name="go_straight", pwm_l=-60, pwm_r=-65),  #RIGHT用
+        TraceLineCam(name="traceline_cam_lapfinish",power=60, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=30,trace_side=TraceSide.OPPOSITE),
     ])
     # part1_黒線を検知した場合ライントレース
     double_loop_black_selector_1 = Selector(name="double_loop_black_selector1",memory=False)
@@ -965,14 +1040,14 @@ def build_behaviour_tree() -> BehaviourTree:
     SmallCircleEntryTuning_selector.add_children([
         IsDistancePassed(name="distance_passed", target_distance=500),  #200は適当なので要調整
         #RunAsInstructed(name="SmallCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="SmallCircle_Entry", pwm_l=-50, pwm_r=-55),  #RIGHT用
+        RunAsInstructed(name="SmallCircle_Entry", pwm_l=-60, pwm_r=-70),  #RIGHT用
     ])
     # 大円に入るときの調整
     BigCircleEntryTuning_selector = Parallel(name="BigCircleEntryTuning_selector", policy=ParallelPolicy.SuccessOnOne())
     BigCircleEntryTuning_selector.add_children([
         IsDistancePassed(name="distance_passed", target_distance=550),  #200は適当なので要調整
         #RunAsInstructed(name="BigCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="BigCircle_Entry", pwm_l=-50, pwm_r=-35),  #RIGHT用
+        RunAsInstructed(name="BigCircle_Entry", pwm_l=-62, pwm_r=-50),  #RIGHT用
     ])
 
     # ================ 青色検知するまでライントレース ================
@@ -982,7 +1057,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_parallel_1.add_children([
         DetectBlue(name="detect_blue"),
         IsDistancePassed(name="distance_passed", target_distance=2025),      #青検知しなかったとき用
-        TraceLineCam(name="traceline_cam_lapfinish",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
     # part2_青色検知するまでライントレース
@@ -990,14 +1065,14 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_parallel_2.add_children([
         DetectBlue(name="detect_blue"),
         IsDistancePassed(name="distance_passed", target_distance=2200),      #青検知しなかったとき用
-        TraceLineCam(name="Tracelinecam_DetectBlue_2",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
+        TraceLineCam(name="Tracelinecam_DetectBlue_2",power=48, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),#小円は右のエッジをトレースしたいから"OPPOSITE"
     ])
     # part3_青色検知するまでライントレース
     double_loop_blue_selector_3 = Selector(name="double_loop_blue_selector_3",memory=False)
     double_loop_blue_selector_3.add_children([
         DetectBlue_failure(name="detect_blue"),
-        TraceLineCam(name="Tracelinecam_DetectBlue_3",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
+        TraceLineCam(name="Tracelinecam_DetectBlue_3",power=48, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=40,trace_side=TraceSide.CENTER),
     ])
 
@@ -1013,14 +1088,14 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_smacary_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_smacary_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="detectblue_or_trace",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="detectblue_or_trace",power=50, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
     # --------ゲートの位置までまっすぐ進む（ゲートの位置で進む距離が変わる）
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(500, 850)),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(490, 850)),
         RunAsInstructed(name="go_gate", pwm_l=-50, pwm_r=-65),
     ])
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
@@ -1128,8 +1203,8 @@ def build_behaviour_tree() -> BehaviourTree:
         gyro_gotolap_Parallel,#                   LAPまで進む
         traceline_cam_start_doubleloop_Parallel,# LAPからダブルループまでのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
-        # SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-183, max_power=60, min_power=MIN_POWER,
-        #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        SpinAround(name="spin by 90 degrees_After_puton_back_first", target=-180, max_power=60, min_power=MIN_POWER,
+                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         distance_loop_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
         # double_loop_black_selector_1,#            ②調整した後、黒いライン検知する処理（いらないかも）
         double_loop_blue_parallel_1,#             ③ライントレースしながら青いラインを探す処理
@@ -1199,7 +1274,7 @@ def build_behaviour_tree() -> BehaviourTree:
     root.add_children([
         calibration,
         start,
-        # loop_01,
+        loop_01,
         loop_02,
         StopNow(name="stop"),
         TheEnd(name="end"),
