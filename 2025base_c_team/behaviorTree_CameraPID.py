@@ -283,7 +283,7 @@ class SpinAround(Behaviour):
             else:
                 self.target_heading = self.target
             self.pid = PID(self.pid_p, self.pid_i, self.pid_d, setpoint=self.target_heading, sample_time=EXEC_INTERVAL)
-                desired_heading = self.target
+            desired_heading = self.target
             # RunByGyro と同じ：「現在角に最も近い等価目標角」へ折り返し
             k = round((current_heading - desired_heading) / 360.0)
             self.target_heading = desired_heading + 360.0 * k
