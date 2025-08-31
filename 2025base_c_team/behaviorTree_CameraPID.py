@@ -254,13 +254,20 @@ class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定
         if not self.running:
             self.running = True
             self.logger.info("%+06d %s.started with pwm=(%s, %s)" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
+        right_power = g_course * self.pwm_r
+        left_power  = g_course * self.pwm_l
         g_right_motor.set_power(g_course * self.pwm_r)
         g_left_motor.set_power(g_course * self.pwm_l)
         # --- デバッグ出力（10tickだけ） ---
         if self.debug_count < 10:
+            actual_r = g_right_motor.get_power()
+            actual_l = g_left_motor.get_power()
+            count_r  = g_right_motor.get_count()
+            count_l  = g_left_motor.get_count()
             print(f"[RunAsInstructed] tick={self.debug_count+1} "
-                f"L={left_power}, R={right_power} "
-                f"(orig L={self.pwm_l}, R={self.pwm_r}, course={g_course})")
+                f"Set(L={left_power}, R={right_power}) "
+                f"→ Actual(L={actual_l}, R={actual_r}), "
+                f"Count(L={count_l}, R={count_r})")
             self.debug_count += 1
         return Status.RUNNING
 
@@ -962,7 +969,7 @@ def build_behaviour_tree() -> BehaviourTree:
     #向正面をジャイロで真っ直ぐ
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=3100),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=3050),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=-90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
