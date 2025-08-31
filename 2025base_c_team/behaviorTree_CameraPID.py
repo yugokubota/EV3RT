@@ -1044,7 +1044,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BigCircleEntryTuning_selector.add_children([
         IsDistancePassed(name="distance_passed", target_distance=550),  #200は適当なので要調整
         #RunAsInstructed(name="BigCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="BigCircle_Entry", pwm_l=-65, pwm_r=-50),  #RIGHT用
+        RunAsInstructed(name="BigCircle_Entry", pwm_l=-62, pwm_r=-50),  #RIGHT用
     ])
 
     # ================ 青色検知するまでライントレース ================
