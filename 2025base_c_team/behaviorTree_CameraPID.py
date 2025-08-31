@@ -383,7 +383,7 @@ class RunByGyro(Behaviour):
         g_right_motor.set_power(right)
         g_left_motor.set_power(left)
         # ---- デバッグ出力を10回だけ ----
-        if self.debug_count < 40:
+        if self.debug_count < 20:
             print(f"[RunByGyro] hdg={current_heading:.1f} tgt={self.target_heading:.1f} "
             f"err={err:.1f} steer={steer} L={left} R={right}")
             self.debug_count += 1
