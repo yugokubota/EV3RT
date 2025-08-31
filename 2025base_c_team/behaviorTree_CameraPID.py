@@ -302,12 +302,12 @@ class SpinAround(Behaviour):
         if error < -180.0:
             error += 360.0
         if abs(error) < 2.0:
-        err = float(self.target_heading) - current_heading
-        # RunByGyro と同じ誤差正規化（[-180, 180]）。一発で収まらない場合もあるので while で安全に。
-        while err > 180.0:
-            err -= 360.0
-        while err < -180.0:
-            err += 360.0
+            err = float(self.target_heading) - current_heading
+            # RunByGyro と同じ誤差正規化（[-180, 180]）。一発で収まらない場合もあるので while で安全に。
+            while err > 180.0:
+                err -= 360.0
+            while err < -180.0:
+                err += 360.0
         # デッドバンドも合わせる（RunByGyro は 1.5 度）
         if abs(err) < 1.5:
             self.logger.info("%+06d %s.spin ended at heading=%d" % (g_plotter.get_distance(),
