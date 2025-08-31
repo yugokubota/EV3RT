@@ -1095,7 +1095,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(500, 850)),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(490, 850)),
         RunAsInstructed(name="go_gate", pwm_l=-50, pwm_r=-65),
     ])
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
