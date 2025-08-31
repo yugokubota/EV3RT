@@ -256,8 +256,8 @@ class RunAsInstructed(Behaviour):# ロボットの左右のモーターに固定
             self.logger.info("%+06d %s.started with pwm=(%s, %s)" % (g_plotter.get_distance(), self.__class__.__name__, self.pwm_l, self.pwm_r))
         right_power = g_course * self.pwm_r
         left_power  = g_course * self.pwm_l
-        g_right_motor.set_power(g_course * self.pwm_r)
-        g_left_motor.set_power(g_course * self.pwm_l)
+        g_right_motor.set_power(right_power)
+        g_left_motor.set_power(left_power)
         # --- デバッグ出力（10tickだけ） ---
         if self.debug_count < 10:
             actual_r = g_right_motor.get_power()
