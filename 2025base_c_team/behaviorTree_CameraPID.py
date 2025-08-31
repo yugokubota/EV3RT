@@ -838,6 +838,19 @@ def gate_value(front_val: int, back_val: int) -> int:
         # 念のため g_gate 未設定でも落ちないように
         return front_val
 
+class ResetGyroPID(Behaviour):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.done = False
+
+    def update(self) -> Status:
+        if not self.done:
+            g_gyro_sensor.reset()
+            print("[ResetGyroPID] gyro reset done")
+            self.done = True
+            return Status.SUCCESS
+        return Status.SUCCESS
+
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
 
@@ -861,6 +874,7 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=40,
         trace_side=TraceSide.RIGHT
     )
+
     # オブジェクト回避とライントレース
     obstacle_Parallel = Parallel(name="obstacle_or_trace", policy=ParallelPolicy.SuccessOnOne())
     obstacle_Parallel.add_children([
@@ -868,6 +882,11 @@ def build_behaviour_tree() -> BehaviourTree:
         # traceline_cam_for_obstacle
         RunByGyro(name="object_avoid_gyro", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    obstacle_seq = Sequence(name="obstacle_seq", memory=True)
+    obstacle_seq.add_children([
+        ResetGyroPID(name="reset_gyro_pid"),
+        obstacle_Parallel
     ])
     # オブジェクトを無視してジャイロで真っ直ぐ
     gyro_obstacle_ignore_Parallel = Parallel(name="gyro_obstacle_ignore", policy=ParallelPolicy.SuccessOnOne())
@@ -1114,7 +1133,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         # Detectcolor(name="detectcolor"),#       色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
         # --------直線とオブジェクト回避--------
-        obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
+        obstacle_seq,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
         # traceline_cam_lapfinish_Parallel,#      オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
         # gyro_obstacle_ignore_Parallel,#           最初の直線（オブジェクト無視）
         SpinAround(name="spin by 90 degrees_After_puton_back_first", target=0, max_power=60, min_power=MIN_POWER,
