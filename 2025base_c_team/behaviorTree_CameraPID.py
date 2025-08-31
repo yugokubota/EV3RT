@@ -312,6 +312,14 @@ class RunByGyro(Behaviour):
         self.pid_d = pid_d
         self.running = False
         self.target_heading = 0.0
+        # --- 追加: 初期スパイク抑制 ---
+        self._just_started = False
+        self._turn_cap = 0             # 現在のturn上限
+        self._turn_cap_init = 10       # 初期上限（お好みで 5〜15）
+        self._turn_cap_step = 10       # 1tickごとに増やす量
+        self._deadband_deg = 2.0       # 微小誤差は無視（1.5〜3.0推奨）
+        # ← デバッグ用カウンタ追加
+        self.debug_count = 0
 
     def update(self) -> Status:
         current_heading = (-1) * g_course * g_gyro_sensor.get_angle()
@@ -328,13 +336,41 @@ class RunByGyro(Behaviour):
                             setpoint=self.target_heading,
                             sample_time=EXEC_INTERVAL, 
                             output_limits=(-self.power, self.power))
+            # 初期化時にPID内部状態を完全リセット
+            self.pid.reset()
             self.running = True
+            self._just_started = True
+            self._turn_cap = self._turn_cap_init
             self.logger.info("%+06d %s.gyro run started toward heading=%.1f" % (g_plotter.get_distance(),self.__class__.__name__, self.target_heading))
-        steer = round(self.pid(current_heading))
+        # 誤差（[-180,180]へ正規化してからデッドバンド適用）
+        err = float(self.target_heading) - current_heading
+        if err > 180.0:  err -= 360.0
+        if err < -180.0: err += 360.0
+        if abs(err) < self._deadband_deg:
+            steer = 0
+        else:
+            steer = round(self.pid(current_heading))
+
+        # ソフトスタート：最初の数tickは turn を段階解放
+        if self._just_started:
+            if steer > 0:
+                steer = min(steer, self._turn_cap)
+            else:
+                steer = max(steer, -self._turn_cap)
+            # 上限を拡大していき、十分大きくなったら解除
+            self._turn_cap = min(self.power, self._turn_cap + self._turn_cap_step)
+            if self._turn_cap >= self.power:
+                self._just_started = False
         right = max(-100, min(100, self.power - steer))
         left  = max(-100, min(100, self.power + steer))
         g_right_motor.set_power(right)
         g_left_motor.set_power(left)
+        # ---- デバッグ出力を10回だけ ----
+        if self.debug_count < 10:
+            print(f"[RunByGyro] hdg={current_heading:.1f} tgt={self.target_heading:.1f} "
+            f"err={err:.1f} steer={steer} L={left} R={right}")
+            self.debug_count += 1
+        # --------------------------------
         return Status.RUNNING
 
 class TraceLine_sensor(Behaviour):
@@ -883,11 +919,6 @@ def build_behaviour_tree() -> BehaviourTree:
         RunByGyro(name="object_avoid_gyro", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
-    obstacle_seq = Sequence(name="obstacle_seq", memory=True)
-    obstacle_seq.add_children([
-        ResetGyroPID(name="reset_gyro_pid"),
-        obstacle_Parallel
-    ])
     # オブジェクトを無視してジャイロで真っ直ぐ
     gyro_obstacle_ignore_Parallel = Parallel(name="gyro_obstacle_ignore", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_ignore_Parallel.add_children([
@@ -1133,7 +1164,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         # Detectcolor(name="detectcolor"),#       色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
         # --------直線とオブジェクト回避--------
-        obstacle_seq,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
+        obstacle_Parallel,#                     直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
         # traceline_cam_lapfinish_Parallel,#      オブジェクト回避後からLAP通過までのライントレース（青いライン検知で抜ける）
         # gyro_obstacle_ignore_Parallel,#           最初の直線（オブジェクト無視）
         SpinAround(name="spin by 90 degrees_After_puton_back_first", target=0, max_power=60, min_power=MIN_POWER,
