@@ -1063,7 +1063,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ターゲットまでまっすぐ進む_puton後（距離で制御）
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_second_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_back", target_distance=1050),
+        IsDistancePassed(name="distance_passed_back", target_distance=1045),
         RunByGyro(name="run straight_smart_carry_puton", target=-180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1097,7 +1097,7 @@ def build_behaviour_tree() -> BehaviourTree:
     DetectBlackLine_Parallel = Parallel(name="DetectBlackLine", policy=ParallelPolicy.SuccessOnOne())
     DetectBlackLine_Parallel.add_children([
         IsOnBlackLine_running(name="detect_blackline", threshold=5),
-        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=600),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=620),
         RunByGyro(name="run_back_DetectBlackLine", target=-90, power=40,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
