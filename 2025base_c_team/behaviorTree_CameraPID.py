@@ -791,7 +791,7 @@ class AvoidObstacleArcFull(Behaviour):
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
         # 右カーブ
-        g_left_motor.set_power(90)
+        g_left_motor.set_power(100)
         g_right_motor.set_power(40)
         time.sleep(0.6)  # 必要に応じて調整
         # # 止める
@@ -800,14 +800,14 @@ class AvoidObstacleArcFull(Behaviour):
 
         # 左に戻す
         g_left_motor.set_power(40)
-        g_right_motor.set_power(90)
+        g_right_motor.set_power(100)
         time.sleep(1.1)  # 必要に応じて調整 
         # g_left_motor.set_power(0)
         # g_right_motor.set_power(0)
 
         # ライン復帰
-        g_left_motor.set_power(90)
-        g_right_motor.set_power(90)
+        g_left_motor.set_power(100)
+        g_right_motor.set_power(100)
         time.sleep(0.7)
         # 止める
         g_left_motor.set_power(0)
@@ -933,33 +933,33 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_Parallel.add_children([
         avoid_seq, 
         # traceline_cam_for_obstacle
-        RunByGyro(name="object_avoid_gyro", target=0, power=90,
+        RunByGyro(name="object_avoid_gyro", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # オブジェクトを無視してジャイロで真っ直ぐ
     gyro_obstacle_ignore_Parallel = Parallel(name="gyro_obstacle_ignore", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_ignore_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=4675),#カーブまで
-        RunByGyro(name="run_back_GoBlackLine", target=0, power=90,
+        RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     gyro_obstacle_avoid_Parallel = Parallel(name="gyro_obstacle_avoid", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_avoid_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=1050),#カーブまで
-        RunByGyro(name="run_back_GoBlackLine", target=0, power=90,
+        RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     #向正面をジャイロで真っ直ぐ
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=3100),#カーブまで
-        RunByGyro(name="run_back_GoBlackLine", target=-90, power=90,
+        RunByGyro(name="run_back_GoBlackLine", target=-90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     gyro_gotolap_Parallel = Parallel(name="gyro_gotolap", policy=ParallelPolicy.SuccessOnOne())
     gyro_gotolap_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=500),#カーブまで
-        RunByGyro(name="run_back_GoBlackLine", target=-180, power=90,
+        RunByGyro(name="run_back_GoBlackLine", target=-180, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # # オブジェクト回避後からLAP完了まで（LAP完了は青色検知）
