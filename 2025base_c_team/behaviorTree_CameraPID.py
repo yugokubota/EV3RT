@@ -791,7 +791,7 @@ class AvoidObstacleArcFull(Behaviour):
         # ライン復帰
         g_left_motor.set_power(100)
         g_right_motor.set_power(100)
-        time.sleep(0.5)
+        time.sleep(0.7)
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -928,7 +928,7 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
     gyro_obstacle_avoid_Parallel = Parallel(name="gyro_obstacle_avoid", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_avoid_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=930),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=950),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
