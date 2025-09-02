@@ -1040,14 +1040,18 @@ def build_behaviour_tree() -> BehaviourTree:
     SmallCircleEntryTuning_selector.add_children([
         IsDistancePassed(name="distance_passed", target_distance=500),  #200は適当なので要調整
         #RunAsInstructed(name="SmallCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="SmallCircle_Entry", pwm_l=-60, pwm_r=-70),  #RIGHT用
+        # RunAsInstructed(name="SmallCircle_Entry", pwm_l=-60, pwm_r=-70),  #RIGHT用
+        TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
     # 大円に入るときの調整
     BigCircleEntryTuning_selector = Parallel(name="BigCircleEntryTuning_selector", policy=ParallelPolicy.SuccessOnOne())
     BigCircleEntryTuning_selector.add_children([
         IsDistancePassed(name="distance_passed", target_distance=550),  #200は適当なので要調整
         #RunAsInstructed(name="BigCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="BigCircle_Entry", pwm_l=-57, pwm_r=-50),  #RIGHT用
+        # RunAsInstructed(name="BigCircle_Entry", pwm_l=-57, pwm_r=-50),  #RIGHT用
+        TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
 
     # ================ 青色検知するまでライントレース ================
