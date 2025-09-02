@@ -1060,7 +1060,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_parallel_1 = Parallel(name="double_loop_blue_parallel_1",policy=ParallelPolicy.SuccessOnOne())
     double_loop_blue_parallel_1.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed", target_distance=2025),      #青検知しなかったとき用
+        IsDistancePassed(name="distance_passed", target_distance=1950),      #青検知しなかったとき用
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
