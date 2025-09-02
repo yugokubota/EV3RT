@@ -1109,6 +1109,18 @@ def build_behaviour_tree() -> BehaviourTree:
         RunByGyro(name="run straight_SpinAndRun", target=93, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
+    Spintotarget_45degree_Sequence= Sequence(name="Spintotarget_45degree", memory=True)
+    Spintotarget_45degree_Sequence.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
+        RunByGyro(name="run straight_SpinAndRun", target=-315, power=70,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+    Spintotarget_90degree_Sequence= Sequence(name="Spintotarget_90degree", memory=True)
+    Spintotarget_90degree_Sequence.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
+        RunByGyro(name="run straight_SpinAndRun", target=-360, power=70,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
     # --------青色検知からゲート通過までをノード化したもの
     SpinAndRun_Sequence = Sequence(name="SpinAndRun_Sequence", memory=True)
     SpinAndRun_Sequence.add_children([
@@ -1116,8 +1128,8 @@ def build_behaviour_tree() -> BehaviourTree:
         # SpinAround(name="spin by 90 degrees_SpinAndRun_1", target=90, max_power=70, min_power=MIN_POWER,
         #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
         SpinAndRun_Parallel,#--------------ゲートを通過する
-        SpinAround(name="spin by 45or90 degrees_SpinAndRun_2", target=-360, max_power=50, min_power=MIN_POWER,
-                    pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        Spintotarget_45degree_Sequence,
+        Spintotarget_90degree_Sequence,
     ])
     # --------ジャイロでターゲットまでまっすぐ進む（距離制御でオブジェクトを置く）
     smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
