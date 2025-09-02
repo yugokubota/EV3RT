@@ -1004,7 +1004,7 @@ def build_behaviour_tree() -> BehaviourTree:
         IsDistancePassed(name="distance_passed", target_distance=750),
         #RunAsInstructed(name="go_straight", pwm_l=58, pwm_r=50),      #LEFT用
         # RunAsInstructed(name="go_straight", pwm_l=-60, pwm_r=-65),  #RIGHT用
-        TraceLineCam(name="traceline_cam_lapfinish",power=60, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=30,trace_side=TraceSide.OPPOSITE),
     ])
     # part1_黒線を検知した場合ライントレース
