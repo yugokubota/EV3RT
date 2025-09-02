@@ -26,7 +26,7 @@ ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
 JUNCT_LOWER_THRESH = 30
 MAX_POWER = 100
-MIN_POWER = 40
+MIN_POWER = 50
 
 class ArmDirection(IntEnum):
     UP = -1
@@ -795,7 +795,7 @@ class AvoidObstacleArcFull(Behaviour):
         g_right_motor.set_power(0)
         # 右カーブ
         g_left_motor.set_power(100)
-        g_right_motor.set_power(60)
+        g_right_motor.set_power(70)
         time.sleep(0.6)  # 必要に応じて調整
         g_left_motor.set_power(80)
         g_right_motor.set_power(100)
@@ -1099,7 +1099,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(490, 850)),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(485, 850)),
         RunAsInstructed(name="go_gate", pwm_l=-50, pwm_r=-65),
     ])
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
