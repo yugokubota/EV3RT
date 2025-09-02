@@ -297,6 +297,10 @@ class SpinAround(Behaviour):
         power = int(self.clamper.clamp(self.pid(current_heading)))
         g_right_motor.set_power(g_course * power)
         g_left_motor.set_power((-1) * g_course * power)
+        if self.debug_count < 10:
+            print(f"[RunByGyro] hdg={current_heading:.1f} tgt={self.target_heading:.1f} "
+            f"err={err:.1f} steer={steer} L={left} R={right}")
+            self.debug_count += 1
         return Status.RUNNING    
 
 
@@ -1042,7 +1046,7 @@ def build_behaviour_tree() -> BehaviourTree:
         #RunAsInstructed(name="SmallCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
         # RunAsInstructed(name="SmallCircle_Entry", pwm_l=-60, pwm_r=-70),  #RIGHT用
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
     # 大円に入るときの調整
     BigCircleEntryTuning_selector = Parallel(name="BigCircleEntryTuning_selector", policy=ParallelPolicy.SuccessOnOne())
