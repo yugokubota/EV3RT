@@ -1047,7 +1047,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BigCircleEntryTuning_selector.add_children([
         IsDistancePassed(name="distance_passed", target_distance=550),  #200は適当なので要調整
         #RunAsInstructed(name="BigCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
-        RunAsInstructed(name="BigCircle_Entry", pwm_l=-62, pwm_r=-50),  #RIGHT用
+        RunAsInstructed(name="BigCircle_Entry", pwm_l=-57, pwm_r=-50),  #RIGHT用
     ])
 
     # ================ 青色検知するまでライントレース ================
@@ -1065,7 +1065,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_parallel_2.add_children([
         DetectBlue(name="detect_blue"),
         IsDistancePassed(name="distance_passed", target_distance=2200),      #青検知しなかったとき用
-        TraceLineCam(name="Tracelinecam_DetectBlue_2",power=48, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
+        TraceLineCam(name="Tracelinecam_DetectBlue_2",power=43, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),#小円は右のエッジをトレースしたいから"OPPOSITE"
     ])
     # part3_青色検知するまでライントレース
