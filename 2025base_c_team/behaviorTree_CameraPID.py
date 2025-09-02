@@ -951,7 +951,7 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
     gyro_obstacle_avoid_Parallel = Parallel(name="gyro_obstacle_avoid", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_avoid_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=1050),#カーブまで
+        IsDistancePassed(name="distance_passed", target_distance=1000),#カーブまで
         RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1099,7 +1099,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(485, 850)),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(475, 850)),
         RunAsInstructed(name="go_gate", pwm_l=-50, pwm_r=-65),
     ])
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
