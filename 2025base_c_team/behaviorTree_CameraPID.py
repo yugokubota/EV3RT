@@ -1105,7 +1105,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2400, 2370)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2400, 2300)),
         RunByGyro(name="run straight_SpinAndRun", target=93, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1122,8 +1122,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ジャイロでターゲットまでまっすぐ進む（距離制御でオブジェクトを置く）
     smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_first_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(330, 600)),
-        RunByGyro(name="run straight_smart_carry_puton", target=0, power=60,
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(330, 650)),
+        RunByGyro(name="run straight_smart_carry_puton", target=0, power=75,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでバック（距離で制御）
