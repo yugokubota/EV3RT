@@ -1060,7 +1060,7 @@ def build_behaviour_tree() -> BehaviourTree:
     double_loop_blue_parallel_1 = Parallel(name="double_loop_blue_parallel_1",policy=ParallelPolicy.SuccessOnOne())
     double_loop_blue_parallel_1.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed", target_distance=1950),      #青検知しなかったとき用
+        IsDistancePassed(name="distance_passed", target_distance=1900),      #青検知しなかったとき用
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
@@ -1099,7 +1099,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(475, 850)),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(465, 850)),
         RunAsInstructed(name="go_gate", pwm_l=-50, pwm_r=-65),
     ])
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
@@ -1142,7 +1142,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------ターゲットまでまっすぐ進む_puton後（距離で制御）
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_second_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_back", target_distance=1015),
+        IsDistancePassed(name="distance_passed_back", target_distance=1000),
         RunByGyro(name="run straight_smart_carry_puton", target=-180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
