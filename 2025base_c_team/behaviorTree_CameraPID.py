@@ -300,7 +300,7 @@ class SpinAround(Behaviour):
         g_left_motor.set_power((-1) * g_course * power)
         if self.debug_count < 10:
             print(f"[RunByGyro] hdg={current_heading:.1f} tgt={self.target_heading:.1f} "
-            f"err={err:.1f} steer={steer} L={left} R={right}")
+            f"err={error:.1f} L={left} R={right}")
             self.debug_count += 1
         return Status.RUNNING    
 
