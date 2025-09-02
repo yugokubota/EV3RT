@@ -272,6 +272,7 @@ class SpinAround(Behaviour):
         self.pid_d = pid_d
         self.clamper = SymmetricClamper(min_power, max_power)
         self.running = False
+        self.debug_count = 0
 
     def update(self) -> Status:
         current_heading = (-1) * g_course * g_gyro_sensor.get_angle()
