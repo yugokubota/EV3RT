@@ -1047,7 +1047,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # 大円に入るときの調整
     BigCircleEntryTuning_selector = Parallel(name="BigCircleEntryTuning_selector", policy=ParallelPolicy.SuccessOnOne())
     BigCircleEntryTuning_selector.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=550),  #200は適当なので要調整
+        IsDistancePassed(name="distance_passed", target_distance=400),  #200は適当なので要調整
         #RunAsInstructed(name="BigCircle_Entry", pwm_l=60, pwm_r=50),      #LEFT用
         # RunAsInstructed(name="BigCircle_Entry", pwm_l=-57, pwm_r=-50),  #RIGHT用
         TraceLineCam(name="traceline_cam_lapfinish",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
@@ -1105,7 +1105,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2400, 2150)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2400, 2230)),
         RunByGyro(name="run straight_SpinAndRun", target=93, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
