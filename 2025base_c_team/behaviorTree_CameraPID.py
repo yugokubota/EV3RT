@@ -1081,7 +1081,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Purpose] 青検知するまでセンターでライントレース（青検知するようにセンターにしている）
     # [Exit]    青検知
     # [Control] Parallel(SuccessOnOne)
-    BigCircle_Linetrace_CenterEdge_parallel = Parallel(name="BigCircle_Linetrace_CenterEdge",memory=False)
+    BigCircle_Linetrace_CenterEdge_parallel = Parallel(name="BigCircle_Linetrace_CenterEdge",policy=ParallelPolicy.SuccessOnOne())
     BigCircle_Linetrace_CenterEdge_parallel.add_children([
         DetectBlue_failure(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_3",power=48, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
@@ -1101,27 +1101,39 @@ def build_behaviour_tree() -> BehaviourTree:
 
     # =========================================================== スマートキャリーツイン ===========================================================
 
-    # --------ダブルループ抜けてからオブジェクト下の青検知まで
+    # --- 最初のボトルまでライントレース（ボトル下の青検知） ---
+    # [Purpose] 最初のボトルまでライントレースをする
+    # [Exit]    青検知
+    # [Control] Parallel(SuccessOnOne)
     traceline_cam_smacary_Parallel = Parallel(name="detectblue_or_trace", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_smacary_Parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="detectblue_or_trace",power=50, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
-    # --------ゲートの位置までまっすぐ進む（ゲートの位置で進む距離が変わる）
+
+    # --- ボトルを捕まえるために、少し円弧走行 ---
+    # [Purpose] ボトルをしっかり捕まえにいく
+    # [Exit]    距離450 or 750（ゲートの位置によって変化）
+    # [Control] Parallel(SuccessOnOne)
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
         IsDistancePassed(name="distance_passed", target_distance=gate_value(450, 750)),
-        RunAsInstructed(name="go_gate", pwm_l=-50, pwm_r=-65),
+        RunAsInstructed(name="go_gate", pwm_l=-65, pwm_r=-50),
     ])
-    # --------90度回転して、ジャイロでまっすぐ進む（距離で制御。）
+
+    # --- ボトルを捕まえるために、少し円弧走行 ---
+    # [Purpose] ボトルをしっかり捕まえにいく
+    # [Exit]    距離450 or 750（ゲートの位置によって変化）
+    # [Control] Parallel(SuccessOnOne)
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2400, 2230)),
         RunByGyro(name="run straight_SpinAndRun", target=93, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
+
     Spintotarget_45degree_Parallel = Parallel(name="Spintotarget_45degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_45degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
