@@ -1066,7 +1066,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     BigCircle_Linetrace_CenterEdge_parallel = Parallel(name="BigCircle_Linetrace_CenterEdge",policy=ParallelPolicy.SuccessOnOne())
     BigCircle_Linetrace_CenterEdge_parallel.add_children([
-        DetectBlue_failure(name="detect_blue"),
+        DetectBlue(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_3",power=48, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=40,trace_side=TraceSide.CENTER),
     ])
@@ -1117,9 +1117,9 @@ def build_behaviour_tree() -> BehaviourTree:
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
-    # --- ゲート通過後に ---
-    # [Purpose] ボトルをしっかり捕まえにいく
-    # [Exit]    距離450 or 750（ゲートの位置によって変化）
+    # --- ゲート通過後にボトルを取りこぼさない ---
+    # [Purpose] 45度で少し走ることで取りこぼさない
+    # [Exit]    距離50
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_45degree_Parallel = Parallel(name="Spintotarget_45degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_45degree_Parallel.add_children([
@@ -1127,6 +1127,11 @@ def build_behaviour_tree() -> BehaviourTree:
         RunByGyro(name="run straight_SpinAndRun", target=-315, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
+
+    # --- 2段階右折で確実に運ぶ ---
+    # [Purpose] 45度で少し走ることで取りこぼさない
+    # [Exit]    距離50
+    # [Control] Parallel(SuccessOnOne)
     Spintotarget_90degree_Parallel = Parallel(name="Spintotarget_90degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_90degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
