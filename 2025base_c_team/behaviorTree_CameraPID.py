@@ -302,30 +302,13 @@ class SpinAround(Behaviour):
         if error < -180.0:
             error += 360.0
         if abs(error) < 2.0:
-            err = float(self.target_heading) - current_heading
-            # RunByGyro と同じ誤差正規化（[-180, 180]）。一発で収まらない場合もあるので while で安全に。
-            while err > 180.0:
-                err -= 360.0
-            while err < -180.0:
-                err += 360.0
-        # デッドバンドも合わせる（RunByGyro は 1.5 度）
-        if abs(err) < 1.5:
             self.logger.info("%+06d %s.spin ended at heading=%d" % (g_plotter.get_distance(),
                                                                     self.__class__.__name__, current_heading))
             return Status.SUCCESS
         power = int(self.clamper.clamp(self.pid(current_heading)))
         g_right_motor.set_power(g_course * power)
         g_left_motor.set_power((-1) * g_course * power)
-        # PID 出力に最小/最大を与えるのは clamper、ただし PID 内部は output_limits で風袋防止
-        power = float(self.pid(current_heading))
-        power = self.clamper.clamp(power)  # 最小トルク確保＆上限
-        power = int(power)
-
-        # その場旋回：角度側で g_course を吸収しているので、出力に g_course は掛けない
-        g_right_motor.set_power(-power)
-        g_left_motor.set_power(+power)
-        return Status.RUNNING    
-
+        return Status.RUNNING
 
 class RunByGyro(Behaviour):
     def __init__(self, name: str, target: int, power: int,
@@ -1123,7 +1106,7 @@ def build_behaviour_tree() -> BehaviourTree:
         RunAsInstructed(name="go_gate", pwm_l=-65, pwm_r=-50),
     ])
 
-    # --- ボトルを捕まえるために、少し円弧走行 ---
+    # --- ゲート通過 ---
     # [Purpose] ボトルをしっかり捕まえにいく
     # [Exit]    距離450 or 750（ゲートの位置によって変化）
     # [Control] Parallel(SuccessOnOne)
