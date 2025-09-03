@@ -1112,7 +1112,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2150, 2100)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2150, 2070)),
         RunByGyro(name="run straight_SpinAndRun", target=-93, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1134,7 +1134,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_90degree_Parallel = Parallel(name="Spintotarget_90degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_90degree_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=80),
         RunByGyro(name="run straight_SpinAndRun", target=0, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
