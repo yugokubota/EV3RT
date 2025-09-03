@@ -1178,8 +1178,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_second_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_back", target_distance=1000),
-        RunByGyro(name="run straight_smart_carry_puton", target=-180, power=60,
+        IsDistancePassed(name="distance_passed_back", target_distance=1020),
+        RunByGyro(name="run straight_smart_carry_puton", target=-181, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1220,7 +1220,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_DetectBlue_GOAL_Parallel = Parallel(name="traceline_cam_DetectBlue_GOAL", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_DetectBlue_GOAL_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=1000),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=900),
         TraceLineCam(name="traceline_cam_DetectBlue_GOAL",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
