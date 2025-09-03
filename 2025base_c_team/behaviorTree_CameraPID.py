@@ -1172,8 +1172,8 @@ def build_behaviour_tree() -> BehaviourTree:
         RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
     ])
 
-    # --- 次の ---
-    # [Purpose] 
+    # --- 次のボトルまで進む ---
+    # [Purpose] 次のボトルの後ろまで進むように距離を調整
     # [Exit]    距離1000
     # [Control] Parallel(SuccessOnOne)
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
@@ -1183,14 +1183,20 @@ def build_behaviour_tree() -> BehaviourTree:
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
-    # --------ジャイロでターゲットまでまっすぐ進む（距離で制御）
+    # --- ジャイロで次のターゲットまで進む ---
+    # [Purpose] 次のターゲットまで進むように距離を調整
+    # [Exit]    距離1580
+    # [Control] Parallel(SuccessOnOne)
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1580),
         RunByGyro(name="run straight_smart_carry_puton_second", target=-270, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
-    # --------ジャイロでバック（距離で制御）
+    # --- ボトルをバックすることで置く ---
+    # [Purpose] ボトルを置く
+    # [Exit]    距離250
+    # [Control] Parallel(SuccessOnOne)
     After_puton_back_third_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_third_Parallel.add_children([
         IsDistancePassed(name="distance_passed_back", target_distance=200),
