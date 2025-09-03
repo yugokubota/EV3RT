@@ -990,7 +990,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=3000),
-        RunByGyro(name="run_back_GoBlackLine", target=-90, power=100,
+        RunByGyro(name="run_back_GoBlackLine", target=90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1001,7 +1001,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_gotolap_Parallel = Parallel(name="gyro_gotolap", policy=ParallelPolicy.SuccessOnOne())
     gyro_gotolap_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=500),
-        RunByGyro(name="run_back_GoBlackLine", target=-180, power=100,
+        RunByGyro(name="run_back_GoBlackLine", target=180, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1028,7 +1028,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Doubleloop_start_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=750),
         TraceLineCam(name="traceline_start_doubleloop",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=30,trace_side=TraceSide.OPPOSITE),
+        gs_min=0, gs_max=30,trace_side=TraceSide.NORMAL),
     ])
 
     # --- 大円：内エッジでライントレース（距離フェイルセーフ付き） ---
@@ -1040,7 +1040,7 @@ def build_behaviour_tree() -> BehaviourTree:
         DetectBlue(name="detect_blue"),
         IsDistancePassed(name="distance_passed", target_distance=1850),      #青検知しなかったとき用の距離制御
         TraceLineCam(name="traceline_cam_inner_egde",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
 
     # --- 小円進入チューニング（エッジ切替） ---
@@ -1051,7 +1051,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SmallCircleEntryTuning_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=800),
         TraceLineCam(name="traceline_entry_smallcircle",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
 
     # --- 小円: 内エッジでライントレース（距離フェイルセーフ付き） ---
@@ -1063,7 +1063,7 @@ def build_behaviour_tree() -> BehaviourTree:
         DetectBlue(name="detect_blue"),
         IsDistancePassed(name="distance_passed", target_distance=2200),      #青検知しなかったとき用の距離制御
         TraceLineCam(name="traceline_cam_inner_egde",power=43, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
-        gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=50,trace_side=TraceSide.OPPOSITE),
     ])
 
     # --- 大円への戻りチューニング（エッジ切替） ---
@@ -1074,7 +1074,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BigCircleEntryTuning_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=400),
         TraceLineCam(name="traceline_entry_bigcircle",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
     
     # --- 大円: センターでライントレース ---
@@ -1096,7 +1096,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Escape_double_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=800),
         TraceLineCam(name="traceline_cam_center_egde",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
 
     # =========================================================== スマートキャリーツイン ===========================================================
