@@ -1171,14 +1171,11 @@ def build_behaviour_tree() -> BehaviourTree:
         IsDistancePassed(name="distance_passed_back", target_distance=250),
         RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
     ])
-    # --------次のオブジェクトの黒線に赤検知するまでライントレース
-    detect_red_Parallel = Parallel(name="detect_red_Parallel", policy=ParallelPolicy.SuccessOnOne())
-    detect_red_Parallel.add_children([
-        DetectRed(name="detect_red"),
-        TraceLineCam(name="traceline_to_object",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
-    ])
-    # --------ターゲットまでまっすぐ進む_puton後（距離で制御）
+
+    # --- 次の ---
+    # [Purpose] 
+    # [Exit]    距離1000
+    # [Control] Parallel(SuccessOnOne)
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_second_Parallel.add_children([
         IsDistancePassed(name="distance_passed_back", target_distance=1000),
@@ -1190,7 +1187,7 @@ def build_behaviour_tree() -> BehaviourTree:
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1580),
-        RunByGyro(name="run straight_smart_carry_puton_second", target=-90, power=60,
+        RunByGyro(name="run straight_smart_carry_puton_second", target=-270, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
     # --------ジャイロでバック（距離で制御）
