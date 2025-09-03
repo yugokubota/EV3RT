@@ -1112,7 +1112,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2200, 2230)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2150, 2230)),
         RunByGyro(name="run straight_SpinAndRun", target=-93, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1284,7 +1284,7 @@ def build_behaviour_tree() -> BehaviourTree:
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         GoBlackLine_Parallel,#                    45度回転して一定距離ジャイロで進む
         SpinAround(name="spin by 90 degrees_GoBlackLine_1",
-                    target=-360,max_power=50,min_power=MIN_POWER,
+                    target=-315,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --------黒線検知で90度回転する
         DetectBlackLine_Parallel,#                黒線を見つけるまでジャイロで進む
