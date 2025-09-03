@@ -1117,6 +1117,10 @@ def build_behaviour_tree() -> BehaviourTree:
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
+    # --- ゲート通過後に ---
+    # [Purpose] ボトルをしっかり捕まえにいく
+    # [Exit]    距離450 or 750（ゲートの位置によって変化）
+    # [Control] Parallel(SuccessOnOne)
     Spintotarget_45degree_Parallel = Parallel(name="Spintotarget_45degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_45degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
@@ -1211,17 +1215,17 @@ def build_behaviour_tree() -> BehaviourTree:
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         gyro_obstacle_end_to_first_curve_Parallel,
         SpinAround(name="spin_by_before_mukojomen",
-                    target=-87,max_power=50,min_power=MIN_POWER,
+                    target=87,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         gyro_mukoujoumen_Parallel,#               向正面の直線
         SpinAround(name="spin_by_before_gotolap",
-                    target=-177,max_power=50,min_power=MIN_POWER,
+                    target=177,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         gyro_gotolap_Parallel,#                   LAPまで進む
         traceline_cam_start_doubleloop_Parallel,# LAPからダブルループまでのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
         SpinAround(name="spin_by_start_doubleloop",
-                    target=-180,max_power=50,min_power=MIN_POWER,
+                    target=180,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         Doubleloop_start_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
         Bigcircle_Linetrace_InnerEdge_parallel,#             ③ライントレースしながら青いラインを探す処理
@@ -1244,28 +1248,28 @@ def build_behaviour_tree() -> BehaviourTree:
         # --------バックして黒線に向かって回転
         After_puton_back_first_Parallel,
         SpinAround(name="spin by 90 degrees_After_puton_back_first",
-                    target=-180,max_power=50,min_power=MIN_POWER,
+                    target=180,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --------ライントレースしながらオブジェクト下の赤検知～ターゲットサークルの黒検知まで
         After_puton_back_second_Parallel,
         SpinAround(name="spin by 90 degrees_detect_red",
-                    target=-90,max_power=50,min_power=MIN_POWER,
+                    target=90,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --------ターゲットにオブジェクトを置く
         smart_carry_puton_second_Parallel,#       オブジェクトを置く
         # --------バックして黒線へ
         After_puton_back_third_Parallel,#         バック
         SpinAround(name="spin by 90 degrees_After_puton_back_second",
-                    target=-45,max_power=50,min_power=MIN_POWER,
+                    target=45,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         GoBlackLine_Parallel,#                    45度回転して一定距離ジャイロで進む
         SpinAround(name="spin by 90 degrees_GoBlackLine_1",
-                    target=-90,max_power=50,min_power=MIN_POWER,
+                    target=90,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --------黒線検知で90度回転する
         DetectBlackLine_Parallel,#                黒線を見つけるまでジャイロで進む
         SpinAround(name="spin by 90 degrees_DetectBlackLine",
-                    target=-180, max_power=50, min_power=MIN_POWER,
+                    target=180, max_power=50, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --------青線検知するまでライントレース
         traceline_cam_DetectBlue_GOAL_Parallel,
