@@ -961,7 +961,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     gyro_obstacle_end_to_first_curve_Parallel = Parallel(name="gyro_obstacle_end_to_first_curve", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_end_to_first_curve_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=650),
+        IsDistancePassed(name="distance_passed", target_distance=850),
         RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1223,7 +1223,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Go_to_next_bottle_Parallel = Parallel(name="Go_to_next_bottle", policy=ParallelPolicy.SuccessOnOne())
     Go_to_next_bottle_Parallel.add_children([
-        IsDistancePassed(name="Go_to_next_bottle", target_distance=900),
+        IsDistancePassed(name="Go_to_next_bottle", target_distance=850),
         RunByGyro(name="Go_to_next_bottle_by_Gyro", target=-185, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
