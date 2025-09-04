@@ -961,7 +961,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     gyro_obstacle_end_to_first_curve_Parallel = Parallel(name="gyro_obstacle_end_to_first_curve", policy=ParallelPolicy.SuccessOnOne())
     gyro_obstacle_end_to_first_curve_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=750),
+        IsDistancePassed(name="distance_passed", target_distance=650),
         RunByGyro(name="run_back_GoBlackLine", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1100,18 +1100,18 @@ def build_behaviour_tree() -> BehaviourTree:
     BigCircleEntryTuning_Parallel = Parallel(name="BigCircleEntryTuning", policy=ParallelPolicy.SuccessOnOne())
     BigCircleEntryTuning_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=400),
-        TraceLineCam(name="traceline_entry_bigcircle",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="traceline_entry_bigcircle",power=42, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
     
-    # --- 大円: センターでライントレース ---
+    # --- 大円： センターでライントレース ---
     # [Purpose] 青検知するまでセンターでライントレース（青検知するようにセンターにしている）
     # [Exit]    青検知
     # [Control] Parallel(SuccessOnOne)
     BigCircle_Linetrace_CenterEdge_parallel = Parallel(name="BigCircle_Linetrace_CenterEdge",policy=ParallelPolicy.SuccessOnOne())
     BigCircle_Linetrace_CenterEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="Tracelinecam_DetectBlue_3",power=48, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
+        TraceLineCam(name="Tracelinecam_DetectBlue_3",power=42, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=40,trace_side=TraceSide.CENTER),
     ])
 
