@@ -1099,7 +1099,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     BigCircleEntryTuning_Parallel = Parallel(name="BigCircleEntryTuning", policy=ParallelPolicy.SuccessOnOne())
     BigCircleEntryTuning_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=500),
+        IsDistancePassed(name="distance_passed", target_distance=600),
         TraceLineCam(name="traceline_entry_bigcircle",power=42, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
@@ -1111,8 +1111,8 @@ def build_behaviour_tree() -> BehaviourTree:
     BigCircle_Linetrace_CenterEdge_parallel = Parallel(name="BigCircle_Linetrace_CenterEdge",policy=ParallelPolicy.SuccessOnOne())
     BigCircle_Linetrace_CenterEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="Tracelinecam_DetectBlue_3",power=42, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
+        TraceLineCam(name="BigCircle_Linetrace_CenterEdge",power=42, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=40,trace_side=TraceSide.CENTER),
     ])
 
     # --- ダブルループ脱出 ---
