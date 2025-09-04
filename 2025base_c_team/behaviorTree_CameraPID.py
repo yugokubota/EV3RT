@@ -1305,9 +1305,9 @@ def build_behaviour_tree() -> BehaviourTree:
     # ========= LAP走行 ========
         # --- スタートからオブジェクト回避
         obstacle_Parallel,
-        SpinAround(name="spin_by_before_avoid",
-                    target=0,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        # SpinAround(name="spin_by_before_avoid",
+        #             target=0,max_power=50,min_power=MIN_POWER,
+        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- オブジェクト回避成功後、LAP走行
         gyro_obstacle_end_to_first_curve_Parallel,
         # SpinAround(name="spin_by_before_mukojomen",
