@@ -1112,7 +1112,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BigCircle_Linetrace_CenterEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
         TraceLineCam(name="Tracelinecam_DetectBlue_3",power=42, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=40,trace_side=TraceSide.CENTER),
+        gs_min=0, gs_max=40,trace_side=TraceSide.NORMAL),
     ])
 
     # --- ダブルループ脱出 ---
