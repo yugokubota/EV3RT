@@ -1333,7 +1333,7 @@ def build_behaviour_tree() -> BehaviourTree:
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- 次のボトルへ
         Go_to_next_bottle_Parallel,
-        Spintotarget_225degree_Parallel,
+        Spintotarget_135degree_Parallel,
         # SpinAround(name="spin by 90 degrees_detect_red",
         #             target=-270,max_power=50,min_power=MIN_POWER,
         #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
