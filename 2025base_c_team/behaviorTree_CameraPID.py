@@ -805,7 +805,7 @@ class AvoidObstacleArcFull(Behaviour):
         g_right_motor.set_power(0)
         # 右カーブ
         g_left_motor.set_power(100)
-        g_right_motor.set_power(60)
+        g_right_motor.set_power(70)
         time.sleep(0.6)  # 必要に応じて調整
         g_left_motor.set_power(80)
         g_right_motor.set_power(100)
@@ -824,7 +824,7 @@ class AvoidObstacleArcFull(Behaviour):
         # ライン復帰
         g_left_motor.set_power(100)
         g_right_motor.set_power(100)
-        time.sleep(0.45)
+        time.sleep(0.6)
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
