@@ -1341,15 +1341,7 @@ def build_behaviour_tree() -> BehaviourTree:
         smart_carry_puton_second_Parallel,
         # --------バックしてボトルを置く
         After_puton_back_second_Parallel,
-        SpinAround(name="spin by 90 degrees_detect_red",
-                    target=-90,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --------ターゲットにオブジェクトを置く
-        smart_carry_puton_second_Parallel,#       オブジェクトを置く
-        # --------バックして黒線へ
-        SpinAround(name="spin by 90 degrees_After_puton_back_second",
-                    target=-45,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         DiagonalRun_Parallel,#                    45度回転して一定距離ジャイロで進む
         SpinAround(name="spin by 90 degrees_GoBlackLine_1",
                     target=-90,max_power=50,min_power=MIN_POWER,
