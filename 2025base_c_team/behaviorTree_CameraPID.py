@@ -1296,7 +1296,7 @@ def build_behaviour_tree() -> BehaviourTree:
         gyro_obstacle_end_to_first_curve_Parallel,
         gyro_first_curve_45degree_Parallel,
         gyro_mukoujoumen_Parallel,#               向正面の直線
-        gyro_second_curve_135degree_Parallel
+        gyro_second_curve_135degree_Parallel,
         gyro_gotolap_Parallel,#                   LAPまで進む
         # --------ここからダブルループ--------
         traceline_cam_start_doubleloop_Parallel,# LAPからダブルループまでのライントレース（青いライン検知で抜ける）
