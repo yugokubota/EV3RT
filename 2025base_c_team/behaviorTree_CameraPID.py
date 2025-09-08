@@ -923,7 +923,7 @@ class ResetGyroPID(Behaviour):
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
 
-    # =========================================================== LAP走行 ===========================================================
+# =========================================================== LAP走行 ===========================================================
     # コース前半：直線⇒オブジェクト回避⇒最初のカーブまで走行⇒向正面走行⇒次のカーブで曲がって、LAPまで走行
 
     # ---オブジェクト回避シーケンス---
@@ -1044,7 +1044,7 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=80,trace_side=TraceSide.CENTER)
     ])
 
-    # =========================================================== ダブルループ処理 ===========================================================
+# =========================================================== ダブルループ処理 ===========================================================
     # コース中盤：大円(内エッジ切替/青検知 or 距離) → 小円(内エッジ切替/青検知 or 距離) → 大円(センターへ切替/青検知 or 距離) → 脱出の流れ
 
     # --- ダブルループ進入調整（エッジ切替のみ） ---
@@ -1126,7 +1126,7 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
 
-    # =========================================================== スマートキャリーツイン ===========================================================
+# =========================================================== スマートキャリーツイン ===========================================================
 
     # --- 最初のボトルまでライントレース（ボトル下の青検知） ---
     # [Purpose] 最初のボトルまでライントレースをする
@@ -1250,9 +1250,9 @@ def build_behaviour_tree() -> BehaviourTree:
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
-    # --- ボトルをバックすることで置く ---
+    # --- バックすることでボトルを置く ---
     # [Purpose] ボトルを置く
-    # [Exit]    距離250
+    # [Exit]    距離200
     # [Control] Parallel(SuccessOnOne)
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_second_Parallel.add_children([
@@ -1295,7 +1295,7 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
 
-    # =========================================================== loop_01 Start ===========================================================
+# =========================================================== loop_01 Start ===========================================================
     # 直線走行⇒オブジェクト回避⇒LAP走行⇒ダブルループ
 
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
@@ -1303,23 +1303,17 @@ def build_behaviour_tree() -> BehaviourTree:
         #色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
         # Detectcolor(name="detectcolor"),
     # ========= LAP走行 ========
-        # --- スタートからオブジェクト回避
+        # --- スタートから一定距離直進⇒オブジェクト回避
         obstacle_Parallel,
         SpinAround(name="spin_by_before_avoid",
                     target=0,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        # --- オブジェクト回避成功後、LAP走行
+        # --- 一定距離走行⇒カーブを曲がる処理⇒向正面走行⇒カーブを曲がる処理⇒LAPまで直進
         gyro_obstacle_end_to_first_curve_Parallel,
-        # SpinAround(name="spin_by_before_mukojomen",
-        #             target=87,max_power=50,min_power=MIN_POWER,
-        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         gyro_first_curve_45degree_Parallel,
         gyro_mukoujoumen_Parallel,
-        # SpinAround(name="spin_by_before_gotolap",
-        #             target=177,max_power=50,min_power=MIN_POWER,
-        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         gyro_second_curve_135degree_Parallel,
-        gyro_second_curve_180degree_Parallel,
+        # gyro_second_curve_180degree_Parallel,
         gyro_gotolap_Parallel,
     # ========= ダブルループ ========     
         # --- LAP完了から大円に移る
@@ -1339,8 +1333,8 @@ def build_behaviour_tree() -> BehaviourTree:
         Escape_double_loop_Parallel,
     ])
 
-    # =========================================================== loop_02 Start ===========================================================
-    # スマートキャリーツイン⇒ゴール
+# =========================================================== loop_02 Start ===========================================================
+    # スマートキャリーツイン⇒ゴールに向かう処理
 
     loop_02 = Sequence(name="loop_02_with_smart_carry_twin", memory=True)
     loop_02.add_children([
@@ -1373,10 +1367,10 @@ def build_behaviour_tree() -> BehaviourTree:
         SpinAround(name="spin by 90 degrees_GoBlackLine_1",
                     target=-315,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        # --- もう45度回転してメインのラインまで走る
+        # --- もう45度回転してメインのラインまで垂直に走る
         Go_to_blackline_Parallel,
         SpinAround(name="spin by 90 degrees_DetectBlackLine",
-                    target=180, max_power=50, min_power=MIN_POWER,
+                    target=175, max_power=50, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- ゴールに向かう
         traceline_cam_DetectBlue_GOAL_Parallel,
