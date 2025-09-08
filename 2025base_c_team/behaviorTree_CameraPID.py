@@ -1099,7 +1099,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     BigCircleEntryTuning_Parallel = Parallel(name="BigCircleEntryTuning", policy=ParallelPolicy.SuccessOnOne())
     BigCircleEntryTuning_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=450),
+        IsDistancePassed(name="distance_passed", target_distance=600),
         TraceLineCam(name="traceline_entry_bigcircle",power=42, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
