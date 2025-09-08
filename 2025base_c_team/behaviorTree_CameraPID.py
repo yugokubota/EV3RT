@@ -1294,16 +1294,12 @@ def build_behaviour_tree() -> BehaviourTree:
                     target=0,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         gyro_obstacle_end_to_first_curve_Parallel,
-        SpinAround(name="spin_by_before_mukojomen",
-                    target=-87,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        gyro_first_curve_45degree_Parallel,
         gyro_mukoujoumen_Parallel,#               向正面の直線
-        SpinAround(name="spin_by_before_gotolap",
-                    target=-177,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        gyro_second_curve_135degree_Parallel
         gyro_gotolap_Parallel,#                   LAPまで進む
-        traceline_cam_start_doubleloop_Parallel,# LAPからダブルループまでのライントレース（青いライン検知で抜ける）
         # --------ここからダブルループ--------
+        traceline_cam_start_doubleloop_Parallel,# LAPからダブルループまでのライントレース（青いライン検知で抜ける）
         SpinAround(name="spin_by_start_doubleloop",
                     target=-180,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
@@ -1349,7 +1345,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # --------黒線検知で90度回転する
         Go_to_blackline_Parallel,#                黒線を見つけるまでジャイロで進む
         SpinAround(name="spin by 90 degrees_DetectBlackLine",
-                    target=-185, max_power=50, min_power=MIN_POWER,
+                    target=-175, max_power=50, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --------青線検知するまでライントレース
         traceline_cam_DetectBlue_GOAL_Parallel,
