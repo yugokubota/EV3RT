@@ -824,7 +824,7 @@ class AvoidObstacleArcFull(Behaviour):
         # ライン復帰
         g_left_motor.set_power(100)
         g_right_motor.set_power(100)
-        time.sleep(0.6)
+        time.sleep(0.5)
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -994,7 +994,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2875),
+        IsDistancePassed(name="distance_passed", target_distance=2950),
         RunByGyro(name="run_back_GoBlackLine", target=90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1224,7 +1224,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Go_to_next_bottle_Parallel = Parallel(name="Go_to_next_bottle", policy=ParallelPolicy.SuccessOnOne())
     Go_to_next_bottle_Parallel.add_children([
         IsDistancePassed(name="Go_to_next_bottle", target_distance=750),
-        RunByGyro(name="Go_to_next_bottle_by_Gyro", target=-185, power=60,
+        RunByGyro(name="Go_to_next_bottle_by_Gyro", target=-180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1234,8 +1234,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_225degree_Parallel = Parallel(name="Spintotarget_225degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_225degree_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=150),
-        RunByGyro(name="run straight_SpinAndRun", target=-225, power=60,
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=300),
+        RunByGyro(name="run straight_SpinAndRun", target=-220, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1245,8 +1245,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
-        IsDistancePassed(name="smart_carry_puton", target_distance=1600),
-        RunByGyro(name="Gyro_straight_smart_carry_puton_second", target=-268, power=60,
+        IsDistancePassed(name="smart_carry_puton", target_distance=1280),
+        RunByGyro(name="Gyro_straight_smart_carry_puton_second", target=-272, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1360,7 +1360,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # --------バックしてボトルを置く
         After_puton_back_second_Parallel,
         SpinAround(name="spin by 90 degrees_After_puton_back_second",
-                    target=-315,max_power=50,min_power=MIN_POWER,
+                    target=-320,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- 45度斜めに走る
         DiagonalRun_Parallel,
