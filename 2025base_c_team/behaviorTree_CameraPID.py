@@ -1225,7 +1225,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Spintotarget_135degree_Parallel = Parallel(name="Spintotarget_135degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_135degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=300),
-        RunByGyro(name="run straight_SpinAndRun", target=-135, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=-130, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1330,9 +1330,9 @@ def build_behaviour_tree() -> BehaviourTree:
         # --- 次のボトルへ
         Go_to_next_bottle_Parallel,
         SpinAround(name="Go_to_next_bottle",
-                    target=-135,max_power=50,min_power=MIN_POWER,
+                    target=-130,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        Spintotarget_135degree_Parallel,
+        Spintotarget_130degree_Parallel,
         # SpinAround(name="spin by 90 degrees_detect_red",
         #             target=-270,max_power=50,min_power=MIN_POWER,
         #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
@@ -1341,6 +1341,9 @@ def build_behaviour_tree() -> BehaviourTree:
         # --------バックしてボトルを置く
         After_puton_back_second_Parallel,
         # --------ターゲットにオブジェクトを置く
+        SpinAround(name="DiagonalRun",
+                    target=-45,max_power=50,min_power=MIN_POWER,
+                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         DiagonalRun_Parallel,#                    45度回転して一定距離ジャイロで進む
         SpinAround(name="spin by 90 degrees_GoBlackLine_1",
                     target=-90,max_power=50,min_power=MIN_POWER,
