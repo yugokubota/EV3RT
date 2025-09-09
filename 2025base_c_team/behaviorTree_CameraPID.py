@@ -814,7 +814,7 @@ class AvoidObstacleArcFull(Behaviour):
         # ライン復帰
         g_left_motor.set_power(100)
         g_right_motor.set_power(100)
-        time.sleep(0.6)
+        time.sleep(0.5)
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
@@ -1225,7 +1225,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Spintotarget_135degree_Parallel = Parallel(name="Spintotarget_135degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_135degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=300),
-        RunByGyro(name="run straight_SpinAndRun", target=-130, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=-140, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1330,7 +1330,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # --- 次のボトルへ
         Go_to_next_bottle_Parallel,
         SpinAround(name="Go_to_next_bottle",
-                    target=-130,max_power=50,min_power=MIN_POWER,
+                    target=-140,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         Spintotarget_135degree_Parallel,
         # SpinAround(name="spin by 90 degrees_detect_red",
