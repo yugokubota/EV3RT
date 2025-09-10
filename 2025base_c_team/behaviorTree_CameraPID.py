@@ -1235,7 +1235,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Spintotarget_225degree_Parallel = Parallel(name="Spintotarget_225degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_225degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=300),
-        RunByGyro(name="run straight_SpinAndRun", target=-220, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=-223, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1245,7 +1245,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
-        IsDistancePassed(name="smart_carry_puton", target_distance=1280),
+        IsDistancePassed(name="smart_carry_puton", target_distance=1380),
         RunByGyro(name="Gyro_straight_smart_carry_puton_second", target=-272, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
