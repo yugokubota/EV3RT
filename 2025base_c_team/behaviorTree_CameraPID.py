@@ -932,8 +932,23 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     obstacle_Parallel = Parallel(name="obstacle_or_gyro", policy=ParallelPolicy.SuccessOnOne())
     obstacle_Parallel.add_children([
-        avoid_seq, # 回避条件（距離到達→回避実行）
+        # avoid_seq, # 回避条件（距離到達→回避実行）
+        IsDistancePassed(name="distance_passed", target_distance=2430),
         RunByGyro(name="object_avoid_gyro", target=0, power=100,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    obstacle_avoid_start_Parallel = Parallel(name="obstacle_avoid_start", policy=ParallelPolicy.SuccessOnOne())
+    obstacle_avoid_start_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=100),
+        RunByGyro(name="object_avoid_gyro", target=45, power=100,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    obstacle_avoid_end_Parallel = Parallel(name="obstacle_avoid_end", policy=ParallelPolicy.SuccessOnOne())
+    obstacle_avoid_end_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=100),
+        RunByGyro(name="object_avoid_gyro", target=-45, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1289,7 +1304,9 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01.add_children([
         # Detectcolor(name="detectcolor"),#       色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
         # --------直線とオブジェクト回避--------
-        obstacle_Parallel,#                       直線のライントレースをする。一定距離走ったらオブジェクト回避して抜ける。
+        obstacle_Parallel,
+        obstacle_avoid_start_Parallel,
+        obstacle_avoid_end_Parallel,
         SpinAround(name="spin_by_before_avoid",
                     target=0,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
