@@ -814,7 +814,7 @@ class AvoidObstacleArcFull(Behaviour):
         # ライン復帰
         g_left_motor.set_power(100)
         g_right_motor.set_power(100)
-        time.sleep(0.45)
+        time.sleep(0.475)
         # 止める
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
