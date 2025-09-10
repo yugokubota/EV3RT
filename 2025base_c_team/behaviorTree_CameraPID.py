@@ -945,9 +945,16 @@ def build_behaviour_tree() -> BehaviourTree:
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
+    obstacle_avoid_middle_Parallel = Parallel(name="obstacle_avoid_middle", policy=ParallelPolicy.SuccessOnOne())
+    obstacle_avoid_middle_Parallel.add_children([
+        IsDistancePassed(name="distance_passed", target_distance=300),
+        RunByGyro(name="object_avoid_gyro", target=0, power=100,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
     obstacle_avoid_end_Parallel = Parallel(name="obstacle_avoid_end", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_end_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=500),
+        IsDistancePassed(name="distance_passed", target_distance=600),
         RunByGyro(name="object_avoid_gyro", target=-45, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1306,6 +1313,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # --------直線とオブジェクト回避--------
         obstacle_Parallel,
         obstacle_avoid_start_Parallel,
+        obstacle_avoid_middle_Parallel,
         obstacle_avoid_end_Parallel,
         SpinAround(name="spin_by_before_avoid",
                     target=0,max_power=50,min_power=MIN_POWER,
