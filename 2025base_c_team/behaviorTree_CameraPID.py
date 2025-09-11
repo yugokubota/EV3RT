@@ -1241,7 +1241,7 @@ def build_behaviour_tree() -> BehaviourTree:
 
     # --- 次のボトルまで進む ---
     # [Purpose] 次のボトルの後ろまで進むように距離を調整
-    # [Exit]    距離970
+    # [Exit]    距離750
     # [Control] Parallel(SuccessOnOne)
     Go_to_next_bottle_Parallel = Parallel(name="Go_to_next_bottle", policy=ParallelPolicy.SuccessOnOne())
     Go_to_next_bottle_Parallel.add_children([
@@ -1254,10 +1254,26 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Purpose] 45度で少し走ることで取りこぼさない
     # [Exit]    距離50
     # [Control] Parallel(SuccessOnOne)
+    DetectBlackline_before_bottle_Parallel = Parallel(name="DetectBlackline_before_bottle_Parallel", policy=ParallelPolicy.SuccessOnOne())
+    DetectBlackline_before_bottle_Parallel.add_children([
+        IsOnBlackLine_running(name="detect_blackline", threshold=5),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=200),
+        RunByGyro(name="run straight_SpinAndRun", target=-270, power=42,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    traceline_cam_Detectred_Parallel = Parallel(name="traceline_cam_Detectred", policy=ParallelPolicy.SuccessOnOne())
+    traceline_cam_Detectred_Parallel.add_children([
+        DetectRed(name="detect_red"),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=500),
+        TraceLineCam(name="traceline_cam_DetectBlue_GOAL",power=45, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+    ])
+
     Spintotarget_225degree_Parallel = Parallel(name="Spintotarget_225degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_225degree_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=300),
-        RunByGyro(name="run straight_SpinAndRun", target=-223, power=60,
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
+        RunByGyro(name="run straight_SpinAndRun", target=-225, power=50,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1377,12 +1393,14 @@ def build_behaviour_tree() -> BehaviourTree:
         # --- 次のボトルへ
         Go_to_next_bottle_Parallel,
         SpinAround(name="spin by 90 degrees_After_puton_back_second",
-                    target=-220,max_power=50,min_power=MIN_POWER,
+                    target=-270,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        DetectBlackline_before_bottle_Parallel,
+        SpinAround(name="spin by 90 degrees_detect_red",
+                    target=180,max_power=50,min_power=MIN_POWER,
+                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        traceline_cam_Detectred_Parallel,
         Spintotarget_225degree_Parallel,
-        # SpinAround(name="spin by 90 degrees_detect_red",
-        #             target=-270,max_power=50,min_power=MIN_POWER,
-        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- ターゲットに向かう
         smart_carry_puton_second_Parallel,
         # --------バックしてボトルを置く
