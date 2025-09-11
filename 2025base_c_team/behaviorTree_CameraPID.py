@@ -1245,7 +1245,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Go_to_next_bottle_Parallel = Parallel(name="Go_to_next_bottle", policy=ParallelPolicy.SuccessOnOne())
     Go_to_next_bottle_Parallel.add_children([
-        IsDistancePassed(name="Go_to_next_bottle", target_distance=750),
+        IsDistancePassed(name="Go_to_next_bottle", target_distance=400),
         RunByGyro(name="Go_to_next_bottle_by_Gyro", target=-180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
