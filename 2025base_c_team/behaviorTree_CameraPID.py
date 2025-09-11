@@ -1254,11 +1254,11 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Purpose] 45度で少し走ることで取りこぼさない
     # [Exit]    距離50
     # [Control] Parallel(SuccessOnOne)
-    DetectBlackline_before_bottle_Parallel = Parallel(name="DetectBlackline_before_bottle_Parallel", policy=ParallelPolicy.SuccessOnOne())
+    DetectBlackline_before_bottle_Parallel = Parallel(name="DetectBlackline_before_bottle", policy=ParallelPolicy.SuccessOnOne())
     DetectBlackline_before_bottle_Parallel.add_children([
         IsOnBlackLine_running(name="detect_blackline", threshold=5),
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=200),
-        RunByGyro(name="run straight_SpinAndRun", target=-270, power=42,
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=300),
+        RunByGyro(name="run straight_SpinAndRun", target=-265, power=42,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1397,7 +1397,7 @@ def build_behaviour_tree() -> BehaviourTree:
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         DetectBlackline_before_bottle_Parallel,
         SpinAround(name="spin by 90 degrees_detect_red",
-                    target=-185,max_power=50,min_power=MIN_POWER,
+                    target=-190,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         traceline_cam_Detectred_Parallel,
         Spintotarget_225degree_Parallel,
