@@ -1316,7 +1316,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Go_to_blackline_Parallel = Parallel(name="Go_to_blackline", policy=ParallelPolicy.SuccessOnOne())
     Go_to_blackline_Parallel.add_children([
         IsOnBlackLine_running(name="detect_blackline", threshold=5),
-        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=800),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=700),
         RunByGyro(name="run_back_DetectBlackLine", target=-270, power=40,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1328,7 +1328,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_DetectBlue_GOAL_Parallel = Parallel(name="traceline_cam_DetectBlue_GOAL", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_DetectBlue_GOAL_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=700),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=850),
         TraceLineCam(name="traceline_cam_DetectBlue_GOAL",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
