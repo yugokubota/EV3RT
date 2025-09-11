@@ -1267,7 +1267,7 @@ def build_behaviour_tree() -> BehaviourTree:
         DetectRed(name="detect_red"),
         IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=500),
         TraceLineCam(name="traceline_cam_DetectBlue_GOAL",power=45, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
-        gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
 
     Spintotarget_225degree_Parallel = Parallel(name="Spintotarget_225degree", policy=ParallelPolicy.SuccessOnOne())
@@ -1397,7 +1397,7 @@ def build_behaviour_tree() -> BehaviourTree:
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         DetectBlackline_before_bottle_Parallel,
         SpinAround(name="spin by 90 degrees_detect_red",
-                    target=180,max_power=50,min_power=MIN_POWER,
+                    target=-185,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         traceline_cam_Detectred_Parallel,
         Spintotarget_225degree_Parallel,
