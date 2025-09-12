@@ -1247,7 +1247,7 @@ def build_behaviour_tree() -> BehaviourTree:
     DetectBlackline_before_bottle_Parallel = Parallel(name="DetectBlackline_before_bottle", policy=ParallelPolicy.SuccessOnOne())
     DetectBlackline_before_bottle_Parallel.add_children([
         IsOnBlackLine_running(name="detect_blackline", threshold=5),
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=300),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=200),
         RunByGyro(name="run straight_SpinAndRun", target=-95, power=42,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
