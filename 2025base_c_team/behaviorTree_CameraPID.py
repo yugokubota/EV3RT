@@ -1039,7 +1039,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     gyro_gotolap_Parallel = Parallel(name="gyro_gotolap", policy=ParallelPolicy.SuccessOnOne())
     gyro_gotolap_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=500),
+        IsDistancePassed(name="distance_passed", target_distance=600),
         RunByGyro(name="run_back_GoBlackLine", target=-180, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1231,13 +1231,37 @@ def build_behaviour_tree() -> BehaviourTree:
 
     # --- 次のボトルまで進む ---
     # [Purpose] 次のボトルの後ろまで進むように距離を調整
-    # [Exit]    距離970
+    # [Exit]    距離400
     # [Control] Parallel(SuccessOnOne)
     Go_to_next_bottle_Parallel = Parallel(name="Go_to_next_bottle", policy=ParallelPolicy.SuccessOnOne())
     Go_to_next_bottle_Parallel.add_children([
-        IsDistancePassed(name="Go_to_next_bottle", target_distance=750),
+        IsDistancePassed(name="Go_to_next_bottle", target_distance=400),
         RunByGyro(name="Go_to_next_bottle_by_Gyro", target=-180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 2本目のボトル手間をライントレース ---
+    # [Purpose] ジャイロで黒線へ進む
+    # [Exit]    距離300 or 黒線検知
+    # [Control] Parallel(SuccessOnOne)
+    DetectBlackline_before_bottle_Parallel = Parallel(name="DetectBlackline_before_bottle", policy=ParallelPolicy.SuccessOnOne())
+    DetectBlackline_before_bottle_Parallel.add_children([
+        IsOnBlackLine_running(name="detect_blackline", threshold=5),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=300),
+        RunByGyro(name="run straight_SpinAndRun", target=-95, power=42,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 2本目のボトルをつかむ ---
+    # [Purpose] ライントレースをすることで決め打ちをリセット
+    # [Exit]    距離500 or 赤線検知
+    # [Control] Parallel(SuccessOnOne)
+    traceline_cam_Detectred_Parallel = Parallel(name="traceline_cam_Detectred", policy=ParallelPolicy.SuccessOnOne())
+    traceline_cam_Detectred_Parallel.add_children([
+        DetectRed(name="detect_red"),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=500),
+        TraceLineCam(name="traceline_cam_DetectBlue_GOAL",power=45, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
 
     # --- ゲート通過後にボトルを取りこぼさない ---
@@ -1246,18 +1270,18 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_135degree_Parallel = Parallel(name="Spintotarget_135degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_135degree_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=300),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
         RunByGyro(name="run straight_SpinAndRun", target=-140, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
     # --- ジャイロで次のターゲットまで進む ---
     # [Purpose] 次のターゲットまで進むように距離を調整
-    # [Exit]    距離1600
+    # [Exit]    距離1380
     # [Control] Parallel(SuccessOnOne)
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
-        IsDistancePassed(name="smart_carry_puton", target_distance=1280),
+        IsDistancePassed(name="smart_carry_puton", target_distance=1380),
         RunByGyro(name="Gyro_straight_smart_carry_puton_second", target=-88, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1290,14 +1314,14 @@ def build_behaviour_tree() -> BehaviourTree:
     Go_to_blackline_Parallel = Parallel(name="Go_to_blackline", policy=ParallelPolicy.SuccessOnOne())
     Go_to_blackline_Parallel.add_children([
         IsOnBlackLine_running(name="detect_blackline", threshold=5),
-        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=800),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=700),
         RunByGyro(name="DiagonalRun_by_Gyro", target=-90, power=40,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
     # --- ゴールに向かってライントレース ---
     # [Purpose] ライントレースしながらゴールゾーンで止まる
-    # [Exit]    距離850 or 青色検知
+    # [Exit]    距離800 or 青色検知
     # [Control] Parallel(SuccessOnOne)
     traceline_cam_DetectBlue_GOAL_Parallel = Parallel(name="traceline_cam_DetectBlue_GOAL", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_DetectBlue_GOAL_Parallel.add_children([
@@ -1307,10 +1331,15 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
 
+# =========================================================== loop_01 Start ===========================================================
+    # 直線走行⇒オブジェクト回避⇒LAP走行⇒ダブルループ
+
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
-        # Detectcolor(name="detectcolor"),#       色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
-        # --------直線とオブジェクト回避--------
+        #色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
+        # Detectcolor(name="detectcolor"),
+    # ========= LAP走行 ========
+        # --- スタートから一定距離直進⇒オブジェクト回避
         obstacle_Parallel,
         obstacle_avoid_start_Parallel,
         obstacle_avoid_middle_Parallel,
@@ -1318,27 +1347,34 @@ def build_behaviour_tree() -> BehaviourTree:
         SpinAround(name="spin_by_before_avoid",
                     target=0,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        # --- 一定距離走行⇒カーブを曲がる処理⇒向正面走行⇒カーブを曲がる処理⇒LAPまで直進
         gyro_obstacle_end_to_first_curve_Parallel,
         gyro_first_curve_45degree_Parallel,
         gyro_mukoujoumen_Parallel,#               向正面の直線
         gyro_second_curve_135degree_Parallel,
         gyro_gotolap_Parallel,#                   LAPまで進む
-        # --------ここからダブルループ--------
-        traceline_cam_start_doubleloop_Parallel,# LAPからダブルループまでのライントレース（青いライン検知で抜ける）
+
+    # ========= ダブルループ ========
+        # --- LAP完了から大円に移る
+        traceline_cam_start_doubleloop_Parallel,
         SpinAround(name="spin_by_start_doubleloop",
                     target=-180,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        Doubleloop_start_Parallel,#                  ①弧のラインに向かってトレースをするように調整する処理（トレースはしてない）
-        Bigcircle_Linetrace_InnerEdge_parallel,#             ③ライントレースしながら青いラインを探す処理
-        # --------小円に移るときの処理--------
-        SmallCircleEntryTuning_Parallel,#         ④青いラインを発見後に小円に入るときに左周りの弧を描き、黒線を迎えに行く
-        SmallCircle_Linetrace_InnerEdge_parallel,#             ⑤ライントレースしながら青いラインを探す処理
-        # --------小円から大円に移るときの処理--------
-        BigCircleEntryTuning_Parallel,#           ⑥青いラインを発見後に大円に入るときに右周りの弧を描き、黒線を迎えに行く
-        BigCircle_Linetrace_CenterEdge_parallel,#             ⑦ライントレースしながら青いラインを探す処理
-        Escape_double_loop_Parallel,#             ⑧ダブルループを抜ける処理
+        Doubleloop_start_Parallel,
+        Bigcircle_Linetrace_InnerEdge_parallel,
+        # --- 小円に移るときの処理
+        SmallCircleEntryTuning_Parallel,
+        SmallCircle_Linetrace_InnerEdge_parallel,
+        # --- 小円から大円に移るときの処理
+        BigCircleEntryTuning_Parallel,
+        BigCircle_Linetrace_CenterEdge_parallel,
+        # --- ダブルループを抜ける処理
+        Escape_double_loop_Parallel,
     ])
 
+# =========================================================== loop_02 Start ===========================================================
+    # スマートキャリーツイン⇒ゴールに向かう処理
+    
     loop_02 = Sequence(name="loop_02_with_smart_carry_twin", memory=True)
     loop_02.add_children([
     # ========= スマートキャリーツイン ========     
@@ -1352,33 +1388,35 @@ def build_behaviour_tree() -> BehaviourTree:
         SpinAround(name="spin by 90 degrees_After_puton_back_first",
                     target=-180,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        # --- 次のボトルへ
+        # --- 次のボトルへ(ライントレースして赤検知でボトルをつかむ)
         Go_to_next_bottle_Parallel,
         SpinAround(name="Go_to_next_bottle",
-                    target=-140,max_power=50,min_power=MIN_POWER,
+                    target=-90,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        DetectBlackline_before_bottle_Parallel,
+        SpinAround(name="Go_to_next_bottle",
+                    target=-170,max_power=50,min_power=MIN_POWER,
+                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        traceline_cam_Detectred_Parallel,
         Spintotarget_135degree_Parallel,
-        # SpinAround(name="spin by 90 degrees_detect_red",
-        #             target=-270,max_power=50,min_power=MIN_POWER,
-        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- ターゲットに向かう
         smart_carry_puton_second_Parallel,
         # --------バックしてボトルを置く
         After_puton_back_second_Parallel,
-        # --------ターゲットにオブジェクトを置く
+        # --- 45度斜めに走る
         SpinAround(name="DiagonalRun",
                     target=-45,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        DiagonalRun_Parallel,#                    45度回転して一定距離ジャイロで進む
+        DiagonalRun_Parallel,
         SpinAround(name="spin by 90 degrees_GoBlackLine_1",
                     target=-90,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        # --------黒線検知で90度回転する
-        Go_to_blackline_Parallel,#                黒線を見つけるまでジャイロで進む
+        # --- もう45度回転してメインのラインまで垂直に走る
+        Go_to_blackline_Parallel,
         SpinAround(name="spin by 90 degrees_DetectBlackLine",
                     target=-175, max_power=50, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        # --------青線検知するまでライントレース
+        # --- ゴールに向かう
         traceline_cam_DetectBlue_GOAL_Parallel,
     ])
 
