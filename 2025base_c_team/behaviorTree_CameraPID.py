@@ -1341,12 +1341,13 @@ def build_behaviour_tree() -> BehaviourTree:
         #色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
         # Detectcolor(name="detectcolor"),
     # ========= LAP走行 ========
-        # --- スタートから一定距離直進⇒オブジェクト回避
+        # --- スタートからdistance700直進→自由走行
         obstacle_Parallel,
-        # --- LAP最速自由走行
+        # --- LAP最速自由走行 40～45°でdistance4860直進
         obstacle_saisoku_freedom_Parallel,
+        # --- ジャイロ90°でゴール前カーブに向く
         gyro_first_curve_90degree_Parallel,
-        # --- ゴール前カーブ
+        # --- 今まで通りゴール前カーブを滑らかに曲がる 
         gyro_second_curve_135degree_Parallel,
         # gyro_second_curve_180degree_Parallel,
         gyro_gotolap_Parallel,
