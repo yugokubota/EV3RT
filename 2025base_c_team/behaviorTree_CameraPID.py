@@ -950,8 +950,8 @@ def build_behaviour_tree() -> BehaviourTree:
 
     obstacle_saisoku_freedom_Parallel = Parallel(name="obstacle_saisoku_freedom", policy=ParallelPolicy.SuccessOnOne())
     obstacle_saisoku_freedom_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=4860),
-        RunByGyro(name="object_avoid_gyro", target=45, power=100,
+        IsDistancePassed(name="distance_passed", target_distance=6000),
+        RunByGyro(name="object_avoid_gyro", target=30, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1342,7 +1342,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # Detectcolor(name="detectcolor"),
     # ========= LAP走行 ========
         # --- スタートからdistance700直進→自由走行
-        obstacle_Parallel,
+        # obstacle_Parallel,
         # --- LAP最速自由走行 40～45°でdistance4860直進
         obstacle_saisoku_freedom_Parallel,
         # --- ジャイロ90°でゴール前カーブに向く
