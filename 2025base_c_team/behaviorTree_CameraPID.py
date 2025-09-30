@@ -950,7 +950,7 @@ def build_behaviour_tree() -> BehaviourTree:
 
     obstacle_saisoku_freedom_Parallel = Parallel(name="obstacle_saisoku_freedom", policy=ParallelPolicy.SuccessOnOne())
     obstacle_saisoku_freedom_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=5000),
+        IsDistancePassed(name="distance_passed", target_distance=4500),
         RunByGyro(name="object_avoid_gyro", target=30, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1005,8 +1005,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     gyro_first_curve_90degree_Parallel = Parallel(name="gyro_curve_90degree", policy=ParallelPolicy.SuccessOnOne())
     gyro_first_curve_90degree_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=100),
-        RunByGyro(name="run_back_GoBlackLine", target=90, power=400,
+        IsDistancePassed(name="distance_passed", target_distance=400),
+        RunByGyro(name="run_back_GoBlackLine", target=90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
