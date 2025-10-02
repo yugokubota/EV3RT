@@ -1279,10 +1279,10 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Purpose] 45度で少し走ったあとに90度にすることで取りこぼさない
     # [Exit]    距離50
     # [Control] Parallel(SuccessOnOne)
-    Spintotarget_270degree_Parallel = Parallel(name="Spintotarget_270degree", policy=ParallelPolicy.SuccessOnOne())
-    Spintotarget_270degree_Parallel.add_children([
+    Spintotarget_225degree_Parallel = Parallel(name="Spintotarget_225degree", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_225degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=200),
-        RunByGyro(name="run straight_SpinAndRun", target=270, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=225, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1314,7 +1314,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_returngate_Parallel = Parallel(name="Spintotarget_returngate_Parallel", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_returngate_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1600),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1750),
         RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1325,7 +1325,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Sequence
     ReturnGate_Sequence = Sequence(name="ReturnGate", memory=True)
     ReturnGate_Sequence.add_children([
-        Spintotarget_270degree_Parallel,
+        Spintotarget_225degree_Parallel,
         Spintotarget_315degree_Parallel,
         Spintotarget_360degree_Parallel,
         Spintotarget_returngate_Parallel,#              ゲートを通過する
