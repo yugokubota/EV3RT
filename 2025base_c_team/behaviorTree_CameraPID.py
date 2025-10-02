@@ -1168,7 +1168,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(420, 800)),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(450, 800)),
         RunByGyro(name="run straight_SpinAndRun", target=-135, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1180,7 +1180,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2150, 2000)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(1800, 2000)),
         RunByGyro(name="run straight_SpinAndRun", target=-93, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1281,7 +1281,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_270degree_Parallel = Parallel(name="Spintotarget_270degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_270degree_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=150),
         RunByGyro(name="run straight_SpinAndRun", target=270, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1292,7 +1292,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_360degree_Parallel = Parallel(name="Spintotarget_360degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_360degree_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=600),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=800),
         RunByGyro(name="run straight_SpinAndRun", target=360, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1303,7 +1303,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_returngate_Parallel = Parallel(name="Spintotarget_returngate_Parallel", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_returngate_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1200),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1600),
         RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
