@@ -1180,7 +1180,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(1800, 2000)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(1900, 2000)),
         RunByGyro(name="run straight_SpinAndRun", target=-93, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1281,8 +1281,19 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_270degree_Parallel = Parallel(name="Spintotarget_270degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_270degree_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=150),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=200),
         RunByGyro(name="run straight_SpinAndRun", target=270, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 2段階右折で確実に運ぶ ---
+    # [Purpose] 45度で少し走ったあとに90度にすることで取りこぼさない
+    # [Exit]    距離50
+    # [Control] Parallel(SuccessOnOne)
+    Spintotarget_315degree_Parallel = Parallel(name="Spintotarget_315degree", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_315degree_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=150),
+        RunByGyro(name="run straight_SpinAndRun", target=315, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1315,6 +1326,7 @@ def build_behaviour_tree() -> BehaviourTree:
     ReturnGate_Sequence = Sequence(name="ReturnGate", memory=True)
     ReturnGate_Sequence.add_children([
         Spintotarget_270degree_Parallel,
+        Spintotarget_315degree_Parallel,
         Spintotarget_360degree_Parallel,
         Spintotarget_returngate_Parallel,#              ゲートを通過する
     ])
