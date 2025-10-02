@@ -1486,8 +1486,8 @@ def build_behaviour_tree() -> BehaviourTree:
     root.add_children([
         calibration,
         start,
-        loop_01,#LAP
-        loop_02,#ダブルループ
+        # loop_01,#LAP
+        # loop_02,#ダブルループ
         loop_03,#スマートキャリーからゴールまで
         StopNow(name="stop"),
         TheEnd(name="end"),
