@@ -957,7 +957,7 @@ def build_behaviour_tree() -> BehaviourTree:
 
     obstacle_avoid_middle_Parallel = Parallel(name="obstacle_avoid_middle", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_middle_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=950),
+        IsDistancePassed(name="distance_passed", target_distance=900),
         RunByGyro(name="object_avoid_gyro", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1133,6 +1133,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BigCircle_Linetrace_CenterEdge_parallel = Parallel(name="BigCircle_Linetrace_CenterEdge",policy=ParallelPolicy.SuccessOnOne())
     BigCircle_Linetrace_CenterEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
+        IsDistancePassed(name="distance_passed", target_distance=800),
         TraceLineCam(name="BigCircle_Linetrace_CenterEdge",power=42, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=40,trace_side=TraceSide.CENTER),
     ])
