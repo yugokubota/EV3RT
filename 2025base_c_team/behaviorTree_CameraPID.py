@@ -1511,8 +1511,8 @@ def build_behaviour_tree() -> BehaviourTree:
         calibration,
         start,
         # loop_01,#LAP
-        loop_02,#ダブルループ
-        # loop_03,#スマートキャリーからゴールまで
+        # loop_02,#ダブルループ
+        loop_03,#スマートキャリーからゴールまで
         StopNow(name="stop"),
         TheEnd(name="end"),
     ])
