@@ -957,7 +957,7 @@ def build_behaviour_tree() -> BehaviourTree:
 
     obstacle_avoid_middle_Parallel = Parallel(name="obstacle_avoid_middle", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_middle_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=400),
+        IsDistancePassed(name="distance_passed", target_distance=1200),
         RunByGyro(name="object_avoid_gyro", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -995,7 +995,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_first_curve_45degree_Parallel = Parallel(name="gyro_curve_45degree", policy=ParallelPolicy.SuccessOnOne())
     gyro_first_curve_45degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=50),
-        RunByGyro(name="run_back_GoBlackLine", target=45, power=100,
+        RunByGyro(name="gyro_first_curve_45degree", target=45, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1017,7 +1017,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=2900),
-        RunByGyro(name="run_back_GoBlackLine", target=90, power=100,
+        RunByGyro(name="gyro_mukoujoumen", target=90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1028,7 +1028,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_second_curve_135degree_Parallel = Parallel(name="gyro_curve_135degree", policy=ParallelPolicy.SuccessOnOne())
     gyro_second_curve_135degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=50),
-        RunByGyro(name="run_back_GoBlackLine", target=135, power=100,
+        RunByGyro(name="gyro_second_curve_135degree", target=135, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1039,7 +1039,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_second_curve_180degree_Parallel = Parallel(name="gyro_curve_180degree", policy=ParallelPolicy.SuccessOnOne())
     gyro_second_curve_180degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=50),
-        RunByGyro(name="run_back_GoBlackLine", target=180, power=100,
+        RunByGyro(name="gyro_second_curve_180degree", target=180, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1050,7 +1050,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_gotolap_Parallel = Parallel(name="gyro_gotolap", policy=ParallelPolicy.SuccessOnOne())
     gyro_gotolap_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=500),
-        RunByGyro(name="run_back_GoBlackLine", target=180, power=100,
+        RunByGyro(name="gyro_gotolap", target=180, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1075,7 +1075,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Doubleloop_start_Parallel = Parallel(name="Doubleloop_start", policy=ParallelPolicy.SuccessOnOne())
     Doubleloop_start_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=750),
+        IsDistancePassed(name="distance_passed", target_distance=850),
         TraceLineCam(name="traceline_start_doubleloop",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=30,trace_side=TraceSide.NORMAL),
     ])
@@ -1411,7 +1411,7 @@ def build_behaviour_tree() -> BehaviourTree:
         obstacle_Parallel,
         obstacle_avoid_start_Parallel,
         obstacle_avoid_middle_Parallel,
-        obstacle_avoid_end_Parallel,
+        # obstacle_avoid_end_Parallel,
         SpinAround(name="spin_by_before_avoid",
                     target=0,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
