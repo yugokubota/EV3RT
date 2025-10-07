@@ -951,13 +951,13 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_avoid_start_Parallel = Parallel(name="obstacle_avoid_start", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_start_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=400),
-        RunByGyro(name="object_avoid_gyro", target=30, power=100,
+        RunByGyro(name="object_avoid_gyro", target=20, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
     obstacle_avoid_middle_Parallel = Parallel(name="obstacle_avoid_middle", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_middle_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=1200),
+        IsDistancePassed(name="distance_passed", target_distance=1000),
         RunByGyro(name="object_avoid_gyro", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
