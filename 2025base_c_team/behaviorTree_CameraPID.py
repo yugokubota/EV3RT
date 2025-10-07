@@ -1075,7 +1075,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Doubleloop_start_Parallel = Parallel(name="Doubleloop_start", policy=ParallelPolicy.SuccessOnOne())
     Doubleloop_start_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=750),
+        IsDistancePassed(name="distance_passed", target_distance=500),
         TraceLineCam(name="traceline_start_doubleloop",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=30,trace_side=TraceSide.NORMAL),
     ])
@@ -1087,7 +1087,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Bigcircle_Linetrace_InnerEdge_parallel = Parallel(name="Bigcircle_Linetrace_InnerEdge",policy=ParallelPolicy.SuccessOnOne())
     Bigcircle_Linetrace_InnerEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed", target_distance=1850),      #青検知しなかったとき用の距離制御
+        IsDistancePassed(name="distance_passed", target_distance=1200),      #青検知しなかったとき用の距離制御
         TraceLineCam(name="traceline_cam_inner_egde",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
@@ -1511,8 +1511,8 @@ def build_behaviour_tree() -> BehaviourTree:
         calibration,
         start,
         # loop_01,#LAP
-        # loop_02,#ダブルループ
-        loop_03,#スマートキャリーからゴールまで
+        loop_02,#ダブルループ
+        # loop_03,#スマートキャリーからゴールまで
         StopNow(name="stop"),
         TheEnd(name="end"),
     ])
