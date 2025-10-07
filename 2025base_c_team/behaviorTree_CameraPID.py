@@ -1075,7 +1075,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Doubleloop_start_Parallel = Parallel(name="Doubleloop_start", policy=ParallelPolicy.SuccessOnOne())
     Doubleloop_start_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=500),
+        IsDistancePassed(name="distance_passed", target_distance=750),
         TraceLineCam(name="traceline_start_doubleloop",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=30,trace_side=TraceSide.NORMAL),
     ])
