@@ -1027,8 +1027,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     gyro_second_curve_135degree_Parallel = Parallel(name="gyro_curve_135degree", policy=ParallelPolicy.SuccessOnOne())
     gyro_second_curve_135degree_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=300),
-        RunByGyro(name="gyro_second_curve_135degree", target=135, power=100,
+        IsDistancePassed(name="distance_passed", target_distance=500),
+        RunByGyro(name="gyro_second_curve_135degree", target=150, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
