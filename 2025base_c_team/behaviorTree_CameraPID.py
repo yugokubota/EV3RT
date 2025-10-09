@@ -428,6 +428,78 @@ class TraceLine_sensor(Behaviour):
         print(f"right_motor power: {right_power}, left_motor power: {left_power}")
         return Status.RUNNING
 
+# カメラで青色を探して見つけたら停止するクラス
+# search_range: (x, y, w, h)で指定した範囲の平均色を取得して青色を検知
+# 640ピクセル × 480ピクセルの画像で、(0,0)が左上、(639,479)が右下
+# カメラ全体を範囲にするなら (0, 0, 640, 480)らしい
+# search_step: ヨー角を動かすステップ（度数）
+# max_angle: 探索の最大角度（-max_angleから+max_angleまで動かす）
+class SearchBlueAndStop(Behaviour):
+    def __init__(self, name: str, search_range: tuple[int, int, int, int], search_step: int, max_angle: int):
+        super().__init__(name)
+        self.search_range = search_range  # (x, y, w, h)
+        self.search_step = search_step
+        self.max_angle = max_angle
+        self.current_angle = -max_angle
+        self.found_angle = None
+        self.state = "search"
+
+    def update(self) -> Status:
+        if self.state == "search":
+            # 指定範囲の平均色取得
+            r, g, b = g_video.get_area_average_color(*self.search_range)
+            max_rgb = max(r, g, b, 1)
+            r_norm, g_norm, b_norm = r / max_rgb, g / max_rgb, b / max_rgb
+            h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+            h_deg = int(h * 360)
+            s_per = int(s * 100)
+            v_per = int(v * 100)
+            print(f"[SearchBlue] angle={self.current_angle} h={h_deg} s={s_per} v={v_per}")
+            if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+                self.found_angle = self.current_angle
+                self.state = "stop"
+                return Status.RUNNING
+            # ヨー角を動かす
+            g_right_motor.set_power(30)
+            g_left_motor.set_power(-30)
+            time.sleep(0.05)
+            self.current_angle += self.search_step
+            if self.current_angle > self.max_angle:
+                g_right_motor.set_power(0)
+                g_left_motor.set_power(0)
+                return Status.FAILURE
+            return Status.RUNNING
+        elif self.state == "stop":
+            # 検知した角度で停止
+            g_right_motor.set_power(0)
+            g_left_motor.set_power(0)
+            print(f"[SearchBlue] Stop at angle={self.found_angle}")
+            return Status.SUCCESS
+        return Status.RUNNING
+
+# class DetectBlueInCenterArea(Behaviour):
+#     def __init__(self, name: str, radius: int = 20):
+#         super().__init__(name)
+#         self.radius = radius  # 中心円の半径（ピクセル単位など）
+#         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+
+#     def update(self) -> Status:
+#         # カメラ画像の中心円エリアのRGB値を取得（仮のAPI例）
+#         r, g, b = g_video.get_center_area_color(radius=self.radius)
+#         max_rgb = max(r, g, b, 1)
+#         r_norm = r / max_rgb
+#         g_norm = g / max_rgb
+#         b_norm = b / max_rgb
+#         h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+#         h_deg = int(h * 360)
+#         s_per = int(s * 100)
+#         v_per = int(v * 100)
+#         # 青色の判定（例: h=200〜260, s/vは適宜調整）
+#         if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+#             self.logger.info("%s: Blue detected in center area! h=%d s=%d v=%d" % (self.__class__.__name__, h_deg, s_per, v_per))
+#             print(f"[DetectBlueInCenterArea] BLUE! h={h_deg} s={s_per} v={v_per}")
+#             return Status.SUCCESS
+#         return Status.RUNNING
 
 class TraceLineCam(Behaviour):
     def __init__(self, name: str, power: int, pid_p: float, pid_i: float, pid_d: float,
@@ -1453,6 +1525,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_03 = Sequence(name="loop_03_with_smart_carry_twin", memory=True)
     loop_03.add_children([
     # ========= スマートキャリーツイン ========     
+        SearchBlueAndStop(name="SearchBlueAndStop", search_range=(140, 100, 40, 40), search_step=5, max_angle=180),
         # --- オブジェクト下の青検知⇒ゲートを通過してターゲットに向かう
         traceline_cam_smacary_Parallel,
         SpinAndRun_Sequence,
@@ -1511,9 +1584,9 @@ def build_behaviour_tree() -> BehaviourTree:
     root.add_children([
         calibration,
         start,
-        loop_01,#LAP
-        loop_02,#ダブルループ
-        # loop_03,#スマートキャリーからゴールまで
+        # loop_01,#LAP
+        # loop_02,#ダブルループ
+        loop_03,#スマートキャリーからゴールまで
         StopNow(name="stop"),
         TheEnd(name="end"),
     ])
