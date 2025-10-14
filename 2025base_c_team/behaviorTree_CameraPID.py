@@ -941,7 +941,7 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_avoid_start_Parallel = Parallel(name="obstacle_avoid_start", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_start_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=400),
-        RunByGyro(name="object_avoid_gyro", target=-25, power=100,
+        RunByGyro(name="object_avoid_gyro", target=25, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1265,15 +1265,72 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
 
-    # --- ゲート通過後にボトルを取りこぼさない ---
-    # [Purpose] 45度で少し走ることで取りこぼさない
+    # --- 2段階右折で確実に運ぶ ---
+    # [Purpose] 45度で少し走ったあとに90度にすることで取りこぼさない
     # [Exit]    距離50
     # [Control] Parallel(SuccessOnOne)
-    Spintotarget_135degree_Parallel = Parallel(name="Spintotarget_135degree", policy=ParallelPolicy.SuccessOnOne())
-    Spintotarget_135degree_Parallel.add_children([
+    Spintotarget_180degree_Parallel = Parallel(name="Spintotarget_180degree", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_180degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
-        RunByGyro(name="run straight_SpinAndRun", target=-140, power=60,
+        RunByGyro(name="run_straight_SpinAndRun", target=180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 2段階右折で確実に運ぶ ---
+    # [Purpose] 45度で少し走ったあとに90度にすることで取りこぼさない
+    # [Exit]    距離50
+    # [Control] Parallel(SuccessOnOne)
+    Spintotarget_225degree_Parallel = Parallel(name="Spintotarget_225degree", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_225degree_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
+        RunByGyro(name="run straight_SpinAndRun", target=-225, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 2段階右折で確実に運ぶ ---
+    # [Purpose] 45度で少し走ったあとに90度にすることで取りこぼさない
+    # [Exit]    距離50
+    # [Control] Parallel(SuccessOnOne)
+    Spintotarget_315degree_Parallel = Parallel(name="Spintotarget_315degree", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_315degree_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
+        RunByGyro(name="run straight_SpinAndRun", target=-315, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 2段階右折で確実に運ぶ ---
+    # [Purpose] 帰りのゲート前まで進む
+    # [Exit]    距離50
+    # [Control] Parallel(SuccessOnOne)
+    Spintotarget_360degree_Parallel = Parallel(name="Spintotarget_360degree", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_360degree_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(1100, 800)),
+        RunByGyro(name="run straight_SpinAndRun", target=0, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 帰りのゲートを通る ---
+    # [Purpose] 帰りのゲートを通過し、ターゲットの直角位置まで進む
+    # [Exit]    距離1200
+    # [Control] Parallel(SuccessOnOne)
+    Spintotarget_returngate_Parallel = Parallel(name="Spintotarget_returngate_Parallel", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_returngate_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1600),
+        RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 青検知でスマートキャリーに入ってからターゲットに向かうまで ---
+    # [Purpose] 各処理をSuccesseさせる
+    # [Exit]    シーケンスがsuccessで完了する
+    # [Control] Sequence
+    ReturnGate_Sequence = Sequence(name="ReturnGate", memory=True)
+    ReturnGate_Sequence.add_children([
+        Spintotarget_180degree_Parallel,
+        Spintotarget_225degree_Parallel,
+        Spintotarget_315degree_Parallel,
+        Spintotarget_360degree_Parallel,
+        Spintotarget_returngate_Parallel,#              ゲートを通過する
     ])
 
     # --- ジャイロで次のターゲットまで進む ---
@@ -1342,9 +1399,9 @@ def build_behaviour_tree() -> BehaviourTree:
     # ========= LAP走行 ========
         # --- スタートから一定距離直進⇒オブジェクト回避
         obstacle_Parallel,
-        obstacle_avoid_start_Parallel,
+        # obstacle_avoid_start_Parallel,
         obstacle_avoid_middle_Parallel,
-        obstacle_avoid_end_Parallel,
+        # obstacle_avoid_end_Parallel,
         SpinAround(name="spin_by_before_avoid",
                     target=0,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
