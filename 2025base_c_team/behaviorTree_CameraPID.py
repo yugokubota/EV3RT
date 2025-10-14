@@ -19,6 +19,7 @@ from py_trees import (
 from py_etrobo_util import Video, TraceSide, Plotter, SymmetricClamper
 from py_etrobo_util.plotter import TIRE_DIAMETER
 import colorsys#GRBをHSVに変える標準ライブラリ
+from py_etrobo_util.video import FRAME_WIDTH, FRAME_HEIGHT
 
 EXEC_INTERVAL: float = 0.02
 VIDEO_INTERVAL: float = 0.02
@@ -428,6 +429,85 @@ class TraceLine_sensor(Behaviour):
         print(f"right_motor power: {right_power}, left_motor power: {left_power}")
         return Status.RUNNING
 
+# ============================================= 検証中 ビヘイビア =============================================
+# カメラで青を中央に合わせる→近づいたらジャイロ固定で一定距離前進して置く（バック禁止）
+class AimBlueThenGo(Behaviour):
+    def __init__(self, name: str,
+                 base_power: int = 35,         # 向き合わせ中の前進速度
+                 kp_turn: float = 0.35,        # 横ずれ(dx)→旋回の係数
+                 align_px: int = 8,            # 横ずれ許容(px)
+                 min_cy_ratio: float = 0.60,   # 近づいた判定（画面高さに対する割合）
+                 go_distance: int = 320,       # そこから真っ直ぐ進む距離[mm]
+                 run_power: int = 45,          # 距離前進中の速度
+                 pid_p: float = 1.1, pid_i: float = 0.001, pid_d: float = 0.03):
+        super().__init__(name)
+        self.base = base_power
+        self.kp = kp_turn
+        self.align_px = align_px
+        self.stop_y = int(FRAME_HEIGHT * min_cy_ratio)
+        self.go_distance = go_distance
+        self.run_power = run_power
+        self.pid_p, self.pid_i, self.pid_d = pid_p, pid_i, pid_d
+        self.phase = "aim"
+        self.running = False
+
+    def _drive(self, L, R):
+        g_left_motor.set_power(max(-100, min(100, L)))
+        g_right_motor.set_power(max(-100, min(100, R)))
+
+    def update(self) -> Status:
+        if not self.running:
+            self.running = True
+            self.phase = "aim"
+            print("[AimBlueThenGo] start aiming...")
+
+        found, cx, cy, area = g_video.get_blue_info()
+
+        # 1) 向き合わせ（常に前進）
+        if self.phase == "aim":
+            if not found:
+                # 青が見えるまでゆっくり前進＋小さく首振り
+                wiggle = 12 if (int(time.time()*2) % 2)==0 else -12
+                self._drive(self.base + wiggle, self.base - wiggle)
+                return Status.RUNNING
+
+            dx = cx - (FRAME_WIDTH // 2)
+            turn = int(self.kp * dx)           # 右が+で右旋回
+            L = self.base + turn
+            R = self.base - turn
+            self._drive(L, R)
+
+            # 横ずれOK かつ ある程度近い → ジャイロ固定へ
+            if abs(dx) <= self.align_px and cy >= self.stop_y:
+                self.target_heading = (-1) * g_course * g_gyro_sensor.get_angle()
+                self.start_dist = g_plotter.get_distance()
+                self.pid = PID(self.pid_p, self.pid_i, self.pid_d,
+                               setpoint=self.target_heading, sample_time=EXEC_INTERVAL,
+                               output_limits=(-self.run_power, self.run_power))
+                self.pid.reset()
+                self.phase = "go"
+                print(f"[AimBlueThenGo] locked heading={self.target_heading:.1f}, go {self.go_distance}mm")
+            return Status.RUNNING
+
+        # 2) ジャイロで一定距離まっすぐ
+        if self.phase == "go":
+            cur_heading = (-1) * g_course * g_gyro_sensor.get_angle()
+            steer = int(self.pid(cur_heading))  # ±run_power で出る
+            L = self.run_power + steer
+            R = self.run_power - steer
+            self._drive(L, R)
+
+            if g_plotter.get_distance() - self.start_dist >= self.go_distance:
+                self._drive(0, 0)
+                print("[AimBlueThenGo] placed → stop")
+                return Status.SUCCESS
+
+            return Status.RUNNING
+
+        # 念のため
+        self._drive(0, 0)
+        return Status.SUCCESS
+
 # カメラで青色を探して見つけたら停止するクラス
 # search_range: (x, y, w, h)で指定した範囲の平均色を取得して青色を検知
 # 640ピクセル × 480ピクセルの画像で、(0,0)が左上、(639,479)が右下
@@ -500,6 +580,7 @@ class SearchBlueAndStop(Behaviour):
 #             print(f"[DetectBlueInCenterArea] BLUE! h={h_deg} s={s_per} v={v_per}")
 #             return Status.SUCCESS
 #         return Status.RUNNING
+# ============================================= 検証中 ビヘイビア =============================================
 
 class TraceLineCam(Behaviour):
     def __init__(self, name: str, power: int, pid_p: float, pid_i: float, pid_d: float,
@@ -1292,6 +1373,15 @@ def build_behaviour_tree() -> BehaviourTree:
         Spintotarget_90degree_Parallel,
     ])
 
+    place_first_seq = Sequence(name="place_first_bottle", memory=True)
+    place_first_seq.add_children([
+        AimBlueThenGo(name="aim_and_place",
+            base_power=35, kp_turn=0.35,
+            min_cy_ratio=0.60,   # 近づいた判定の高さ
+            go_distance=320,     # ここを現場で調整
+            run_power=45),
+    ])
+
     # --- 最初のボトルをターゲットに置く ---
     # [Purpose] 中心に近づけるようにボトルを置く
     # [Exit]    距離330 or 580（ゲートの位置によって変化）
@@ -1524,9 +1614,9 @@ def build_behaviour_tree() -> BehaviourTree:
 
     loop_03 = Sequence(name="loop_03_with_smart_carry_twin", memory=True)
     loop_03.add_children([
-    # ========= スマートキャリーツイン ========     
-        SearchBlueAndStop(name="SearchBlueAndStop", search_range=(140, 100, 40, 40), search_step=5, max_angle=180),
-        # --- オブジェクト下の青検知⇒ゲートを通過してターゲットに向かう
+    # ========= スマートキャリーツイン ========
+        place_first_seq,     
+        # --- 最初のボトルまでライントレース
         traceline_cam_smacary_Parallel,
         SpinAndRun_Sequence,
         # --- ターゲットにオブジェクトを置く
