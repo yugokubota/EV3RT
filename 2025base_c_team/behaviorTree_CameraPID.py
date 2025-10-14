@@ -1384,7 +1384,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_DetectBlue_GOAL_Parallel = Parallel(name="traceline_cam_DetectBlue_GOAL", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_DetectBlue_GOAL_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=800),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=750),
         TraceLineCam(name="traceline_cam_DetectBlue_GOAL",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
@@ -1392,7 +1392,7 @@ def build_behaviour_tree() -> BehaviourTree:
 # =========================================================== loop_01 Start ===========================================================
     # 直線走行⇒オブジェクト回避⇒LAP走行⇒ダブルループ
 
-    loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
+    loop_01 = Sequence(name="loop_01_with_obstacle", memory=True)
     loop_01.add_children([
         #色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
         # Detectcolor(name="detectcolor"),
@@ -1411,8 +1411,13 @@ def build_behaviour_tree() -> BehaviourTree:
         gyro_mukoujoumen_Parallel,#               向正面の直線
         gyro_second_curve_135degree_Parallel,
         gyro_gotolap_Parallel,#                   LAPまで進む
+    ])
 
-    # ========= ダブルループ ========
+# =========================================================== loop_02 Start ===========================================================
+
+    loop_02 = Sequence(name="loop_02_with_doubleloop", memory=True)
+    loop_02.add_children([
+    # ========= ダブルループ ========     
         # --- LAP完了から大円に移る
         traceline_cam_start_doubleloop_Parallel,
         SpinAround(name="spin_by_start_doubleloop",
@@ -1430,11 +1435,11 @@ def build_behaviour_tree() -> BehaviourTree:
         Escape_double_loop_Parallel,
     ])
 
-# =========================================================== loop_02 Start ===========================================================
+# =========================================================== loop_03 Start ===========================================================
     # スマートキャリーツイン⇒ゴールに向かう処理
-    
-    loop_02 = Sequence(name="loop_02_with_smart_carry_twin", memory=True)
-    loop_02.add_children([
+
+    loop_03 = Sequence(name="loop_03_with_smart_carry_twin", memory=True)
+    loop_03.add_children([
     # ========= スマートキャリーツイン ========     
         # --- オブジェクト下の青検知⇒ゲートを通過してターゲットに向かう
         traceline_cam_smacary_Parallel,
@@ -1456,20 +1461,13 @@ def build_behaviour_tree() -> BehaviourTree:
                     target=-170,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         traceline_cam_Detectred_Parallel,
-        Spintotarget_135degree_Parallel,
+        # --- ゲート復路通過処理
+        ReturnGate_Sequence,
         # --- ターゲットに向かう
         smart_carry_puton_second_Parallel,
-        # --------バックしてボトルを置く
+        # --- バックしてボトルを置く
         After_puton_back_second_Parallel,
-        # --- 45度斜めに走る
-        SpinAround(name="DiagonalRun",
-                    target=-45,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        DiagonalRun_Parallel,
-        SpinAround(name="spin by 90 degrees_GoBlackLine_1",
-                    target=-90,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        # --- もう45度回転してメインのラインまで垂直に走る
+        # --- メインのラインまで垂直に走る
         Go_to_blackline_Parallel,
         SpinAround(name="spin by 90 degrees_DetectBlackLine",
                     target=-175, max_power=50, min_power=MIN_POWER,
@@ -1493,8 +1491,9 @@ def build_behaviour_tree() -> BehaviourTree:
     root.add_children([
         calibration,
         start,
-        loop_01,
-        loop_02,
+        loop_01,#LAP
+        loop_02,#ダブルループ
+        # loop_03,#スマートキャリーからゴールまで
         StopNow(name="stop"),
         TheEnd(name="end"),
     ])
