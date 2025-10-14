@@ -1168,8 +1168,9 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel = Parallel(name="BringObject_to_Gate", policy=ParallelPolicy.SuccessOnOne())
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed", target_distance=gate_value(420, 800)),
-        RunAsInstructed(name="go_gate", pwm_l=-65, pwm_r=-50),
+        IsDistancePassed(name="distance_passed", target_distance=gate_value(450, 700)),
+        RunByGyro(name="run straight_SpinAndRun", target=-160, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
     # --- ゲート通過 ---
@@ -1179,7 +1180,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2150, 2000)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(1900, 2000)),
         RunByGyro(name="run straight_SpinAndRun", target=-93, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1224,7 +1225,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     smart_carry_puton_first_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_first_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(330, 580)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(330, 550)),
         RunByGyro(name="run straight_smart_carry_puton", target=0, power=75,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1250,18 +1251,22 @@ def build_behaviour_tree() -> BehaviourTree:
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
-    # --- ゲート通過後にボトルを取りこぼさない ---
-    # [Purpose] 45度で少し走ることで取りこぼさない
-    # [Exit]    距離50
+    # --- 次のボトル前の黒線を検知 ---
+    # [Purpose] 黒線を検知する
+    # [Exit]    距離300 or 黒線検知
     # [Control] Parallel(SuccessOnOne)
     DetectBlackline_before_bottle_Parallel = Parallel(name="DetectBlackline_before_bottle", policy=ParallelPolicy.SuccessOnOne())
     DetectBlackline_before_bottle_Parallel.add_children([
-        IsOnBlackLine_running(name="detect_blackline", threshold=5),
+        IsOnBlackLine_running(name="detect_blackline", threshold=20),
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=300),
         RunByGyro(name="run straight_SpinAndRun", target=-265, power=42,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
+    # --- 次のボトル下の赤線を検知 ---
+    # [Purpose] 赤線を検知する
+    # [Exit]    距離500 or 赤線検知
+    # [Control] Parallel(SuccessOnOne)
     traceline_cam_Detectred_Parallel = Parallel(name="traceline_cam_Detectred", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_Detectred_Parallel.add_children([
         DetectRed(name="detect_red"),
@@ -1270,21 +1275,82 @@ def build_behaviour_tree() -> BehaviourTree:
         gs_min=0, gs_max=80,trace_side=TraceSide.CENTER),
     ])
 
-    Spintotarget_225degree_Parallel = Parallel(name="Spintotarget_225degree", policy=ParallelPolicy.SuccessOnOne())
-    Spintotarget_225degree_Parallel.add_children([
+    # --- 2段階右折で確実に運ぶ ---
+    # [Purpose] 45度で少し走ったあとに90度にすることで取りこぼさない
+    # [Exit]    距離50
+    # [Control] Parallel(SuccessOnOne)
+    Spintotarget_180degree_Parallel = Parallel(name="Spintotarget_180degree", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_180degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
-        RunByGyro(name="run straight_SpinAndRun", target=-225, power=50,
+        RunByGyro(name="run straight_SpinAndRun", target=180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
+    # --- 2段階右折で確実に運ぶ ---
+    # [Purpose] 45度で少し走ったあとに90度にすることで取りこぼさない
+    # [Exit]    距離50
+    # [Control] Parallel(SuccessOnOne)
+    Spintotarget_225degree_Parallel = Parallel(name="Spintotarget_225degree", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_225degree_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
+        RunByGyro(name="run straight_SpinAndRun", target=225, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 2段階右折で確実に運ぶ ---
+    # [Purpose] 45度で少し走ったあとに90度にすることで取りこぼさない
+    # [Exit]    距離50
+    # [Control] Parallel(SuccessOnOne)
+    Spintotarget_315degree_Parallel = Parallel(name="Spintotarget_315degree", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_315degree_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
+        RunByGyro(name="run straight_SpinAndRun", target=315, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 2段階右折で確実に運ぶ ---
+    # [Purpose] 帰りのゲート前まで進む
+    # [Exit]    距離50
+    # [Control] Parallel(SuccessOnOne)
+    Spintotarget_360degree_Parallel = Parallel(name="Spintotarget_360degree", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_360degree_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(1100, 800)),
+        RunByGyro(name="run straight_SpinAndRun", target=360, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 帰りのゲートを通る ---
+    # [Purpose] 帰りのゲートを通過し、ターゲットの直角位置まで進む
+    # [Exit]    距離1200
+    # [Control] Parallel(SuccessOnOne)
+    Spintotarget_returngate_Parallel = Parallel(name="Spintotarget_returngate_Parallel", policy=ParallelPolicy.SuccessOnOne())
+    Spintotarget_returngate_Parallel.add_children([
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1600),
+        RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
+
+    # --- 青検知でスマートキャリーに入ってからターゲットに向かうまで ---
+    # [Purpose] 各処理をSuccesseさせる
+    # [Exit]    シーケンスがsuccessで完了する
+    # [Control] Sequence
+    ReturnGate_Sequence = Sequence(name="ReturnGate", memory=True)
+    ReturnGate_Sequence.add_children([
+        Spintotarget_180degree_Parallel,
+        Spintotarget_225degree_Parallel,
+        Spintotarget_315degree_Parallel,
+        Spintotarget_360degree_Parallel,
+        Spintotarget_returngate_Parallel,#              ゲートを通過する
+    ])
+
     # --- ジャイロで次のターゲットまで進む ---
-    # [Purpose] 次のターゲットまで進むように距離を調整
-    # [Exit]    距離1600
+    # [Purpose] ゲート通過後、次のターゲットまで進むように距離を調整
+    # [Exit]    距離600
     # [Control] Parallel(SuccessOnOne)
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
-        IsDistancePassed(name="smart_carry_puton", target_distance=1380),
-        RunByGyro(name="Gyro_straight_smart_carry_puton_second", target=-272, power=60,
+        IsDistancePassed(name="smart_carry_puton", target_distance=gate_value(850, 500)),
+        RunByGyro(name="Gyro_straight_smart_carry_puton_second", target=180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1294,7 +1360,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     After_puton_back_second_Parallel = Parallel(name="After_puton_back", policy=ParallelPolicy.SuccessOnOne())
     After_puton_back_second_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_back", target_distance=200),
+        IsDistancePassed(name="distance_passed_back", target_distance=400),
         RunAsInstructed(name="go_straight_3", pwm_l=60, pwm_r=60),
     ])
 
@@ -1328,7 +1394,7 @@ def build_behaviour_tree() -> BehaviourTree:
     traceline_cam_DetectBlue_GOAL_Parallel = Parallel(name="traceline_cam_DetectBlue_GOAL", policy=ParallelPolicy.SuccessOnOne())
     traceline_cam_DetectBlue_GOAL_Parallel.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=850),
+        IsDistancePassed(name="distance_passed_GoBlackLine", target_distance=750),
         TraceLineCam(name="traceline_cam_DetectBlue_GOAL",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
@@ -1355,7 +1421,13 @@ def build_behaviour_tree() -> BehaviourTree:
         gyro_mukoujoumen_Parallel,
         gyro_second_curve_135degree_Parallel,
         # gyro_second_curve_180degree_Parallel,
-        gyro_gotolap_Parallel,
+        gyro_gotolap_Parallel
+    ])
+
+# =========================================================== loop_02 Start ===========================================================
+
+    loop_02 = Sequence(name="loop_02_with_doubleloop", memory=True)
+    loop_02.add_children([
     # ========= ダブルループ ========     
         # --- LAP完了から大円に移る
         traceline_cam_start_doubleloop_Parallel,
@@ -1374,11 +1446,11 @@ def build_behaviour_tree() -> BehaviourTree:
         Escape_double_loop_Parallel,
     ])
 
-# =========================================================== loop_02 Start ===========================================================
+# =========================================================== loop_03 Start ===========================================================
     # スマートキャリーツイン⇒ゴールに向かう処理
 
-    loop_02 = Sequence(name="loop_02_with_smart_carry_twin", memory=True)
-    loop_02.add_children([
+    loop_03 = Sequence(name="loop_03_with_smart_carry_twin", memory=True)
+    loop_03.add_children([
     # ========= スマートキャリーツイン ========     
         # --- オブジェクト下の青検知⇒ゲートを通過してターゲットに向かう
         traceline_cam_smacary_Parallel,
@@ -1400,23 +1472,24 @@ def build_behaviour_tree() -> BehaviourTree:
                     target=-190,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         traceline_cam_Detectred_Parallel,
-        Spintotarget_225degree_Parallel,
+        # --- ゲート復路通過処理
+        ReturnGate_Sequence,
         # --- ターゲットに向かう
         smart_carry_puton_second_Parallel,
-        # --------バックしてボトルを置く
+        # --- バックしてボトルを置く
         After_puton_back_second_Parallel,
-        SpinAround(name="spin by 90 degrees_After_puton_back_second",
-                    target=-320,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        # --- 45度斜めに走る
-        DiagonalRun_Parallel,
-        SpinAround(name="spin by 90 degrees_GoBlackLine_1",
-                    target=-315,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        # --- もう45度回転してメインのラインまで垂直に走る
+        # SpinAround(name="spin by 90 degrees_After_puton_back_second",
+        #             target=-320,max_power=50,min_power=MIN_POWER,
+        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        # # --- 45度斜めに走る
+        # DiagonalRun_Parallel,
+        # SpinAround(name="spin by 90 degrees_GoBlackLine_1",
+        #             target=-315,max_power=50,min_power=MIN_POWER,
+        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        # --- メインのラインまで垂直に走る
         Go_to_blackline_Parallel,
         SpinAround(name="spin by 90 degrees_DetectBlackLine",
-                    target=175, max_power=50, min_power=MIN_POWER,
+                    target=160, max_power=50, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- ゴールに向かう
         traceline_cam_DetectBlue_GOAL_Parallel,
@@ -1437,8 +1510,9 @@ def build_behaviour_tree() -> BehaviourTree:
     root.add_children([
         calibration,
         start,
-        loop_01,
-        loop_02,
+        # loop_01,#LAP
+        # loop_02,#ダブルループ
+        loop_03,#スマートキャリーからゴールまで
         StopNow(name="stop"),
         TheEnd(name="end"),
     ])
