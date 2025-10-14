@@ -79,6 +79,12 @@ class Video(object):
         self.theta:float = 0.0
         self.target_insight = False
 
+        # --- 追加: 青ターゲットの情報 ---
+        self.blue_found = False
+        self.blue_cx = 0
+        self.blue_cy = 0
+        self.blue_area = 0
+
     def __del__(self):
         cv2.destroyAllWindows
         self.cap.release()
@@ -249,6 +255,33 @@ class Video(object):
         cv2.imshow("video monitor", img_comm)
 
         c = cv2.waitKey(1) # show the window
+
+        # ===== 追加：青丸検出（HSV） =====
+        hsv = cv2.cvtColor(img_orig, cv2.COLOR_BGR2HSV)
+        # 青のしきい値（環境で微調整）
+        lower_blue = np.array([100, 80, 50])   # H,S,V
+        upper_blue = np.array([140, 255, 255])
+        mask = cv2.inRange(hsv, lower_blue, upper_blue)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel)
+
+        cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        self.blue_found = False
+        if cnts:
+            cnt = max(cnts, key=cv2.contourArea)
+            area = cv2.contourArea(cnt)
+            if area > 80:  # ノイズ除去
+                M = cv2.moments(cnt)
+                if M["m00"] != 0:
+                    self.blue_cx = int(M["m10"]/M["m00"])
+                    self.blue_cy = int(M["m01"]/M["m00"])
+                    self.blue_area = int(area)
+                    self.blue_found = True
+                    # デバッグ描画（青中心）
+                    cv2.circle(img_orig, (self.blue_cx, self.blue_cy), 5, (255,0,0), -1)
+
+        ...
+        cv2.imshow("video monitor", img_comm)
+        c = cv2.waitKey(1)
         
     def get_theta(self) -> float:
         return self.theta
@@ -295,3 +328,7 @@ class Video(object):
             return (0, 0, 0)
         b, g, r = np.mean(area.reshape(-1, 3), axis=0)
         return int(r), int(g), int(b)
+
+    # --- 追加: 取得用メソッド ---
+    def get_blue_info(self):
+        return (self.blue_found, self.blue_cx, self.blue_cy, self.blue_area)
