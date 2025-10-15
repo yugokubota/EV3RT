@@ -1170,7 +1170,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2100, 2000)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2200, 2000)),
         RunByGyro(name="run straight_SpinAndRun", target=90, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1468,9 +1468,12 @@ def build_behaviour_tree() -> BehaviourTree:
         # --- バックしてボトルを置く
         After_puton_back_second_Parallel,
         # --- メインのラインまで垂直に走る
+        SpinAround(name="spin by 90 degrees_After_puton_back_first",
+                    target=-90,max_power=50,min_power=MIN_POWER,
+                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         Go_to_blackline_Parallel,
         SpinAround(name="spin by 90 degrees_DetectBlackLine",
-                    target=175, max_power=50, min_power=MIN_POWER,
+                    target=-150, max_power=50, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- ゴールに向かう
         traceline_cam_DetectBlue_GOAL_Parallel,
