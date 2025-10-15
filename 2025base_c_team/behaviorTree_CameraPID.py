@@ -1304,7 +1304,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_360degree_Parallel = Parallel(name="Spintotarget_360degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_360degree_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(1250, 800)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(1250, 900)),
         RunByGyro(name="run straight_SpinAndRun", target=0, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
