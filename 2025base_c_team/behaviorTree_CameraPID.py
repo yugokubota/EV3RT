@@ -1315,7 +1315,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     Spintotarget_returngate_Parallel = Parallel(name="Spintotarget_returngate_Parallel", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_returngate_Parallel.add_children([
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1600),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1750),
         RunByGyro(name="run straight_SpinAndRun", target=-90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1339,7 +1339,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
-        IsDistancePassed(name="smart_carry_puton", target_distance=gate_value(1100, 800)),
+        IsDistancePassed(name="smart_carry_puton", target_distance=gate_value(1000, 800)),
         RunByGyro(name="Gyro_straight_smart_carry_puton_second", target=-180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1470,7 +1470,7 @@ def build_behaviour_tree() -> BehaviourTree:
         # --- メインのラインまで垂直に走る
         Go_to_blackline_Parallel,
         SpinAround(name="spin by 90 degrees_DetectBlackLine",
-                    target=-175, max_power=50, min_power=MIN_POWER,
+                    target=175, max_power=50, min_power=MIN_POWER,
                     pid_p=1.1, pid_i=0.001, pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- ゴールに向かう
         traceline_cam_DetectBlue_GOAL_Parallel,
