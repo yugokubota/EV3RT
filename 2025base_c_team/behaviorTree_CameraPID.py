@@ -1159,7 +1159,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BringObject_to_Gate_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
         IsDistancePassed(name="distance_passed", target_distance=gate_value(450, 700)),
-        RunByGyro(name="run straight_SpinAndRun", target=-160, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=160, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1182,7 +1182,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Spintotarget_45degree_Parallel = Parallel(name="Spintotarget_45degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_45degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
-        RunByGyro(name="run straight_SpinAndRun", target=-315, power=70,
+        RunByGyro(name="run straight_SpinAndRun", target=45, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1193,7 +1193,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Spintotarget_90degree_Parallel = Parallel(name="Spintotarget_90degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_90degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(50, 100)),
-        RunByGyro(name="run straight_SpinAndRun", target=-360, power=70,
+        RunByGyro(name="run straight_SpinAndRun", target=0, power=70,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1237,7 +1237,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Go_to_next_bottle_Parallel = Parallel(name="Go_to_next_bottle", policy=ParallelPolicy.SuccessOnOne())
     Go_to_next_bottle_Parallel.add_children([
         IsDistancePassed(name="Go_to_next_bottle", target_distance=400),
-        RunByGyro(name="Go_to_next_bottle_by_Gyro", target=-180, power=60,
+        RunByGyro(name="Go_to_next_bottle_by_Gyro", target=180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1283,7 +1283,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Spintotarget_225degree_Parallel = Parallel(name="Spintotarget_225degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_225degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
-        RunByGyro(name="run straight_SpinAndRun", target=-225, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=135, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1294,7 +1294,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Spintotarget_315degree_Parallel = Parallel(name="Spintotarget_315degree", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_315degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=50),
-        RunByGyro(name="run straight_SpinAndRun", target=-315, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1316,7 +1316,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Spintotarget_returngate_Parallel = Parallel(name="Spintotarget_returngate_Parallel", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_returngate_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1600),
-        RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=-90, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1340,7 +1340,7 @@ def build_behaviour_tree() -> BehaviourTree:
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
         IsDistancePassed(name="smart_carry_puton", target_distance=1380),
-        RunByGyro(name="Gyro_straight_smart_carry_puton_second", target=-88, power=60,
+        RunByGyro(name="Gyro_straight_smart_carry_puton_second", target=-180, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
