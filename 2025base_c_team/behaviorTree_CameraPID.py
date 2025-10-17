@@ -433,7 +433,7 @@ class TraceLine_sensor(Behaviour):
 # カメラで青を中央に合わせる→近づいたらジャイロ固定で一定距離前進して置く（バック禁止）
 class AimBlueThenGo(Behaviour):
     def __init__(self, name: str,
-                 base_power: int = 35,
+                 base_power: int = 45,
                  kp_turn: float = 0.3,
                  align_px: int = 3,
                  min_cy_ratio: float = 0.60,
@@ -1379,10 +1379,10 @@ def build_behaviour_tree() -> BehaviourTree:
     place_first_seq = Sequence(name="place_first_bottle", memory=True)
     place_first_seq.add_children([
         AimBlueThenGo(name="aim_and_place",
-            base_power=40, kp_turn=0.3,
+            base_power=45, kp_turn=0.3,
             min_cy_ratio=0.60,   # 近づいた判定の高さ
             go_distance=320,     # ここを現場で調整
-            run_power=40),
+            run_power=45),
     ])
 
     # --- 最初のボトルをターゲットに置く ---
