@@ -275,9 +275,15 @@ class Video(object):
                     self.blue_cx = int(M["m10"]/M["m00"])
                     self.blue_cy = int(M["m01"]/M["m00"])
                     self.blue_area = int(area)
-                    self.blue_found = True
-                    # デバッグ描画（青中心）
-                    cv2.circle(img_orig, (self.blue_cx, self.blue_cy), 5, (255,0,0), -1)
+                    center_x = FRAME_WIDTH // 2
+                    center_y = FRAME_HEIGHT // 2
+                    # 中心から±40ピクセル以内のみ検知
+                    if abs(cx - center_x) < 40 and abs(cy - center_y) < 40:
+                        self.blue_found = True
+                        # デバッグ描画（青中心）
+                        cv2.circle(img_orig, (cx, cy), 5, (255,0,0), -1)
+                    else:
+                        self.blue_found = False
 
         ...
         cv2.imshow("video monitor", img_comm)
