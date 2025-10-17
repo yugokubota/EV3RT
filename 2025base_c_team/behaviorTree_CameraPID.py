@@ -1623,6 +1623,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # ========= スマートキャリーツイン ========
         place_first_seq,
         StopNow(name="stop"),
+        TheEnd(name="end"),
         # --- 最初のボトルまでライントレース
         traceline_cam_smacary_Parallel,
         SpinAndRun_Sequence,
