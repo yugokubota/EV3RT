@@ -433,24 +433,20 @@ class TraceLine_sensor(Behaviour):
 # カメラで青を中央に合わせる→近づいたらジャイロ固定で一定距離前進して置く（バック禁止）
 class AimBlueThenGo(Behaviour):
     def __init__(self, name: str,
-                 base_power: int = 35,         # 向き合わせ中の前進速度
-                 kp_turn: float = 0.35,        # 横ずれ(dx)→旋回の係数
-                 align_px: int = 2,            # 横ずれ許容(px)
-                 min_cy_ratio: float = 0.60,   # 近づいた判定（画面高さに対する割合）
-                 go_distance: int = 320,       # そこから真っ直ぐ進む距離[mm]
-                 run_power: int = 45,          # 距離前進中の速度
+                 base_power: int = 35,
+                 kp_turn: float = 0.3,
+                 align_px: int = 3,
+                 min_cy_ratio: float = 0.60,
+                 go_distance: int = 320,
+                 run_power: int = 30,
                  pid_p: float = 1.1, pid_i: float = 0.001, pid_d: float = 0.03):
         super().__init__(name)
         self.base = base_power
         self.kp = kp_turn
         self.align_px = align_px
         self.stop_y = int(FRAME_HEIGHT * min_cy_ratio)
-        self.go_distance = go_distance
-        self.run_power = run_power
-        self.pid_p, self.pid_i, self.pid_d = pid_p, pid_i, pid_d
         self.phase = "aim"
         self.running = False
-        self.blue_dx = None  # 青中心のdx記録
 
     def _drive(self, L, R):
         g_left_motor.set_power(max(-100, min(100, L)))
@@ -464,52 +460,54 @@ class AimBlueThenGo(Behaviour):
 
         found, cx, cy, area = g_video.get_blue_info()
 
-        # 1) 向き合わせ（常に前進）
+        # 1) 青色を探して前進＋旋回
         if self.phase == "aim":
             if not found:
-                # 青が見えるまでゆっくり前進＋小さく首振り
                 wiggle = 12 if (int(time.time()*2) % 2)==0 else -12
                 self._drive(self.base + wiggle, self.base - wiggle)
                 return Status.RUNNING
 
             dx = cx - (FRAME_WIDTH // 2)
-            turn = int(self.kp * dx)           # 右が+で右旋回
+            turn = int(self.kp * dx)
             L = self.base + turn
             R = self.base - turn
             self._drive(L, R)
 
-            # 青色検知したら停止し、中心点のdxを記録して旋回フェーズへ
-            if abs(dx) <= self.align_px and cy >= self.stop_y:
+            # 青色が十分近くに来たら停止して旋回フェーズへ
+            if cy >= self.stop_y:
                 self._drive(0, 0)
-                self.blue_dx = dx
                 self.phase = "turn"
-                print(f"[AimBlueThenGo] Blue found! dx={dx}, switching to turn phase")
+                print(f"[AimBlueThenGo] Blue close enough, start turning phase")
             return Status.RUNNING
 
-        # 2) 青色中心点の角度に旋回
+        # 2) 旋回のみで青色中心点の正面に合わせる
         if self.phase == "turn":
-            # dxが右なら右旋回、左なら左旋回（例: 角度に比例したPWMで一定時間回す）
-            if self.blue_dx is not None:
-                # 例: dxの符号で旋回方向、絶対値で旋回時間
-                turn_pwm = 40 if self.blue_dx > 0 else -40
-                duration = min(0.5, abs(self.blue_dx) / (FRAME_WIDTH // 2))  # 最大0.5秒
-                g_left_motor.set_power(-turn_pwm)
-                g_right_motor.set_power(turn_pwm)
-                time.sleep(duration)
-                g_left_motor.set_power(0)
-                g_right_motor.set_power(0)
-                print(f"[AimBlueThenGo] Turned to blue center. Finished.")
+            if not found:
+                # 青色が見えなくなったら停止
+                self._drive(0, 0)
+                print("[AimBlueThenGo] Lost blue, stop.")
+                return Status.FAILURE
+
+            dx = cx - (FRAME_WIDTH // 2)
+            if abs(dx) <= self.align_px:
+                # 正面になったら停止
+                self._drive(0, 0)
+                print(f"[AimBlueThenGo] Aligned to blue center! dx={dx}")
                 self.phase = "done"
                 return Status.SUCCESS
-            else:
-                return Status.RUNNING
 
-        # 完了
+            # 前進せず旋回のみ
+            turn_pwm = int(self.kp * dx)
+            turn_pwm = max(-40, min(40, turn_pwm))  # 安全のため最大値制限
+            g_left_motor.set_power(-turn_pwm)
+            g_right_motor.set_power(turn_pwm)
+            print(f"[AimBlueThenGo] Turning... dx={dx}, pwm={turn_pwm}")
+            return Status.RUNNING
+
         if self.phase == "done":
             self._drive(0, 0)
             return Status.SUCCESS
 
-        # 念のため
         self._drive(0, 0)
         return Status.SUCCESS
 
@@ -1381,7 +1379,7 @@ def build_behaviour_tree() -> BehaviourTree:
     place_first_seq = Sequence(name="place_first_bottle", memory=True)
     place_first_seq.add_children([
         AimBlueThenGo(name="aim_and_place",
-            base_power=35, kp_turn=0.2,
+            base_power=35, kp_turn=0.3,
             min_cy_ratio=0.60,   # 近づいた判定の高さ
             go_distance=320,     # ここを現場で調整
             run_power=30),
@@ -1620,7 +1618,8 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_03 = Sequence(name="loop_03_with_smart_carry_twin", memory=True)
     loop_03.add_children([
     # ========= スマートキャリーツイン ========
-        place_first_seq,     
+        place_first_seq,
+        stopNow(name="stop"),
         # --- 最初のボトルまでライントレース
         traceline_cam_smacary_Parallel,
         SpinAndRun_Sequence,
