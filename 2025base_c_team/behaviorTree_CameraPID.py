@@ -438,7 +438,7 @@ class AimBlueThenGo(Behaviour):
                  align_px: int = 3,
                  min_cy_ratio: float = 0.60,
                  go_distance: int = 320,
-                 run_power: int = 30,
+                 run_power: int = 45,
                  pid_p: float = 1.1, pid_i: float = 0.001, pid_d: float = 0.03):
         super().__init__(name)
         self.base = base_power
@@ -1382,7 +1382,7 @@ def build_behaviour_tree() -> BehaviourTree:
             base_power=35, kp_turn=0.3,
             min_cy_ratio=0.60,   # 近づいた判定の高さ
             go_distance=320,     # ここを現場で調整
-            run_power=30),
+            run_power=35),
     ])
 
     # --- 最初のボトルをターゲットに置く ---
