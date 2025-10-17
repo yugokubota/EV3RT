@@ -272,8 +272,10 @@ class Video(object):
             if area > 80:  # ノイズ除去
                 M = cv2.moments(cnt)
                 if M["m00"] != 0:
-                    self.blue_cx = int(M["m10"]/M["m00"])
-                    self.blue_cy = int(M["m01"]/M["m00"])
+                    cx = int(M["m10"]/M["m00"])
+                    cy = int(M["m01"]/M["m00"])
+                    self.blue_cx = cx
+                    self.blue_cy = cy
                     self.blue_area = int(area)
                     center_x = FRAME_WIDTH // 2
                     center_y = FRAME_HEIGHT // 2
