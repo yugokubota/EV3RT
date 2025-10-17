@@ -1619,7 +1619,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_03.add_children([
     # ========= スマートキャリーツイン ========
         place_first_seq,
-        stopNow(name="stop"),
+        StopNow(name="stop"),
         # --- 最初のボトルまでライントレース
         traceline_cam_smacary_Parallel,
         SpinAndRun_Sequence,
