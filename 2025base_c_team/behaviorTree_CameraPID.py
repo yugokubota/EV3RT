@@ -435,7 +435,7 @@ class AimBlueThenGo(Behaviour):
     def __init__(self, name: str,
                  base_power: int = 35,         # 向き合わせ中の前進速度
                  kp_turn: float = 0.35,        # 横ずれ(dx)→旋回の係数
-                 align_px: int = 8,            # 横ずれ許容(px)
+                 align_px: int = 2,            # 横ずれ許容(px)
                  min_cy_ratio: float = 0.60,   # 近づいた判定（画面高さに対する割合）
                  go_distance: int = 320,       # そこから真っ直ぐ進む距離[mm]
                  run_power: int = 45,          # 距離前進中の速度
@@ -450,6 +450,7 @@ class AimBlueThenGo(Behaviour):
         self.pid_p, self.pid_i, self.pid_d = pid_p, pid_i, pid_d
         self.phase = "aim"
         self.running = False
+        self.blue_dx = None  # 青中心のdx記録
 
     def _drive(self, L, R):
         g_left_motor.set_power(max(-100, min(100, L)))
@@ -477,32 +478,36 @@ class AimBlueThenGo(Behaviour):
             R = self.base - turn
             self._drive(L, R)
 
-            # 横ずれOK かつ ある程度近い → ジャイロ固定へ
+            # 青色検知したら停止し、中心点のdxを記録して旋回フェーズへ
             if abs(dx) <= self.align_px and cy >= self.stop_y:
-                self.target_heading = (-1) * g_course * g_gyro_sensor.get_angle()
-                self.start_dist = g_plotter.get_distance()
-                self.pid = PID(self.pid_p, self.pid_i, self.pid_d,
-                               setpoint=self.target_heading, sample_time=EXEC_INTERVAL,
-                               output_limits=(-self.run_power, self.run_power))
-                self.pid.reset()
-                self.phase = "go"
-                print(f"[AimBlueThenGo] locked heading={self.target_heading:.1f}, go {self.go_distance}mm")
-            return Status.RUNNING
-
-        # 2) ジャイロで一定距離まっすぐ
-        if self.phase == "go":
-            cur_heading = (-1) * g_course * g_gyro_sensor.get_angle()
-            steer = int(self.pid(cur_heading))  # ±run_power で出る
-            L = self.run_power + steer
-            R = self.run_power - steer
-            self._drive(L, R)
-
-            if g_plotter.get_distance() - self.start_dist >= self.go_distance:
                 self._drive(0, 0)
-                print("[AimBlueThenGo] placed → stop")
-                return Status.SUCCESS
-
+                self.blue_dx = dx
+                self.phase = "turn"
+                print(f"[AimBlueThenGo] Blue found! dx={dx}, switching to turn phase")
             return Status.RUNNING
+
+        # 2) 青色中心点の角度に旋回
+        if self.phase == "turn":
+            # dxが右なら右旋回、左なら左旋回（例: 角度に比例したPWMで一定時間回す）
+            if self.blue_dx is not None:
+                # 例: dxの符号で旋回方向、絶対値で旋回時間
+                turn_pwm = 40 if self.blue_dx > 0 else -40
+                duration = min(0.5, abs(self.blue_dx) / (FRAME_WIDTH // 2))  # 最大0.5秒
+                g_left_motor.set_power(-turn_pwm)
+                g_right_motor.set_power(turn_pwm)
+                time.sleep(duration)
+                g_left_motor.set_power(0)
+                g_right_motor.set_power(0)
+                print(f"[AimBlueThenGo] Turned to blue center. Finished.")
+                self.phase = "done"
+                return Status.SUCCESS
+            else:
+                return Status.RUNNING
+
+        # 完了
+        if self.phase == "done":
+            self._drive(0, 0)
+            return Status.SUCCESS
 
         # 念のため
         self._drive(0, 0)
@@ -1376,10 +1381,10 @@ def build_behaviour_tree() -> BehaviourTree:
     place_first_seq = Sequence(name="place_first_bottle", memory=True)
     place_first_seq.add_children([
         AimBlueThenGo(name="aim_and_place",
-            base_power=35, kp_turn=0.35,
+            base_power=35, kp_turn=0.2,
             min_cy_ratio=0.60,   # 近づいた判定の高さ
             go_distance=320,     # ここを現場で調整
-            run_power=45),
+            run_power=30),
     ])
 
     # --- 最初のボトルをターゲットに置く ---
