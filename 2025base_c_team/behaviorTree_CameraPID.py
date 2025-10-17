@@ -498,6 +498,9 @@ class AimBlueThenGo(Behaviour):
 
             # 前進せず旋回のみ
             turn_pwm = int(self.kp * dx)
+            min_turn_pwm = 12  # モーターが確実に動く最小値（現場で調整）
+            if 0 < abs(turn_pwm) < min_turn_pwm:
+                turn_pwm = min_turn_pwm if turn_pwm > 0 else -min_turn_pwm
             turn_pwm = max(-40, min(40, turn_pwm))  # 安全のため最大値制限
             g_left_motor.set_power(-turn_pwm)
             g_right_motor.set_power(turn_pwm)
