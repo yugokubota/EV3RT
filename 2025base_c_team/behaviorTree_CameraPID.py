@@ -1379,8 +1379,8 @@ def build_behaviour_tree() -> BehaviourTree:
     place_first_seq = Sequence(name="place_first_bottle", memory=True)
     place_first_seq.add_children([
         AimBlueThenGo(name="aim_and_place",
-            base_power=45, kp_turn=0.3,
-            min_cy_ratio=0.60,   # 近づいた判定の高さ
+            base_power=55, kp_turn=0.3,
+            min_cy_ratio=0.50,   # 近づいた判定の高さ
             go_distance=320,     # ここを現場で調整
             run_power=45),
     ])
