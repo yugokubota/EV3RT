@@ -263,8 +263,12 @@ class Video(object):
         upper_blue = np.array([75, 95, 210])
         mask = cv2.inRange(hsv, lower_blue, upper_blue)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel)
+        upper_mask = np.zeros_like(mask)
+        upper_limit = int(FRAME_HEIGHT * 2 / 3)
+        upper_mask[0:upper_limit, :] = 1
+        mask_upper = cv2.bitwise_and(mask, mask, mask=upper_mask)
 
-        cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts, _ = cv2.findContours(mask_upper, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         self.blue_found = False
         if cnts:
             cnt = max(cnts, key=cv2.contourArea)
@@ -293,6 +297,7 @@ class Video(object):
                         self.blue_found = True
                         # デバッグ描画（青中心）
                         cv2.circle(img_orig, (cx, cy), 5, (255,0,0), -1)
+                        print(f"Blue center: cx={cx}, cy={cy}, center_x={center_x}, center_y={center_y}")
                     else:
                         self.blue_found = False
 
