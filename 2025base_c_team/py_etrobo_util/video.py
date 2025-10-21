@@ -259,7 +259,7 @@ class Video(object):
         # ===== 追加：青丸検出（HSV） =====
         hsv = cv2.cvtColor(img_orig, cv2.COLOR_BGR2HSV)
         # 青のしきい値（環境で微調整）
-        lower_blue = np.array([115, 255, 120])   # H,S,V
+        lower_blue = np.array([110, 120, 80])   # H,S,V
         upper_blue = np.array([130, 255, 255])
         mask = cv2.inRange(hsv, lower_blue, upper_blue)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel)
@@ -277,6 +277,15 @@ class Video(object):
                     self.blue_cx = cx
                     self.blue_cy = cy
                     self.blue_area = int(area)
+                    # 検出領域のHSV平均値を出力
+                    mask_cnt = np.zeros(mask.shape, np.uint8)
+                    cv2.drawContours(mask_cnt, [cnt], -1, 255, -1)
+                    hsv_pixels = hsv[mask_cnt == 255]
+                    if len(hsv_pixels) > 0:
+                        h_mean = int(np.mean(hsv_pixels[:,0]))
+                        s_mean = int(np.mean(hsv_pixels[:,1]))
+                        v_mean = int(np.mean(hsv_pixels[:,2]))
+                        print(f"[BlueDetect] HSV mean: H={h_mean}, S={s_mean}, V={v_mean}, area={area}")
                     center_x = FRAME_WIDTH // 2
                     center_y = FRAME_HEIGHT // 2
                     # 中心から±40ピクセル以内のみ検知
