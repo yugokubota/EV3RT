@@ -259,8 +259,8 @@ class Video(object):
         # ===== 追加：青丸検出（HSV） =====
         hsv = cv2.cvtColor(img_orig, cv2.COLOR_BGR2HSV)
         # 青のしきい値（環境で微調整）
-        lower_blue = np.array([110, 120, 80])   # H,S,V
-        upper_blue = np.array([130, 255, 255])
+        lower_blue = np.array([60, 80, 190])   # H,S,V
+        upper_blue = np.array([75, 95, 210])
         mask = cv2.inRange(hsv, lower_blue, upper_blue)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel)
 
