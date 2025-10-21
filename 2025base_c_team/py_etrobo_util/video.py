@@ -293,7 +293,7 @@ class Video(object):
                     center_x = FRAME_WIDTH // 2
                     center_y = FRAME_HEIGHT // 2
                     # 中心から±40ピクセル以内のみ検知
-                    if abs(cx - center_x) < 40 and abs(cy - center_y) < 40:
+                    if cy < upper_limit:
                         self.blue_found = True
                         # デバッグ描画（青中心）
                         cv2.circle(img_orig, (cx, cy), 5, (255,0,0), -1)
