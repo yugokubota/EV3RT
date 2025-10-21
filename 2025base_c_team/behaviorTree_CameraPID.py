@@ -487,17 +487,19 @@ class AimBlueThenGo(Behaviour):
 
         # 3. ジャイロで目標角度まで旋回
         if self.phase == "turn":
-            error = self.target_angle - g_gyro_sensor.get_angle()
-            # [-180,180]に正規化
+            current_angle = g_gyro_sensor.get_angle()
+            error = self.target_angle - current_angle
             if error > 180: error -= 360
             if error < -180: error += 360
+            print(f"[DEBUG] current={current_angle:.2f}, target={self.target_angle:.2f}, error={error:.2f}")
             if abs(error) < self.angle_margin:
                 g_left_motor.set_power(0)
                 g_right_motor.set_power(0)
                 print(f"[AimBlueThenGo] Finished turning. error={error:.2f}")
                 self.phase = "done"
                 return Status.SUCCESS
-            turn_pwm = int(self.pid(g_gyro_sensor.get_angle()))
+            turn_pwm = int(self.pid(current_angle))
+            print(f"[DEBUG] pid_output={turn_pwm}")
             # 最小PWM保証
             min_turn_pwm = 10
             if 0 < abs(turn_pwm) < min_turn_pwm:
