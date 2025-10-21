@@ -433,24 +433,21 @@ class TraceLine_sensor(Behaviour):
 # カメラで青を中央に合わせる→近づいたらジャイロ固定で一定距離前進して置く（バック禁止）
 class AimBlueThenGo(Behaviour):
     def __init__(self, name: str,
-                 base_power: int = 45,
-                 kp_turn: float = 0.3,
                  align_px: int = 3,
+                 gyro_p: float = 1.1, gyro_i: float = 0.001, gyro_d: float = 0.03,
                  min_cy_ratio: float = 0.60,
-                 go_distance: int = 320,
-                 run_power: int = 45,
-                 pid_p: float = 1.1, pid_i: float = 0.001, pid_d: float = 0.03):
+                 angle_margin: float = 2.0):
         super().__init__(name)
-        self.base = base_power
-        self.kp = kp_turn
         self.align_px = align_px
-        self.stop_y = int(FRAME_HEIGHT * min_cy_ratio)
+        self.gyro_p = gyro_p
+        self.gyro_i = gyro_i
+        self.gyro_d = gyro_d
+        self.min_cy_ratio = min_cy_ratio
+        self.angle_margin = angle_margin
         self.phase = "aim"
         self.running = False
-
-    def _drive(self, L, R):
-        g_left_motor.set_power(max(-100, min(100, L)))
-        g_right_motor.set_power(max(-100, min(100, R)))
+        self.target_angle = None
+        self.pid = None
 
     def update(self) -> Status:
         if not self.running:
@@ -459,59 +456,64 @@ class AimBlueThenGo(Behaviour):
             print("[AimBlueThenGo] start aiming...")
 
         found, cx, cy, area = g_video.get_blue_info()
-
-        # 1) 青色を探して前進＋旋回
-        if self.phase == "aim":
-            if not found:
-                wiggle = 12 if (int(time.time()*2) % 2)==0 else -12
-                self._drive(self.base + wiggle, self.base - wiggle)
-                return Status.RUNNING
-
-            dx = cx - (FRAME_WIDTH // 2)
-            turn = int(self.kp * dx)
-            L = self.base + turn
-            R = self.base - turn
-            self._drive(L, R)
-
-            # 青色が十分近くに来たら停止して旋回フェーズへ
-            if cy >= self.stop_y:
-                self._drive(0, 0)
-                self.phase = "turn"
-                print(f"[AimBlueThenGo] Blue close enough, start turning phase")
+        if not found:
+            # 青が見えない場合は停止
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+            print("[AimBlueThenGo] Blue not found, stop.")
             return Status.RUNNING
 
-        # 2) 旋回のみで青色中心点の正面に合わせる
-        if self.phase == "turn":
-            if not found:
-                # 青色が見えなくなったら停止
-                self._drive(0, 0)
-                print("[AimBlueThenGo] Lost blue, stop.")
-                return Status.FAILURE
+        # 1. 青点の中心から目標角度を算出
+        dx = cx - (FRAME_WIDTH // 2)
+        # カメラ画角からピクセル→角度変換（例: 320px=60度なら1px=0.1875度）
+        # 実際のカメラ画角に合わせて調整してください
+        CAMERA_FOV_DEG = 60.0
+        px_per_deg = FRAME_WIDTH / CAMERA_FOV_DEG
+        rel_angle = dx / px_per_deg  # 右が正、左が負
 
-            dx = cx - (FRAME_WIDTH // 2)
-            if abs(dx) <= self.align_px:
-                # 正面になったら停止
-                self._drive(0, 0)
-                print(f"[AimBlueThenGo] Aligned to blue center! dx={dx}")
+        # 2. 目標角度を現在角度に加算（相対角度で旋回）
+        current_angle = g_gyro_sensor.get_angle()
+        if self.phase == "aim":
+            self.target_angle = current_angle + rel_angle
+            # PID初期化
+            self.pid = PID(self.gyro_p, self.gyro_i, self.gyro_d,
+                           setpoint=self.target_angle,
+                           sample_time=EXEC_INTERVAL,
+                           output_limits=(-40, 40))
+            self.pid.reset()
+            print(f"[AimBlueThenGo] Blue center dx={dx}, rel_angle={rel_angle:.2f}, target={self.target_angle:.2f}")
+            self.phase = "turn"
+            return Status.RUNNING
+
+        # 3. ジャイロで目標角度まで旋回
+        if self.phase == "turn":
+            error = self.target_angle - g_gyro_sensor.get_angle()
+            # [-180,180]に正規化
+            if error > 180: error -= 360
+            if error < -180: error += 360
+            if abs(error) < self.angle_margin:
+                g_left_motor.set_power(0)
+                g_right_motor.set_power(0)
+                print(f"[AimBlueThenGo] Finished turning. error={error:.2f}")
                 self.phase = "done"
                 return Status.SUCCESS
-
-            # 前進せず旋回のみ
-            turn_pwm = int(self.kp * dx)
-            turn_pwm = max(-40, min(40, turn_pwm))  # 安全のため最大値制限
-            min_turn_pwm = 20  # モーターが確実に動く最小値（現場で調整）
+            turn_pwm = int(self.pid(g_gyro_sensor.get_angle()))
+            # 最小PWM保証
+            min_turn_pwm = 10
             if 0 < abs(turn_pwm) < min_turn_pwm:
                 turn_pwm = min_turn_pwm if turn_pwm > 0 else -min_turn_pwm
             g_left_motor.set_power(-turn_pwm)
             g_right_motor.set_power(turn_pwm)
-            print(f"[AimBlueThenGo] Turning... dx={dx}, pwm={turn_pwm}")
+            print(f"[AimBlueThenGo] Turning... error={error:.2f}, pwm={turn_pwm}")
             return Status.RUNNING
 
         if self.phase == "done":
-            self._drive(0, 0)
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
             return Status.SUCCESS
 
-        self._drive(0, 0)
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
         return Status.SUCCESS
 
 # カメラで青色を探して見つけたら停止するクラス
@@ -1381,12 +1383,16 @@ def build_behaviour_tree() -> BehaviourTree:
 
     place_first_seq = Sequence(name="place_first_bottle", memory=True)
     place_first_seq.add_children([
-        AimBlueThenGo(name="aim_and_place",
-            base_power=55, kp_turn=0.3,
-            min_cy_ratio=0.50,   # 近づいた判定の高さ
-            go_distance=320,     # ここを現場で調整
-            run_power=45),
-    ])
+    AimBlueThenGo(
+        name="aim_and_place",
+        align_px=3,            # 中心合わせ許容ピクセル
+        gyro_p=1.1,            # ジャイロPIDパラメータ
+        gyro_i=0.001,
+        gyro_d=0.03,
+        min_cy_ratio=0.50,     # 近づいた判定の高さ
+        angle_margin=2.0       # 角度許容誤差
+    ),
+])
 
     # --- 最初のボトルをターゲットに置く ---
     # [Purpose] 中心に近づけるようにボトルを置く
