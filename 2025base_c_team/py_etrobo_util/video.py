@@ -321,36 +321,6 @@ class Video(object):
     def is_target_insight(self) -> bool:
         return self.target_insight
 
-    def get_center_area_color(self, radius=20):
-        """
-        カメラ画像の中心から半径radiusの円内の平均RGB値を返す
-        """
-        if not hasattr(self, 'frame') or self.frame is None:
-            return (0, 0, 0)
-        h, w = self.frame.shape[:2]
-        cy, cx = h // 2, w // 2
-        mask = np.zeros((h, w), dtype=np.uint8)
-        cv2.circle(mask, (cx, cy), radius, 1, -1)
-        # 円内のピクセル抽出
-        pixels = self.frame[mask == 1]
-        if len(pixels) == 0:
-            return (0, 0, 0)
-        # OpenCVはBGRなのでRGBに並び替え
-        b, g, r = np.mean(pixels, axis=0)
-        return int(r), int(g), int(b)
-
-    def get_area_average_color(self, x, y, w, h):
-        """
-        指定した矩形範囲(x, y, w, h)の平均RGB値を返す
-        """
-        if not hasattr(self, 'frame') or self.frame is None:
-            return (0, 0, 0)
-        area = self.frame[y:y+h, x:x+w]
-        if area.size == 0:
-            return (0, 0, 0)
-        b, g, r = np.mean(area.reshape(-1, 3), axis=0)
-        return int(r), int(g), int(b)
-
     # --- 追加: 取得用メソッド ---
     def get_blue_info(self):
         return (self.blue_found, self.blue_cx, self.blue_cy, self.blue_area)

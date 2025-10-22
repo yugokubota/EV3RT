@@ -430,6 +430,125 @@ class TraceLine_sensor(Behaviour):
         return Status.RUNNING
 
 # ============================================= 検証中 ビヘイビア =============================================
+# 機能ごとに分割
+# 青点検出ビヘイビア
+class DetectBlueDot(Behaviour):
+    def __init__(self, name: str, max_cy_ratio: float = 0.66):
+        super().__init__(name)
+        self.max_cy = int(FRAME_HEIGHT * max_cy_ratio)
+
+    def update(self) -> Status:
+        found, cx, cy, area = g_video.get_blue_info()
+        if not found:
+            print("[DetectBlueDot] Blue dot not found.")
+            return Status.FAILURE
+        
+        if cy > self.max_cy:
+            print(f"[DetectBlueDot] Blue dot too low in image (cy={cy}). Ignored.")
+            return Status.FAILURE
+
+        # データを共有変数に保存（外部で読み取れるように）
+        g_shared["blue_detected"] = {
+            "found": True,
+            "cx": cx,
+            "cy": cy,
+            "area": area
+        }
+        print(f"[DetectBlueDot] Blue dot detected at ({cx}, {cy}), area={area}")
+        return Status.SUCCESS
+
+# 青点に向けた旋回ビヘイビア
+class TurnToBlueDot(Behaviour):
+    def __init__(self, name: str,
+                 gyro_p: float = 1.1, gyro_i: float = 0.001, gyro_d: float = 0.03,
+                 angle_margin: float = 2.0,
+                 camera_fov_deg: float = 60.0,
+                 min_pwm: int = 10):
+        super().__init__(name)
+        self.gyro_p = gyro_p
+        self.gyro_i = gyro_i
+        self.gyro_d = gyro_d
+        self.angle_margin = angle_margin
+        self.camera_fov_deg = camera_fov_deg
+        self.min_pwm = min_pwm
+        self.pid = None
+        self.target_angle = None
+    
+    def update(self) -> Status:
+        blue = g_shared.get("blue_detected")
+        # 青色データがない場合failure
+        if not blue or not blue.get("found"):
+            print("[TurnToBlueDot] No blue dot data. Aborting.")
+            return Status.FAILURE
+
+        cx = blue["cx"]
+        dx = cx - (FRAME_WIDTH // 2)
+        px_per_deg = FRAME_WIDTH / self.camera_fov_deg
+        rel_angle = dx / px_per_deg
+
+        current_angle = g_gyro_sensor.get_angle()
+
+        if self.pid is None:
+            self.target_angle = current_angle + rel_angle
+            self.pid = PID(self.gyro_p, self.gyro_i, self.gyro_d,
+                           setpoint=self.target_angle,
+                           sample_time=EXEC_INTERVAL,
+                           output_limits=(-40, 40))
+            self.pid.reset()
+            print(f"[TurnToBlueDot] Turning to target angle: {self.target_angle:.2f}")
+            return Status.RUNNING
+
+        error = self.target_angle - current_angle
+        error = (error + 180) % 360 - 180  # wrap error to [-180, 180]
+
+        if abs(error) < self.angle_margin:
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+            print("[TurnToBlueDot] Angle aligned.")
+            return Status.SUCCESS
+
+        turn_pwm = int(self.pid(current_angle))
+        if 0 < abs(turn_pwm) < self.min_pwm:
+            turn_pwm = self.min_pwm if turn_pwm > 0 else -self.min_pwm
+
+        g_left_motor.set_power(-turn_pwm)
+        g_right_motor.set_power(turn_pwm)
+        print(f"[TurnToBlueDot] Turning... error={error:.2f}, pwm={turn_pwm}")
+        return Status.RUNNING
+
+    def terminate(self, new_status):
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
+        self.pid = None
+        self.target_angle = None
+
+# 大円のグレーまで走行し、検出直後停止するビヘイビア
+class ForwardUntilGray(Behaviour):
+    def __init__(self, name: str, threshold: int = 20, power: int = 30):
+        super().__init__(name)
+        self.threshold = threshold
+        self.power = power
+
+    def update(self) -> Status:
+        reflection = g_color_sensor.get_reflected_light()
+        print(f"[ForwardUntilGray] Reflection: {reflection}")
+
+        if reflection < self.threshold:
+            g_left_motor.set_power(0)
+            g_right_motor.set_power(0)
+            print("[ForwardUntilGray] Gray detected. Stopping.")
+            return Status.SUCCESS
+
+        g_left_motor.set_power(self.power)
+        g_right_motor.set_power(self.power)
+        return Status.RUNNING
+
+    def terminate(self, new_status):
+        g_left_motor.set_power(0)
+        g_right_motor.set_power(0)
+
+
+# 上記に分割済みのため、使用不可============================================================
 # カメラで青を中央に合わせる→近づいたらジャイロ固定で一定距離前進して置く（バック禁止）
 class AimBlueThenGo(Behaviour):
     def __init__(self, name: str,
@@ -524,48 +643,48 @@ class AimBlueThenGo(Behaviour):
 # カメラ全体を範囲にするなら (0, 0, 640, 480)らしい
 # search_step: ヨー角を動かすステップ（度数）
 # max_angle: 探索の最大角度（-max_angleから+max_angleまで動かす）
-class SearchBlueAndStop(Behaviour):
-    def __init__(self, name: str, search_range: tuple[int, int, int, int], search_step: int, max_angle: int):
-        super().__init__(name)
-        self.search_range = search_range  # (x, y, w, h)
-        self.search_step = search_step
-        self.max_angle = max_angle
-        self.current_angle = -max_angle
-        self.found_angle = None
-        self.state = "search"
+# class SearchBlueAndStop(Behaviour):
+#     def __init__(self, name: str, search_range: tuple[int, int, int, int], search_step: int, max_angle: int):
+#         super().__init__(name)
+#         self.search_range = search_range  # (x, y, w, h)
+#         self.search_step = search_step
+#         self.max_angle = max_angle
+#         self.current_angle = -max_angle
+#         self.found_angle = None
+#         self.state = "search"
 
-    def update(self) -> Status:
-        if self.state == "search":
-            # 指定範囲の平均色取得
-            r, g, b = g_video.get_area_average_color(*self.search_range)
-            max_rgb = max(r, g, b, 1)
-            r_norm, g_norm, b_norm = r / max_rgb, g / max_rgb, b / max_rgb
-            h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
-            h_deg = int(h * 360)
-            s_per = int(s * 100)
-            v_per = int(v * 100)
-            print(f"[SearchBlue] angle={self.current_angle} h={h_deg} s={s_per} v={v_per}")
-            if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
-                self.found_angle = self.current_angle
-                self.state = "stop"
-                return Status.RUNNING
-            # ヨー角を動かす
-            g_right_motor.set_power(30)
-            g_left_motor.set_power(-30)
-            time.sleep(0.05)
-            self.current_angle += self.search_step
-            if self.current_angle > self.max_angle:
-                g_right_motor.set_power(0)
-                g_left_motor.set_power(0)
-                return Status.FAILURE
-            return Status.RUNNING
-        elif self.state == "stop":
-            # 検知した角度で停止
-            g_right_motor.set_power(0)
-            g_left_motor.set_power(0)
-            print(f"[SearchBlue] Stop at angle={self.found_angle}")
-            return Status.SUCCESS
-        return Status.RUNNING
+#     def update(self) -> Status:
+#         if self.state == "search":
+#             # 指定範囲の平均色取得
+#             r, g, b = g_video.get_area_average_color(*self.search_range)
+#             max_rgb = max(r, g, b, 1)
+#             r_norm, g_norm, b_norm = r / max_rgb, g / max_rgb, b / max_rgb
+#             h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+#             h_deg = int(h * 360)
+#             s_per = int(s * 100)
+#             v_per = int(v * 100)
+#             print(f"[SearchBlue] angle={self.current_angle} h={h_deg} s={s_per} v={v_per}")
+#             if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
+#                 self.found_angle = self.current_angle
+#                 self.state = "stop"
+#                 return Status.RUNNING
+#             # ヨー角を動かす
+#             g_right_motor.set_power(30)
+#             g_left_motor.set_power(-30)
+#             time.sleep(0.05)
+#             self.current_angle += self.search_step
+#             if self.current_angle > self.max_angle:
+#                 g_right_motor.set_power(0)
+#                 g_left_motor.set_power(0)
+#                 return Status.FAILURE
+#             return Status.RUNNING
+#         elif self.state == "stop":
+#             # 検知した角度で停止
+#             g_right_motor.set_power(0)
+#             g_left_motor.set_power(0)
+#             print(f"[SearchBlue] Stop at angle={self.found_angle}")
+#             return Status.SUCCESS
+#         return Status.RUNNING
 
 # class DetectBlueInCenterArea(Behaviour):
 #     def __init__(self, name: str, radius: int = 20):
