@@ -431,6 +431,13 @@ class TraceLine_sensor(Behaviour):
 
 # ============================================= 検証中 ビヘイビア =============================================
 # 機能ごとに分割
+# おそらく、640ピクセル × 480ピクセルの画像で、(0,0)が左上、(639,479)が右下
+# カメラの新常識: 上側:0.0～下側:FRAME_HEIGHT
+# cy: 小さいほど上、大きいほど下
+# cx: 小さいほど左、大きいほど右
+# dx: cx - FRAME_WIDTH/2 (負: 左、正: 右)
+# dy: cy - FRAME_HEIGHT/2 (負: 上、正: 下)
+# area: 点の大きさ（面積）
 # 青点検出ビヘイビア
 class DetectBlueDot(Behaviour):
     def __init__(self, name: str, max_cy_ratio: float = 0.66):
@@ -441,11 +448,11 @@ class DetectBlueDot(Behaviour):
         found, cx, cy, area = g_video.get_blue_info()
         if not found:
             print("[DetectBlueDot] Blue dot not found.")
-            return Status.FAILURE
+            return Status.RUNNING
         
         if cy > self.max_cy:
             print(f"[DetectBlueDot] Blue dot too low in image (cy={cy}). Ignored.")
-            return Status.FAILURE
+            return Status.RUNNING
 
         # データを共有変数に保存（外部で読み取れるように）
         g_shared["blue_detected"] = {
@@ -1502,18 +1509,12 @@ def build_behaviour_tree() -> BehaviourTree:
         Spintotarget_90degree_Parallel,
     ])
 
-    place_first_seq = Sequence(name="place_first_bottle", memory=True)
-    place_first_seq.add_children([
-    AimBlueThenGo(
-        name="aim_and_place",
-        align_px=3,            # 中心合わせ許容ピクセル
-        gyro_p=1.1,            # ジャイロPIDパラメータ
-        gyro_i=0.001,
-        gyro_d=0.03,
-        min_cy_ratio=0.50,     # 近づいた判定の高さ
-        angle_margin=2.0       # 角度許容誤差
-    ),
-])
+    first_landing_prepare_sequence = Sequence(name="first_landing_prepare", memory=True)
+    first_landing_prepare_sequence.add_children([
+        DetectBlueDot(name="blue_detected_for_smartcarry_start"),
+        TurnToBlueDot(name="turn_to_blue_dot_start"),
+        ForwardUntilGray(name="forward_until_gray_start", target_gray=30),
+    ])
 
     # --- 最初のボトルをターゲットに置く ---
     # [Purpose] 中心に近づけるようにボトルを置く
@@ -1748,7 +1749,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_03 = Sequence(name="loop_03_with_smart_carry_twin", memory=True)
     loop_03.add_children([
     # ========= スマートキャリーツイン ========
-        place_first_seq,
+        first_landing_prepare_sequence,
         StopNow(name="stop"),
         TheEnd(name="end"),
         # --- 最初のボトルまでライントレース

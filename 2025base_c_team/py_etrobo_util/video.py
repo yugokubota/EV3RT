@@ -256,51 +256,96 @@ class Video(object):
 
         c = cv2.waitKey(1) # show the window
 
-        # ===== 追加：青丸検出（HSV） =====
+        # ===== 青丸検出（HSV）開始 =====
+
+        # BGR画像をHSV画像に変換（色検出に適した空間）
         hsv = cv2.cvtColor(img_orig, cv2.COLOR_BGR2HSV)
-        # 青のしきい値（環境で微調整）
-        lower_blue = np.array([60, 80, 190])   # H,S,V
+
+        # 青色のしきい値を設定（環境に応じて調整）
+        lower_blue = np.array([60, 80, 190])   # H:色相, S:彩度, V:明度
         upper_blue = np.array([75, 95, 210])
+
+        # 指定範囲の青色だけを抽出して2値マスクを作成
         mask = cv2.inRange(hsv, lower_blue, upper_blue)
+
+        # マスクにモルフォロジー処理を施し、小さなノイズを除去
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel)
+
+        # === 検出エリアの制限設定 ===
+        # 検出対象とする縦の範囲：画像の上端（0）～ 高さの0.67倍まで
+        lower_limit = int(FRAME_HEIGHT * 0.67)
+
+        # 上側のみを許可するマスクを作成（検出範囲外の下部を除外）
         upper_mask = np.zeros_like(mask)
-        upper_limit = int(FRAME_HEIGHT * 2 / 3)
-        upper_mask[0:upper_limit, :] = 1
+        upper_mask[0:lower_limit, :] = 1  # 上のエリアのみ1に設定（マスク適用）
+
+        # 青色マスクと上側マスクをANDして、最終的な検出マスクを生成
         mask_upper = cv2.bitwise_and(mask, mask, mask=upper_mask)
 
+        # 青色領域の輪郭を検出（複数あれば後で面積で最大を選ぶ）
         cnts, _ = cv2.findContours(mask_upper, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # 初期化（青が見つからなければ False のまま）
         self.blue_found = False
+
         if cnts:
+            # 面積が最大の輪郭を選択（最も大きな青い物体）
             cnt = max(cnts, key=cv2.contourArea)
             area = cv2.contourArea(cnt)
-            if area > 80:  # ノイズ除去
+
+            if area > 80:  # 小さい面積（ノイズ）は無視
                 M = cv2.moments(cnt)
                 if M["m00"] != 0:
+                    # 輪郭の重心位置（中心座標）を算出
                     cx = int(M["m10"]/M["m00"])
                     cy = int(M["m01"]/M["m00"])
+
+                    # 青点の情報を保存（クラスのメンバ変数）
                     self.blue_cx = cx
                     self.blue_cy = cy
                     self.blue_area = int(area)
-                    # 検出領域のHSV平均値を出力
+
+                    # 検出領域内のHSV平均値（デバッグ用）
                     mask_cnt = np.zeros(mask.shape, np.uint8)
-                    cv2.drawContours(mask_cnt, [cnt], -1, 255, -1)
+                    cv2.drawContours(mask_cnt, [cnt], -1, 255, -1)  # 輪郭内だけをマスク
                     hsv_pixels = hsv[mask_cnt == 255]
                     if len(hsv_pixels) > 0:
                         h_mean = int(np.mean(hsv_pixels[:,0]))
                         s_mean = int(np.mean(hsv_pixels[:,1]))
                         v_mean = int(np.mean(hsv_pixels[:,2]))
                         print(f"[BlueDetect] HSV mean: H={h_mean}, S={s_mean}, V={v_mean}, area={area}")
+
                     center_x = FRAME_WIDTH // 2
                     center_y = FRAME_HEIGHT // 2
-                    # 中心から±40ピクセル以内のみ検知
-                    if cy < upper_limit:
+
+                    # === 青点検出エリアの可視化（常時表示） ===
+                    max_cy_ratio = 0.66  # ※ DetectBlueDot ビヘイビアと必ず一致させる！
+                    debug_limit_y = int(FRAME_HEIGHT * max_cy_ratio)
+
+                    # 赤い矩形で検出エリア（画像上端～debug_limit_y）を囲う
+                    cv2.rectangle(img_orig,
+                                (0, 0),  # 左上
+                                (FRAME_WIDTH - 1, debug_limit_y),  # 右下
+                                (0, 0, 255), 1)  # 赤色, 線の太さ1
+
+                    # エリアの下端に説明ラベルを描画
+                    cv2.putText(img_orig,
+                                f"Detection Area <= y={debug_limit_y}",
+                                (10, debug_limit_y - 5),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.5,
+                                (0, 0, 255), 1, cv2.LINE_AA)
+
+                    # 青点の重心が検出範囲内にあるか確認
+                    if cy < debug_limit_y:
                         self.blue_found = True
-                        # デバッグ描画（青中心）
-                        cv2.circle(img_orig, (cx, cy), 5, (255,0,0), -1)
+                        # デバッグ描画：検出した青点の中心を青丸で表示
+                        cv2.circle(img_orig, (cx, cy), 5, (255, 0, 0), -1)
                         print(f"Blue center: cx={cx}, cy={cy}, center_x={center_x}, center_y={center_y}")
                     else:
                         self.blue_found = False
 
+        # ===== 青丸検出 終了 =====
         ...
         cv2.imshow("video monitor", img_comm)
         c = cv2.waitKey(1)
