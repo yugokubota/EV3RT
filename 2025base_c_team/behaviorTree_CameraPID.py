@@ -461,7 +461,7 @@ class DetectBlueDot(Behaviour):
             "cy": cy,
             "area": area
         }
-        print(f"[DetectBlueDot] Blue dot detected at ({cx}, {cy}), area={area}")
+        print(f"[DetectBlueDot] ★★★ Blue dot detected ★★★ at ({cx}, {cy}), area={area}")
         return Status.SUCCESS
 
 # 青点に向けた旋回ビヘイビア
