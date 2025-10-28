@@ -448,8 +448,12 @@ class DetectBlueDot(Behaviour):
         found, cx, cy, area = g_video.get_blue_info()
         if not found:
             print("[DetectBlueDot] Blue dot not found.")
+            # 青検知できなかったら、旋回して探す処理をここに入れるべきかもしれん
+            g_left_motor.set_power(-30)
+            g_right_motor.set_power(30)
             return Status.RUNNING
         
+        # 指定した検知範囲より検知した青点が低い場合は無視
         if cy > self.max_cy:
             print(f"[DetectBlueDot] Blue dot too low in image (cy={cy}). Ignored.")
             return Status.RUNNING
