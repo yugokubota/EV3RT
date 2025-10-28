@@ -531,7 +531,7 @@ class TurnToBlueDot(Behaviour):
 
 # 大円のグレーまで走行し、検出直後停止するビヘイビア
 class ForwardUntilGray(Behaviour):
-    def __init__(self, name: str, threshold: int = 20, power: int = 30):
+    def __init__(self, name: str, threshold: int = 20, power: int = 40):
         super().__init__(name)
         self.threshold = threshold
         self.power = power
