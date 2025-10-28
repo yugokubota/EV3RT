@@ -537,10 +537,10 @@ class ForwardUntilGray(Behaviour):
         self.power = power
 
     def update(self) -> Status:
-        reflection = g_color_sensor.get_reflected_light()
-        print(f"[ForwardUntilGray] Reflection: {reflection}")
+        brightness = g_color_sensor.get_brightness()
+        print(f"[ForwardUntilGray] Brightness: {brightness}")
 
-        if reflection < self.threshold:
+        if brightness < self.threshold:
             g_left_motor.set_power(0)
             g_right_motor.set_power(0)
             print("[ForwardUntilGray] Gray detected. Stopping.")
