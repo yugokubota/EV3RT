@@ -1513,7 +1513,7 @@ def build_behaviour_tree() -> BehaviourTree:
     first_landing_prepare_sequence.add_children([
     #    DetectBlueDot(name="blue_detected_for_smartcarry_start"),
     #    TurnToBlueDot(name="turn_to_blue_dot_start"),
-        ForwardUntilGray(name="forward_until_gray_start", threshold=30),
+        ForwardUntilGray(name="forward_until_gray_start", threshold=85),
     ])
 
     # --- 最初のボトルをターゲットに置く ---
