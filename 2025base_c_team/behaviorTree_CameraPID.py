@@ -1509,7 +1509,7 @@ def build_behaviour_tree() -> BehaviourTree:
         Spintotarget_90degree_Parallel,
     ])
 
-    # --- グレー検知後、PWM=40で600mm走る ---
+    # --- グレー検知後、PWM=40で600mm走る（本多） ---
     constant_run_after_gray = Parallel(
         name="constant_run_after_gray",
         policy=ParallelPolicy.SuccessOnOne()
@@ -1817,16 +1817,30 @@ def build_behaviour_tree() -> BehaviourTree:
         IsTouchOn(name="touch start"),
     ])
 
-    root = Sequence(name="loop_by_camera", memory=True)
-    root.add_children([
-        calibration,
-        start,
-        # loop_01,#LAP
-        # loop_02,#ダブルループ
-        loop_03,#スマートキャリーからゴールまで
+        # --- テスト用：定数走行だけを実行 ---
+    test_only_constant = Sequence(name="TEST_only_constant", memory=True)
+    test_only_constant.add_children([
+        calibration,           # 既存のキャリブレーションを流用
+        start,                 # タッチで開始
+        constant_run_after_gray,  # ★ ここが今回のテスト対象
         StopNow(name="stop"),
         TheEnd(name="end"),
     ])
+
+    # ★ テスト時はこちらを使用
+    root = test_only_constant
+
+    # ★ 通常のrootはコメントアウト（本番走行時に戻せるように）
+    # root = Sequence(name="loop_by_camera", memory=True)
+    # root.add_children([
+    #     calibration,
+    #     start,
+    #     # loop_01,#LAP
+    #     # loop_02,#ダブルループ
+    #     loop_03,#スマートキャリーからゴールまで
+    #     StopNow(name="stop"),
+    #     TheEnd(name="end"),
+    # ])
     return root
 
 def initialize_etrobo(backend: str) -> ETRobo:
