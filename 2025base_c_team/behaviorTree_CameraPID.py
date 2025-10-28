@@ -1509,11 +1509,22 @@ def build_behaviour_tree() -> BehaviourTree:
         Spintotarget_90degree_Parallel,
     ])
 
+    # --- グレー検知後、PWM=40で600mm走る ---
+    constant_run_after_gray = Parallel(
+        name="constant_run_after_gray",
+        policy=ParallelPolicy.SuccessOnOne()
+    )
+    constant_run_after_gray.add_children([
+        IsDistancePassed(name="run_const_dist_after_gray", target_distance=600),
+        RunAsInstructed(name="const_run_pwm_after_gray", pwm_l=40, pwm_r=40),
+    ])
+
     first_landing_prepare_sequence = Sequence(name="first_landing_prepare", memory=True)
     first_landing_prepare_sequence.add_children([
         DetectBlueDot(name="blue_detected_for_smartcarry_start"),
         TurnToBlueDot(name="turn_to_blue_dot_start"),
         ForwardUntilGray(name="forward_until_gray_start", target_gray=30),
+        constant_run_after_gray,  # ← ここで追加した定数走行を呼び出す
     ])
 
     # --- 最初のボトルをターゲットに置く ---
