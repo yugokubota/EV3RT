@@ -554,6 +554,18 @@ class ForwardUntilGray(Behaviour):
         g_left_motor.set_power(0)
         g_right_motor.set_power(0)
 
+# 現在のヨー角（角度）を取得して表示するビヘイビア
+class GetCurrentYaw(Behaviour):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.logger.debug("%s.__init__()" % (self.__class__.__name__))
+
+    def update(self) -> Status:
+        yaw = g_gyro_sensor.get_angle()  # ジャイロセンサーから角度を取得
+        print(f"[GetCurrentYaw] Current yaw angle: {yaw:.2f}°")
+        self.logger.info("%+06d %s.yaw=%.2f°" % (g_plotter.get_distance(), self.__class__.__name__, yaw))
+        return Status.SUCCESS
+
 
 # 上記に分割済みのため、使用不可============================================================
 # カメラで青を中央に合わせる→近づいたらジャイロ固定で一定距離前進して置く（バック禁止）
@@ -948,7 +960,7 @@ class IsOnBlackLine_running(Behaviour):#黒色を明るさで検知
             return Status.RUNNING
 
 class DetectBlackCount(Behaviour):
-    def __init__(self, name: str, black_thresh: int = 5, gray_thresh: int = 30, target_count: int = 3):
+    def __init__(self, name: str, black_thresh: int = 5, gray_thresh: int = 85, target_count: int = 3):
         super().__init__(name)
         self.black_thresh = black_thresh
         self.gray_thresh = gray_thresh
@@ -1508,12 +1520,19 @@ def build_behaviour_tree() -> BehaviourTree:
         Spintotarget_45degree_Parallel,
         Spintotarget_90degree_Parallel,
     ])
+    ForwardUntilGraybyGyro = Parallel(name="ForwardUntilGraybyGyro", policy=ParallelPolicy.SuccessOnOne())
+    ForwardUntilGraybyGyro.add_children([
+        DetectBlackCount(name="detect_black_count_smartcarry_start", target_count=3, gray_thresh=85),
+        RunByGyro(name="run_straight_until_gray_smartcarry_start", target=yaw, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    ])
 
     first_landing_prepare_sequence = Sequence(name="first_landing_prepare", memory=True)
     first_landing_prepare_sequence.add_children([
     #    DetectBlueDot(name="blue_detected_for_smartcarry_start"),
     #    TurnToBlueDot(name="turn_to_blue_dot_start"),
-        ForwardUntilGray(name="forward_until_gray_start", threshold=85),
+        GetCurrentYaw(name="get_current_yaw_smartcarry_start"),
+        ForwardUntilGraybyGyro,
     ])
 
     # --- 最初のボトルをターゲットに置く ---
