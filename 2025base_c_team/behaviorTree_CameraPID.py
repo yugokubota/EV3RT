@@ -962,6 +962,7 @@ class IsOnBlackLine_running(Behaviour):#黒色を明るさで検知
 class DetectBlackCount(Behaviour):
     def __init__(self, name: str, black_thresh: int = 5, gray_brightness: int = 85, gray_saturation: int = 40, target_count: int = 3):
         super().__init__(name)
+        h_deg, s_per, v_per = g_color_sensor.get_hsv()
         self.black_thresh = black_thresh
         self.gray_brightness = gray_brightness
         self.gray_saturation = gray_saturation
@@ -977,9 +978,9 @@ class DetectBlackCount(Behaviour):
                 return Status.SUCCESS
             else:
                 return Status.RUNNING
-        if brightness < self.gray_brightness and g_color_sensor.s_per() > self.gray_saturation:
+        if brightness < self.gray_brightness and s_per() > self.gray_saturation:
             self.count += 1
-            print(f"グレー検知回数: {self.count} (brightness={brightness}(saturation={g_color_sensor.s_per()}))")
+            print(f"グレー検知回数: {self.count} (brightness={brightness}(saturation={s_per()}))")
             if self.count >= self.target_count:
                 return Status.SUCCESS
             else:
