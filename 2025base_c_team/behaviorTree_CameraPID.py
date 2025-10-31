@@ -989,9 +989,9 @@ class DetectBlackCount(Behaviour):
                 return Status.SUCCESS
             else:
                 return Status.RUNNING
-        if brightness < self.gray_brightness and s_per() > self.gray_saturation:
+        if brightness < self.gray_brightness and s_per > self.gray_saturation:
             self.count += 1
-            print(f"グレー検知回数: {self.count} (brightness={brightness}(saturation={s_per()}))")
+            print(f"グレー検知回数: {self.count} (brightness={brightness}(saturation={s_per}))")
             if self.count >= self.target_count:
                 return Status.SUCCESS
             else:
