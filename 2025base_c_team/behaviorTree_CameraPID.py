@@ -28,6 +28,7 @@ JUNCT_UPPER_THRESH = 50
 JUNCT_LOWER_THRESH = 30
 MAX_POWER = 100
 MIN_POWER = 50
+yaw = 0.0  # グローバル変数としてのヨー角目標値
 
 class ArmDirection(IntEnum):
     UP = -1
