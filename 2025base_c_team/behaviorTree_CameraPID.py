@@ -960,12 +960,12 @@ class IsOnBlackLine_running(Behaviour):#黒色を明るさで検知
             return Status.RUNNING
 
 class DetectBlackCount(Behaviour):
-    def __init__(self, name: str, black_thresh: int = 5, gray_brightness: int = 85, gray_saturation: int = 40, gray_target_count: int = 3):
+    def __init__(self, name: str, black_thresh: int = 5, gray_brightness: int = 85, gray_saturation: int = 40, target_count: int = 3):
         super().__init__(name)
         self.black_thresh = black_thresh
         self.gray_brightness = gray_brightness
         self.gray_saturation = gray_saturation
-        self.gray_target_count = gray_target_count
+        self.target_count = target_count
         self.count = 0
 
     def update(self) -> Status:
