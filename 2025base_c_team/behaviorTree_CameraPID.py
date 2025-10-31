@@ -1533,19 +1533,31 @@ def build_behaviour_tree() -> BehaviourTree:
         Spintotarget_45degree_Parallel,
         Spintotarget_90degree_Parallel,
     ])
+    # --- 灰色検知までジャイロで直進 ---
     ForwardUntilGraybyGyro = Parallel(name="ForwardUntilGraybyGyro", policy=ParallelPolicy.SuccessOnOne())
     ForwardUntilGraybyGyro.add_children([
         DetectBlackCount(name="detect_black_count_smartcarry_start", target_count=1, gray_brightness=85, gray_saturation=15),
         RunByGyro(name="run_straight_until_gray_smartcarry_start", target=0, power=40,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.RELATIVE),
     ])
-
+    # --- ほんの少しジャイロで直進 ---
+    GostraightbyGyro_short = Parallel(name="GostraightbyGyro_short", policy=ParallelPolicy.SuccessOnOne())
+    GostraightbyGyro_short.add_children([
+        IsDistancePassed(name="distance_passed_short", target_distance=50),
+        RunByGyro(name="run_straight_short_smartcarry_start", target=0, power=40,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.RELATIVE),
+    ])
+    # --- 最初のボトルを置く処理 ---
     first_landing_prepare_sequence = Sequence(name="first_landing_prepare", memory=True)
     first_landing_prepare_sequence.add_children([
     #    DetectBlueDot(name="blue_detected_for_smartcarry_start"),
     #    TurnToBlueDot(name="turn_to_blue_dot_start"),
-    #    GetCurrentYaw(name="get_current_yaw_smartcarry_start"),
+    #    GetCurrentYaw(name="get_current_yaw_smartcarry_start"),使わない
         ForwardUntilGraybyGyro,
+        GostraightbyGyro_short,
+        ForwardUntilGraybyGyro,
+        GostraightbyGyro_short,
+        ForwardUntilGraybyGyro
     ])
 
     # --- 最初のボトルをターゲットに置く ---
