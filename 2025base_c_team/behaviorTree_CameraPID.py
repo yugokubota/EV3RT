@@ -1788,12 +1788,12 @@ def build_behaviour_tree() -> BehaviourTree:
         #             target=-315,max_power=50,min_power=MIN_POWER,
         #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- メインのラインまで垂直に走る
-        Go_to_blackline_Parallel,
-        SpinAround(name="spin by 90 degrees_DetectBlackLine",
-                    target=160, max_power=50, min_power=MIN_POWER,
-                    pid_p=1.1, pid_i=0.001, pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        # --- ゴールに向かう
-        traceline_cam_DetectBlue_GOAL_Parallel,
+        # Go_to_blackline_Parallel,
+        # SpinAround(name="spin by 90 degrees_DetectBlackLine",
+        #             target=160, max_power=50, min_power=MIN_POWER,
+        #             pid_p=1.1, pid_i=0.001, pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        # # --- ゴールに向かう
+        # traceline_cam_DetectBlue_GOAL_Parallel,
     ])
 
     calibration = Sequence(name="calibration", memory=True)
