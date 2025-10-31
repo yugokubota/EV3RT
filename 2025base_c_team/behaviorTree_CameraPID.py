@@ -28,7 +28,6 @@ JUNCT_UPPER_THRESH = 50
 JUNCT_LOWER_THRESH = 30
 MAX_POWER = 100
 MIN_POWER = 50
-yaw = 0.0  # グローバル変数としてのヨー角目標値
 
 class ArmDirection(IntEnum):
     UP = -1
@@ -1524,15 +1523,15 @@ def build_behaviour_tree() -> BehaviourTree:
     ForwardUntilGraybyGyro = Parallel(name="ForwardUntilGraybyGyro", policy=ParallelPolicy.SuccessOnOne())
     ForwardUntilGraybyGyro.add_children([
         DetectBlackCount(name="detect_black_count_smartcarry_start", target_count=3, gray_thresh=75),
-        RunByGyro(name="run_straight_until_gray_smartcarry_start", target=yaw, power=60,
-                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+        RunByGyro(name="run_straight_until_gray_smartcarry_start", target=0, power=60,
+                pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.RELATIVE),
     ])
 
     first_landing_prepare_sequence = Sequence(name="first_landing_prepare", memory=True)
     first_landing_prepare_sequence.add_children([
     #    DetectBlueDot(name="blue_detected_for_smartcarry_start"),
     #    TurnToBlueDot(name="turn_to_blue_dot_start"),
-        GetCurrentYaw(name="get_current_yaw_smartcarry_start"),
+    #    GetCurrentYaw(name="get_current_yaw_smartcarry_start"),
         ForwardUntilGraybyGyro,
     ])
 
