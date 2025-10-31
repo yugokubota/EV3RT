@@ -1523,7 +1523,7 @@ def build_behaviour_tree() -> BehaviourTree:
     ForwardUntilGraybyGyro = Parallel(name="ForwardUntilGraybyGyro", policy=ParallelPolicy.SuccessOnOne())
     ForwardUntilGraybyGyro.add_children([
         DetectBlackCount(name="detect_black_count_smartcarry_start", target_count=3, gray_thresh=75),
-        RunByGyro(name="run_straight_until_gray_smartcarry_start", target=0, power=60,
+        RunByGyro(name="run_straight_until_gray_smartcarry_start", target=0, power=40,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.RELATIVE),
     ])
 
