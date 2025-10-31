@@ -960,11 +960,12 @@ class IsOnBlackLine_running(Behaviour):#黒色を明るさで検知
             return Status.RUNNING
 
 class DetectBlackCount(Behaviour):
-    def __init__(self, name: str, black_thresh: int = 5, gray_thresh: int = 85, target_count: int = 3):
+    def __init__(self, name: str, black_thresh: int = 5, gray_brightness: int = 85, gray_saturation: int = 40, gray_target_count: int = 3):
         super().__init__(name)
         self.black_thresh = black_thresh
-        self.gray_thresh = gray_thresh
-        self.target_count = target_count
+        self.gray_brightness = gray_brightness
+        self.gray_saturation = gray_saturation
+        self.gray_target_count = gray_target_count
         self.count = 0
 
     def update(self) -> Status:
@@ -976,9 +977,9 @@ class DetectBlackCount(Behaviour):
                 return Status.SUCCESS
             else:
                 return Status.RUNNING
-        if brightness < self.gray_thresh:
+        if brightness < self.gray_brightness and g_color_sensor.get_saturation() > self.gray_saturation:
             self.count += 1
-            print(f"黒/グレー検知回数: {self.count} (brightness={brightness})")
+            print(f"グレー検知回数: {self.count} (brightness={brightness})")
             if self.count >= self.target_count:
                 return Status.SUCCESS
             else:
@@ -1522,7 +1523,7 @@ def build_behaviour_tree() -> BehaviourTree:
     ])
     ForwardUntilGraybyGyro = Parallel(name="ForwardUntilGraybyGyro", policy=ParallelPolicy.SuccessOnOne())
     ForwardUntilGraybyGyro.add_children([
-        DetectBlackCount(name="detect_black_count_smartcarry_start", target_count=1, gray_thresh=75),
+        DetectBlackCount(name="detect_black_count_smartcarry_start", target_count=1, gray_brightness=85, gray_saturation=15),
         RunByGyro(name="run_straight_until_gray_smartcarry_start", target=0, power=40,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.RELATIVE),
     ])
