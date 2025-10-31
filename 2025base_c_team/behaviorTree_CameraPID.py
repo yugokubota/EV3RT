@@ -1602,6 +1602,7 @@ def build_behaviour_tree() -> BehaviourTree:
         make_forward_until_gray_by_gyro(),
         make_gostraightbygyro_short(),
         make_forward_until_gray_by_gyro(),
+        make_gostraightbygyro_short(),
     ])
 
     # --- 最初のボトルをターゲットに置く ---
