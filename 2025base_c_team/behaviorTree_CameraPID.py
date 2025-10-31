@@ -21,8 +21,8 @@ from py_etrobo_util.plotter import TIRE_DIAMETER
 import colorsys#GRBをHSVに変える標準ライブラリ
 from py_etrobo_util.video import FRAME_WIDTH, FRAME_HEIGHT
 
-EXEC_INTERVAL: float = 2.00
-VIDEO_INTERVAL: float = 2.00
+EXEC_INTERVAL: float = 0.02
+VIDEO_INTERVAL: float = 0.02
 ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
 JUNCT_LOWER_THRESH = 30
