@@ -519,8 +519,8 @@ class TurnToBlueDot(Behaviour):
         if 0 < abs(turn_pwm) < self.min_pwm:
             turn_pwm = self.min_pwm if turn_pwm > 0 else -self.min_pwm
 
-        g_left_motor.set_power(-turn_pwm)
-        g_right_motor.set_power(turn_pwm)
+        g_left_motor.set_power(turn_pwm)
+        g_right_motor.set_power(-turn_pwm)
         print(f"[TurnToBlueDot] Turning... error={error:.2f}, pwm={turn_pwm}")
         return Status.RUNNING
 
