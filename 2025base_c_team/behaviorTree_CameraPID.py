@@ -1547,17 +1547,59 @@ def build_behaviour_tree() -> BehaviourTree:
         RunByGyro(name="run_straight_short_smartcarry_start", target=0, power=40,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.RELATIVE),
     ])
+    # --- 灰色検知までジャイロで直進 ---
+def make_forward_until_gray_by_gyro():
+    node = Parallel(name="ForwardUntilGraybyGyro", policy=ParallelPolicy.SuccessOnOne())
+    node.add_children([
+        DetectBlackCount(
+            name="detect_black_count_smartcarry_start",
+            black_thresh=5,
+            gray_brightness=85,
+            gray_saturation=15,
+            target_count=1
+        ),
+        RunByGyro(
+            name="run_straight_until_gray_smartcarry_start",
+            target=0,          # ← すべて target=0 で固定
+            power=40,
+            pid_p=1.1,
+            pid_i=0.001,
+            pid_d=0.03,
+            target_type=HeadingType.RELATIVE
+        ),
+    ])
+    return node
+
+
+    # --- ほんの少しジャイロで直進 ---
+def make_gostraightbygyro_short():
+    node = Parallel(name="GostraightbyGyro_short", policy=ParallelPolicy.SuccessOnOne())
+    node.add_children([
+        IsDistancePassed(name="distance_passed_short", target_distance=50),
+        RunByGyro(
+            name="run_straight_short_smartcarry_start",
+            target=0,          # ← すべて target=0
+            power=40,
+            pid_p=1.1,
+            pid_i=0.001,
+            pid_d=0.03,
+            target_type=HeadingType.RELATIVE
+        ),
+    ])
+    return node
+
     # --- 最初のボトルを置く処理 ---
     first_landing_prepare_sequence = Sequence(name="first_landing_prepare", memory=True)
     first_landing_prepare_sequence.add_children([
     #    DetectBlueDot(name="blue_detected_for_smartcarry_start"),
     #    TurnToBlueDot(name="turn_to_blue_dot_start"),
     #    GetCurrentYaw(name="get_current_yaw_smartcarry_start"),使わない
-        ForwardUntilGraybyGyro,
-        GostraightbyGyro_short,
-        ForwardUntilGraybyGyro,
-        GostraightbyGyro_short,
-        ForwardUntilGraybyGyro
+    #    ForwardUntilGraybyGyro,
+        make_forward_until_gray_by_gyro(),
+        make_gostraightbygyro_short(),
+        make_forward_until_gray_by_gyro(),
+        make_gostraightbygyro_short(),
+        make_forward_until_gray_by_gyro(),
     ])
 
     # --- 最初のボトルをターゲットに置く ---
