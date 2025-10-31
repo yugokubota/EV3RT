@@ -482,13 +482,14 @@ class TurnToBlueDot(Behaviour):
         self.target_angle = None
     
     def update(self) -> Status:
-        blue = g_shared.get("blue_detected")
-        # 青色データがない場合failure
-        if not blue or not blue.get("found"):
-            print("[TurnToBlueDot] No blue dot data. Aborting.")
-            return Status.FAILURE
+        # blue = g_shared.get("blue_detected")
+        # # 青色データがない場合failure
+        # if not blue or not blue.get("found"):
+        #     print("[TurnToBlueDot] No blue dot data. Aborting.")
+        #     return Status.FAILURE
 
-        cx = blue["cx"]
+        # cx = blue["cx"]
+        cx=320
         dx = cx - (FRAME_WIDTH // 2)
         px_per_deg = FRAME_WIDTH / self.camera_fov_deg
         rel_angle = dx / px_per_deg
@@ -1511,7 +1512,7 @@ def build_behaviour_tree() -> BehaviourTree:
 
     first_landing_prepare_sequence = Sequence(name="first_landing_prepare", memory=True)
     first_landing_prepare_sequence.add_children([
-        DetectBlueDot(name="blue_detected_for_smartcarry_start"),
+        # DetectBlueDot(name="blue_detected_for_smartcarry_start"),
         TurnToBlueDot(name="turn_to_blue_dot_start"),
         # ForwardUntilGray(name="forward_until_gray_start", target_gray=30),
     ])
