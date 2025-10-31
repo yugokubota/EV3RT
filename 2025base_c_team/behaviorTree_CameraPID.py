@@ -21,8 +21,8 @@ from py_etrobo_util.plotter import TIRE_DIAMETER
 import colorsys#GRBをHSVに変える標準ライブラリ
 from py_etrobo_util.video import FRAME_WIDTH, FRAME_HEIGHT
 
-EXEC_INTERVAL: float = 0.02
-VIDEO_INTERVAL: float = 0.02
+EXEC_INTERVAL: float = 2.00
+VIDEO_INTERVAL: float = 2.00
 ARM_SHIFT_PWM = 30
 JUNCT_UPPER_THRESH = 50
 JUNCT_LOWER_THRESH = 30
@@ -1721,7 +1721,7 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_01 = Sequence(name="loop_01_with_obstacle_and_doubleloop", memory=True)
     loop_01.add_children([
         #色や明るさを検知できる（ずっとRUNNINGで無限ループ）※次の処理にはいかない仕様
-        # Detectcolor(name="detectcolor"),
+        Detectcolor(name="detectcolor"),
     # ========= LAP走行 ========
         # --- スタートから一定距離直進⇒オブジェクト回避
         obstacle_Parallel,
@@ -1829,7 +1829,7 @@ def build_behaviour_tree() -> BehaviourTree:
     root.add_children([
         calibration,
         start,
-        # loop_01,#LAP
+        loop_01,#LAP
         # loop_02,#ダブルループ
         loop_03,#スマートキャリーからゴールまで
         StopNow(name="stop"),
