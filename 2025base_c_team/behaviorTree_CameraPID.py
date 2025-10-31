@@ -470,7 +470,7 @@ class TurnToBlueDot(Behaviour):
                  gyro_p: float = 1.1, gyro_i: float = 0.001, gyro_d: float = 0.03,
                  angle_margin: float = 2.0,
                  camera_fov_deg: float = 60.0,
-                 min_pwm: int = 10):
+                 min_pwm: int = 40):
         super().__init__(name)
         self.gyro_p = gyro_p
         self.gyro_i = gyro_i
