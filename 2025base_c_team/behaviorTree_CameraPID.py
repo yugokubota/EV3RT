@@ -1513,7 +1513,7 @@ def build_behaviour_tree() -> BehaviourTree:
     first_landing_prepare_sequence.add_children([
         DetectBlueDot(name="blue_detected_for_smartcarry_start"),
         TurnToBlueDot(name="turn_to_blue_dot_start"),
-        ForwardUntilGray(name="forward_until_gray_start", target_gray=30),
+        # ForwardUntilGray(name="forward_until_gray_start", target_gray=30),
     ])
 
     # --- 最初のボトルをターゲットに置く ---
@@ -1750,34 +1750,34 @@ def build_behaviour_tree() -> BehaviourTree:
     loop_03.add_children([
     # ========= スマートキャリーツイン ========
         first_landing_prepare_sequence,
-        StopNow(name="stop"),
-        TheEnd(name="end"),
-        # --- 最初のボトルまでライントレース
-        traceline_cam_smacary_Parallel,
-        SpinAndRun_Sequence,
-        # --- ターゲットにオブジェクトを置く
-        smart_carry_puton_first_Parallel,
-        # --- バック
-        After_puton_back_first_Parallel,
-        SpinAround(name="spin by 90 degrees_After_puton_back_first",
-                    target=180,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        # --- 次のボトルへ
-        Go_to_next_bottle_Parallel,
-        SpinAround(name="spin by 90 degrees_After_puton_back_second",
-                    target=-270,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        DetectBlackline_before_bottle_Parallel,
-        SpinAround(name="spin by 90 degrees_detect_red",
-                    target=-190,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
-        traceline_cam_Detectred_Parallel,
-        # --- ゲート復路通過処理
-        ReturnGate_Sequence,
-        # --- ターゲットに向かう
-        smart_carry_puton_second_Parallel,
-        # --- バックしてボトルを置く
-        After_puton_back_second_Parallel,
+        # StopNow(name="stop"),
+        # TheEnd(name="end"),
+        # # --- 最初のボトルまでライントレース
+        # traceline_cam_smacary_Parallel,
+        # SpinAndRun_Sequence,
+        # # --- ターゲットにオブジェクトを置く
+        # smart_carry_puton_first_Parallel,
+        # # --- バック
+        # After_puton_back_first_Parallel,
+        # SpinAround(name="spin by 90 degrees_After_puton_back_first",
+        #             target=180,max_power=50,min_power=MIN_POWER,
+        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        # # --- 次のボトルへ
+        # Go_to_next_bottle_Parallel,
+        # SpinAround(name="spin by 90 degrees_After_puton_back_second",
+        #             target=-270,max_power=50,min_power=MIN_POWER,
+        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        # DetectBlackline_before_bottle_Parallel,
+        # SpinAround(name="spin by 90 degrees_detect_red",
+        #             target=-190,max_power=50,min_power=MIN_POWER,
+        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        # traceline_cam_Detectred_Parallel,
+        # # --- ゲート復路通過処理
+        # ReturnGate_Sequence,
+        # # --- ターゲットに向かう
+        # smart_carry_puton_second_Parallel,
+        # # --- バックしてボトルを置く
+        # After_puton_back_second_Parallel,
         # SpinAround(name="spin by 90 degrees_After_puton_back_second",
         #             target=-320,max_power=50,min_power=MIN_POWER,
         #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
