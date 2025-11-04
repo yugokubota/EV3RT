@@ -470,7 +470,7 @@ class TurnToBlueDot(Behaviour):
                  gyro_p: float = 1.1, gyro_i: float = 0.001, gyro_d: float = 0.03,
                  angle_margin: float = 2.0,
                  camera_fov_deg: float = 60.0,
-                 min_pwm: int = 40):
+                 min_pwm: int = 50):
         super().__init__(name)
         self.gyro_p = gyro_p
         self.gyro_i = gyro_i
@@ -519,8 +519,8 @@ class TurnToBlueDot(Behaviour):
         if 0 < abs(turn_pwm) < self.min_pwm:
             turn_pwm = self.min_pwm if turn_pwm > 0 else -self.min_pwm
 
-        g_left_motor.set_power(turn_pwm + 20)
-        g_right_motor.set_power(-turn_pwm + 20)
+        g_left_motor.set_power(turn_pwm)
+        g_right_motor.set_power(-turn_pwm)
         print(f"[TurnToBlueDot] Turning... error={error:.2f}, pwm={turn_pwm}")
         return Status.RUNNING
 
