@@ -262,8 +262,8 @@ class Video(object):
         hsv = cv2.cvtColor(img_orig, cv2.COLOR_BGR2HSV)
 
         # 青色のしきい値を設定（環境に応じて調整）
-        lower_blue = np.array([60, 80, 190])   # H:色相, S:彩度, V:明度
-        upper_blue = np.array([75, 95, 210])
+        lower_blue = np.array([95, 80, 90])   # H:色相, S:彩度, V:明度
+        upper_blue = np.array([115, 255, 170])
 
         # 指定範囲の青色だけを抽出して2値マスクを作成
         mask = cv2.inRange(hsv, lower_blue, upper_blue)

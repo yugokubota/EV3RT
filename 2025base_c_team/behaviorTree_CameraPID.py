@@ -447,7 +447,7 @@ class DetectBlueDot(Behaviour):
     def update(self) -> Status:
         found, cx, cy, area = g_video.get_blue_info()
         if not found:
-            print("[DetectBlueDot] Blue dot not found.")
+            print("[DetectBlueDot] Blue dot not found. ")
             # 青検知できなかったら、旋回して探す処理をここに入れるべきかもしれん
             g_left_motor.set_power(-30)
             g_right_motor.set_power(30)
