@@ -1259,10 +1259,10 @@ def make_forward_until_gray_by_gyro():
 
 
     # --- ほんの少しジャイロで直進 ---
-def make_gostraightbygyro_short():
+def make_gostraightbygyro_short(target_distance: int = 50):
     node = Parallel(name="GostraightbyGyro_short", policy=ParallelPolicy.SuccessOnOne())
     node.add_children([
-        IsDistancePassed(name="distance_passed_short", target_distance=50),
+        IsDistancePassed(name="distance_passed_short", target_distance=target_distance),
         RunByGyro(
             name="run_straight_short_smartcarry_start",
             target=0,          # ← すべて target=0
@@ -1602,7 +1602,7 @@ def build_behaviour_tree() -> BehaviourTree:
         make_forward_until_gray_by_gyro(),
         make_gostraightbygyro_short(),
         make_forward_until_gray_by_gyro(),
-        make_gostraightbygyro_short(),
+        make_gostraightbygyro_short(80),
     ])
 
     # --- 最初のボトルをターゲットに置く ---
