@@ -1241,7 +1241,7 @@ def make_forward_until_gray_by_gyro():
         DetectBlackCount(
             name="detect_black_count_smartcarry_start",
             black_thresh=5,
-            gray_brightness=85,
+            gray_brightness=75,
             gray_saturation=15,
             target_count=1
         ),
