@@ -373,18 +373,18 @@ class Video(object):
         return (self.blue_found, self.blue_cx, self.blue_cy, self.blue_area)
 
     def detect_blue_ellipse(img_bgr: np.ndarray):
-    hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-    lower_blue = np.array([90, 50, 50])
-    upper_blue = np.array([130, 255, 255])
-    mask = cv2.inRange(hsv, lower_blue, upper_blue)
-    kernel = np.ones((5,5), np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    for cnt in contours:
-        if len(cnt) >= 5:
-            ellipse = cv2.fitEllipse(cnt)
-            (cx, cy), (major_axis, minor_axis), angle = ellipse
-            area = math.pi * (major_axis/2) * (minor_axis/2)
-            if area > 80:
-                return True, int(cx), int(cy), int(area)
-    return False, 0, 0, 0
+        hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+        lower_blue = np.array([90, 50, 50])
+        upper_blue = np.array([130, 255, 255])
+        mask = cv2.inRange(hsv, lower_blue, upper_blue)
+        kernel = np.ones((5,5), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for cnt in contours:
+            if len(cnt) >= 5:
+                ellipse = cv2.fitEllipse(cnt)
+                (cx, cy), (major_axis, minor_axis), angle = ellipse
+                area = math.pi * (major_axis/2) * (minor_axis/2)
+                if area > 80:
+                    return True, int(cx), int(cy), int(area)
+        return False, 0, 0, 0
