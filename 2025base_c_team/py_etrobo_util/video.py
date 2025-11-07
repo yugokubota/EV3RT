@@ -280,7 +280,8 @@ class Video(object):
         upper_mask[0:lower_limit, :] = 1  # 上のエリアのみ1に設定（マスク適用）
 
         # 青色マスクと上側マスクをANDして、最終的な検出マスクを生成
-        mask_upper = cv2.bitwise_and(mask, mask, mask=upper_mask)
+        # mask_upper = cv2.bitwise_and(mask, mask, mask=upper_mask)
+        mask_upper = mask
 
         # 青色領域の輪郭を検出（複数あれば後で面積で最大を選ぶ）
         cnts, _ = cv2.findContours(mask_upper, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -320,32 +321,29 @@ class Video(object):
                     center_x = FRAME_WIDTH // 2
                     center_y = FRAME_HEIGHT // 2
 
-                    # === 青点検出エリアの可視化（常時表示） ===
-                    max_cy_ratio = 0.2  # ※ DetectBlueDot ビヘイビアと必ず一致させる！
-                    debug_limit_y = int(FRAME_HEIGHT * max_cy_ratio)
+                    # # === 青点検出エリアの可視化（常時表示） ===
+                    # max_cy_ratio = 0.2  # ※ DetectBlueDot ビヘイビアと必ず一致させる！
+                    # debug_limit_y = int(FRAME_HEIGHT * max_cy_ratio)
 
-                    # 赤い矩形で検出エリア（画像上端～debug_limit_y）を囲う
+                    # # 赤い矩形で検出エリア（画像上端～debug_limit_y）を囲う
+                    # cv2.rectangle(img_orig,
+                    #             (0, 0),  # 左上
+                    #             (FRAME_WIDTH - 1, debug_limit_y),  # 右下
+                    #             (0, 0, 255), 1)  # 赤色, 線の太さ1
+                    # 赤枠を画面全体に変更（任意で枠線表示したい場合）
                     cv2.rectangle(img_orig,
                                 (0, 0),  # 左上
-                                (FRAME_WIDTH - 1, debug_limit_y),  # 右下
+                                (FRAME_WIDTH - 1, FRAME_HEIGHT - 1),  # 右下
                                 (0, 0, 255), 1)  # 赤色, 線の太さ1
 
-                    # エリアの下端に説明ラベルを描画
-                    cv2.putText(img_orig,
-                                f"Detection Area <= y={debug_limit_y}",
-                                (10, debug_limit_y - 5),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                0.5,
-                                (0, 0, 255), 1, cv2.LINE_AA)
-
                     # 青点の重心が検出範囲内にあるか確認
-                    if cy < debug_limit_y:
-                        self.blue_found = True
-                        # デバッグ描画：検出した青点の中心を青丸で表示
-                        cv2.circle(img_orig, (cx, cy), 5, (255, 0, 0), -1)
-                        print(f"Blue center: cx={cx}, cy={cy}, center_x={center_x}, center_y={center_y}")
-                    else:
-                        self.blue_found = False
+                    # if cy < debug_limit_y:
+                    self.blue_found = True
+                    # デバッグ描画：検出した青点の中心を青丸で表示
+                    cv2.circle(img_orig, (cx, cy), 5, (255, 0, 0), -1)
+                    print(f"Blue center: cx={cx}, cy={cy}, center_x={center_x}, center_y={center_y}")
+                    # else:
+                    #     self.blue_found = False
 
         # ===== 青丸検出 終了 =====
         ...
