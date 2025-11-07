@@ -321,7 +321,7 @@ class Video(object):
                     center_y = FRAME_HEIGHT // 2
 
                     # === 青点検出エリアの可視化（常時表示） ===
-                    max_cy_ratio = 0.66  # ※ DetectBlueDot ビヘイビアと必ず一致させる！
+                    max_cy_ratio = 0.2  # ※ DetectBlueDot ビヘイビアと必ず一致させる！
                     debug_limit_y = int(FRAME_HEIGHT * max_cy_ratio)
 
                     # 赤い矩形で検出エリア（画像上端～debug_limit_y）を囲う

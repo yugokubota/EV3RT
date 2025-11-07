@@ -441,7 +441,7 @@ class TraceLine_sensor(Behaviour):
 # area: 点の大きさ（面積）
 # 青点検出ビヘイビア
 class DetectBlueDot(Behaviour):
-    def __init__(self, name: str, max_cy_ratio: float = 0.66):
+    def __init__(self, name: str, max_cy_ratio: float = 0.2):
         super().__init__(name)
         self.max_cy = int(FRAME_HEIGHT * max_cy_ratio)
 
