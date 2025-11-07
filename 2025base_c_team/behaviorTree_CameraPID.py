@@ -950,14 +950,27 @@ class IsOnBlackLine_running(Behaviour):#黒色を明るさで検知
             return Status.RUNNING
 
 class DetectBlackCount(Behaviour):
-    def __init__(self, name: str, black_thresh: int = 5, gray_thresh: int = 30, target_count: int = 3):
+    def __init__(self, name: str, black_thresh: int = 5, gray_brightness: int = 75, gray_saturation: int = 15, target_count: int = 3):
         super().__init__(name)
         self.black_thresh = black_thresh
-        self.gray_thresh = gray_thresh
+        self.gray_brightness = gray_brightness
+        self.gray_saturation = gray_saturation
         self.target_count = target_count
         self.count = 0
 
     def update(self) -> Status:
+        r, g, b = g_color_sensor.get_raw_color()
+        # 正規化：最大値で割る（例：センサの上限値が1023なら/1023.0、255なら/255.0）
+        max_rgb = max(r, g, b, 1)  # 1で割りゼロ防止
+        r_norm = r / max_rgb
+        g_norm = g / max_rgb
+        b_norm = b / max_rgb
+        # colorsysで変換（返り値: h,s,vは0.0〜1.0）
+        h, s, v = colorsys.rgb_to_hsv(r_norm, g_norm, b_norm)
+        # 色相Hだけ0〜360度に直す
+        h_deg = int(h * 360)
+        s_per = int(s * 100)
+        v_per = int(v * 100)
         brightness = g_color_sensor.get_brightness()
         if brightness < self.black_thresh:
             self.count += 1
@@ -966,9 +979,9 @@ class DetectBlackCount(Behaviour):
                 return Status.SUCCESS
             else:
                 return Status.RUNNING
-        if brightness < self.gray_thresh:
+        if brightness < self.gray_brightness and s_per > self.gray_saturation:
             self.count += 1
-            print(f"黒/グレー検知回数: {self.count} (brightness={brightness})")
+            print(f"グレー検知回数: {self.count} (brightness={brightness}(saturation={s_per}))")
             if self.count >= self.target_count:
                 return Status.SUCCESS
             else:
@@ -1210,6 +1223,48 @@ class ResetGyroPID(Behaviour):
             self.done = True
             return Status.SUCCESS
         return Status.SUCCESS
+
+    # 以下繰り返し処理したいノードをツリー外で定義
+    # --- 灰色検知までジャイロで直進 ---
+def make_forward_until_gray_by_gyro():
+    node = Parallel(name="ForwardUntilGraybyGyro", policy=ParallelPolicy.SuccessOnOne())
+    node.add_children([
+        DetectBlackCount(
+            name="detect_black_count_smartcarry_start",
+            black_thresh=5,
+            gray_brightness=75,
+            gray_saturation=15,
+            target_count=1
+        ),
+        RunByGyro(
+            name="run_straight_until_gray_smartcarry_start",
+            target=0,          # ← すべて target=0 で固定
+            power=40,
+            pid_p=1.1,
+            pid_i=0.001,
+            pid_d=0.03,
+            target_type=HeadingType.RELATIVE
+        ),
+    ])
+    return node
+
+
+    # --- ほんの少しジャイロで直進 ---
+def make_gostraightbygyro_short(target_distance: int = 50):
+    node = Parallel(name="GostraightbyGyro_short", policy=ParallelPolicy.SuccessOnOne())
+    node.add_children([
+        IsDistancePassed(name="distance_passed_short", target_distance=target_distance),
+        RunByGyro(
+            name="run_straight_short_smartcarry_start",
+            target=0,          # ← すべて target=0
+            power=40,
+            pid_p=1.1,
+            pid_i=0.001,
+            pid_d=0.03,
+            target_type=HeadingType.RELATIVE
+        ),
+    ])
+    return node
 
 def build_behaviour_tree() -> BehaviourTree:
     # 各ノードを定義
@@ -1515,7 +1570,13 @@ def build_behaviour_tree() -> BehaviourTree:
     first_landing_prepare_sequence.add_children([
         DetectBlueDot(name="blue_detected_for_smartcarry_start"),
         TurnToBlueDot(name="turn_to_blue_dot_start"),
-        ForwardUntilGray(name="forward_until_gray_start", target_gray=30),
+       # ForwardUntilGray(name="forward_until_gray_start", target_gray=30),
+        make_forward_until_gray_by_gyro(),
+        make_gostraightbygyro_short(),
+        make_forward_until_gray_by_gyro(),
+        make_gostraightbygyro_short(),
+        make_forward_until_gray_by_gyro(),
+        make_gostraightbygyro_short(80),
     ])
 
     # --- 最初のボトルをターゲットに置く ---
