@@ -372,46 +372,19 @@ class Video(object):
     def get_blue_info(self):
         return (self.blue_found, self.blue_cx, self.blue_cy, self.blue_area)
 
-    def detect_blue_circles(self, img_bgr: np.ndarray):
-        """
-        青色の円をHoughCirclesで検出する関数。
-        img_bgr: BGRカラー画像（np.ndarray）
-        戻り値: (found: bool, cx: int, cy: int, area: int)
-        """
-        # BGRをHSVに変換
-        hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-
-        # 青色のHSV範囲（環境に応じて調整してください）
-        lower_blue = np.array([95, 80, 90])
-        upper_blue = np.array([115, 255, 170])
-
-        # 青色領域のマスク作成
-        mask = cv2.inRange(hsv, lower_blue, upper_blue)
-
-        # ノイズ除去のためモルフォロジー処理（クロージング）
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel)
-
-        # マスク画像をぼかして円検出の精度を上げる
-        blurred = cv2.GaussianBlur(mask, (9, 9), 2)
-
-        # HoughCirclesで円検出
-        circles = cv2.HoughCircles(
-            blurred,
-            cv2.HOUGH_GRADIENT,
-            dp=1,
-            minDist=20,
-            param1=50,
-            param2=30,
-            minRadius=10,
-            maxRadius=100
-        )
-
-        if circles is not None:
-            circles = np.uint16(np.around(circles))
-            # 最大半径の円をターゲットにする例
-            max_circle = max(circles[0, :], key=lambda c: c[2])
-            cx, cy, radius = max_circle
-            area = int(np.pi * radius * radius)
-            return True, cx, cy, area
-        else:
-            return False, 0, 0, 0
+    def detect_blue_ellipse(img_bgr: np.ndarray):
+    hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    lower_blue = np.array([90, 50, 50])
+    upper_blue = np.array([130, 255, 255])
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    kernel = np.ones((5,5), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+        if len(cnt) >= 5:
+            ellipse = cv2.fitEllipse(cnt)
+            (cx, cy), (major_axis, minor_axis), angle = ellipse
+            area = math.pi * (major_axis/2) * (minor_axis/2)
+            if area > 80:
+                return True, int(cx), int(cy), int(area)
+    return False, 0, 0, 0

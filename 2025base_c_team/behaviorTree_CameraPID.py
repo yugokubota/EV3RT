@@ -450,8 +450,8 @@ class DetectBlueDot(Behaviour):
         if img is None:
             print("[DetectBlueDot] No image available yet.")
             return Status.RUNNING
-        
-        found, cx, cy, area = g_video.detect_blue_circles(img)
+
+        found, cx, cy, area = g_video.detect_blue_ellipse(img)
         if not found:
             print("[DetectBlueDot] Blue dot not found. ")
             # 青検知できなかったら、旋回して探す処理をここに入れるべきかもしれん
