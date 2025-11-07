@@ -67,6 +67,7 @@ g_video_thread: threading.Thread = None
 g_course: int = 0
 g_gate: int = 0
 g_is_distance_to_gate = None
+g_shared = {}
 
 
 class TheEnd(Behaviour):# ctl+cで処理を終了させるようにしている
