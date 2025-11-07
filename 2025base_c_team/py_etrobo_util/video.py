@@ -372,7 +372,7 @@ class Video(object):
     def get_blue_info(self):
         return (self.blue_found, self.blue_cx, self.blue_cy, self.blue_area)
 
-    def detect_blue_ellipse(img_bgr: np.ndarray):
+    def detect_blue_ellipse(self, img_bgr: np.ndarray):
         hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
         lower_blue = np.array([90, 50, 50])
         upper_blue = np.array([130, 255, 255])
