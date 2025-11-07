@@ -288,6 +288,8 @@ class Video(object):
         # 初期化（青が見つからなければ False のまま）
         self.blue_found = False
 
+        self.latest_frame = img_orig.copy()
+
         if cnts:
             # 面積が最大の輪郭を選択（最も大きな青い物体）
             cnt = max(cnts, key=cv2.contourArea)

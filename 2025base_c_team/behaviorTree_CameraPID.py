@@ -446,7 +446,12 @@ class DetectBlueDot(Behaviour):
         self.max_cy = int(FRAME_HEIGHT * max_cy_ratio)
 
     def update(self) -> Status:
-        found, cx, cy, area = g_video.detect_blue_circles()
+        img = g_video.latest_frame if hasattr(g_video, "latest_frame") else None
+        if img is None:
+            print("[DetectBlueDot] No image available yet.")
+            return Status.RUNNING
+        
+        found, cx, cy, area = g_video.detect_blue_circles(img)
         if not found:
             print("[DetectBlueDot] Blue dot not found. ")
             # 青検知できなかったら、旋回して探す処理をここに入れるべきかもしれん
