@@ -326,7 +326,7 @@ class Video(object):
 
                     # 赤い矩形で検出エリア（画像上端～debug_limit_y）を囲う
                     cv2.rectangle(img_orig,
-                                (0, 0.5),  # 左上
+                                (0, 0),  # 左上
                                 (FRAME_WIDTH - 1, debug_limit_y),  # 右下
                                 (0, 0, 255), 1)  # 赤色, 線の太さ1
 
