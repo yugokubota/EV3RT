@@ -470,7 +470,7 @@ class TurnToBlueDot(Behaviour):
                  gyro_p: float = 1.1, gyro_i: float = 0.001, gyro_d: float = 0.03,
                  angle_margin: float = 2.0,
                  camera_fov_deg: float = 60.0,
-                 min_pwm: int = 10):
+                 min_pwm: int = 50):
         super().__init__(name)
         self.gyro_p = gyro_p
         self.gyro_i = gyro_i
@@ -482,13 +482,14 @@ class TurnToBlueDot(Behaviour):
         self.target_angle = None
     
     def update(self) -> Status:
-        blue = g_shared.get("blue_detected")
-        # 青色データがない場合failure
-        if not blue or not blue.get("found"):
-            print("[TurnToBlueDot] No blue dot data. Aborting.")
-            return Status.FAILURE
+        # blue = g_shared.get("blue_detected")
+        # # 青色データがない場合failure
+        # if not blue or not blue.get("found"):
+        #     print("[TurnToBlueDot] No blue dot data. Aborting.")
+        #     return Status.FAILURE
 
-        cx = blue["cx"]
+        # cx = blue["cx"]
+        cx=320
         dx = cx - (FRAME_WIDTH // 2)
         px_per_deg = FRAME_WIDTH / self.camera_fov_deg
         rel_angle = dx / px_per_deg
@@ -518,8 +519,8 @@ class TurnToBlueDot(Behaviour):
         if 0 < abs(turn_pwm) < self.min_pwm:
             turn_pwm = self.min_pwm if turn_pwm > 0 else -self.min_pwm
 
-        g_left_motor.set_power(-turn_pwm)
-        g_right_motor.set_power(turn_pwm)
+        g_left_motor.set_power(turn_pwm)
+        g_right_motor.set_power(-turn_pwm)
         print(f"[TurnToBlueDot] Turning... error={error:.2f}, pwm={turn_pwm}")
         return Status.RUNNING
 
@@ -528,6 +529,7 @@ class TurnToBlueDot(Behaviour):
         g_right_motor.set_power(0)
         self.pid = None
         self.target_angle = None
+
 
 # 大円のグレーまで走行し、検出直後停止するビヘイビア
 class ForwardUntilGray(Behaviour):
