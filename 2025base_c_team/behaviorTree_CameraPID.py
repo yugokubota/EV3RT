@@ -934,7 +934,7 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_Parallel.add_children([
         # avoid_seq, # 回避条件（距離到達→回避実行）
         IsDistancePassed(name="distance_passed", target_distance=2750),
-        RunByGyro(name="object_avoid_gyro", target=-3, power=100,
+        RunByGyro(name="object_avoid_gyro", target=-4, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
