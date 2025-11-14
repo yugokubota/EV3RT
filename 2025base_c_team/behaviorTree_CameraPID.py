@@ -1171,7 +1171,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2200, 2000)),
-        RunByGyro(name="run straight_SpinAndRun", target=90, power=80,
+        RunByGyro(name="run straight_SpinAndRun", target=92, power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
