@@ -944,7 +944,7 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_Parallel.add_children([
         # avoid_seq, # 回避条件（距離到達→回避実行）
         IsDistancePassed(name="distance_passed", target_distance=2430),
-        RunByGyro(name="object_avoid_gyro", target=0, power=100,
+        RunByGyro(name="object_avoid_gyro", target=2, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -995,7 +995,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_first_curve_45degree_Parallel = Parallel(name="gyro_curve_45degree", policy=ParallelPolicy.SuccessOnOne())
     gyro_first_curve_45degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=50),
-        RunByGyro(name="run_back_GoBlackLine", target=45, power=100,
+        RunByGyro(name="gyro_first_curve_45degree", target=45, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1017,7 +1017,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=2900),
-        RunByGyro(name="run_back_GoBlackLine", target=90, power=100,
+        RunByGyro(name="gyro_mukoujoumen", target=90, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1028,7 +1028,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_second_curve_135degree_Parallel = Parallel(name="gyro_curve_135degree", policy=ParallelPolicy.SuccessOnOne())
     gyro_second_curve_135degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=50),
-        RunByGyro(name="run_back_GoBlackLine", target=135, power=100,
+        RunByGyro(name="gyro_second_curve_135degree", target=130, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1039,7 +1039,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_second_curve_180degree_Parallel = Parallel(name="gyro_curve_180degree", policy=ParallelPolicy.SuccessOnOne())
     gyro_second_curve_180degree_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=50),
-        RunByGyro(name="run_back_GoBlackLine", target=180, power=100,
+        RunByGyro(name="gyro_second_curve_180degree", target=180, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1050,7 +1050,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_gotolap_Parallel = Parallel(name="gyro_gotolap", policy=ParallelPolicy.SuccessOnOne())
     gyro_gotolap_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=500),
-        RunByGyro(name="run_back_GoBlackLine", target=180, power=100,
+        RunByGyro(name="gyro_gotolap", target=180, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1110,7 +1110,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SmallCircle_Linetrace_InnerEdge_parallel = Parallel(name="Smallcircle_Linetrace_InnerEdge",policy=ParallelPolicy.SuccessOnOne())
     SmallCircle_Linetrace_InnerEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed", target_distance=2200),      #青検知しなかったとき用の距離制御
+        IsDistancePassed(name="distance_passed", target_distance=1600),      #青検知しなかったとき用の距離制御
         TraceLineCam(name="traceline_cam_inner_egde",power=43, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=50,trace_side=TraceSide.OPPOSITE),
     ])
@@ -1121,7 +1121,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     BigCircleEntryTuning_Parallel = Parallel(name="BigCircleEntryTuning", policy=ParallelPolicy.SuccessOnOne())
     BigCircleEntryTuning_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=600),
+        IsDistancePassed(name="distance_passed", target_distance=900),
         TraceLineCam(name="traceline_entry_bigcircle",power=42, pid_p=2.0, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
@@ -1181,7 +1181,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(1900, 2000)),
-        RunByGyro(name="run straight_SpinAndRun", target=-93, power=80,
+        RunByGyro(name="run straight_SpinAndRun", target=gate_value(-93,-93), power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1409,9 +1409,9 @@ def build_behaviour_tree() -> BehaviourTree:
     # ========= LAP走行 ========
         # --- スタートから一定距離直進⇒オブジェクト回避
         obstacle_Parallel,
-        obstacle_avoid_start_Parallel,
+        # obstacle_avoid_start_Parallel,
         obstacle_avoid_middle_Parallel,
-        obstacle_avoid_end_Parallel,
+        # obstacle_avoid_end_Parallel,
         SpinAround(name="spin_by_before_avoid",
                     target=0,max_power=50,min_power=MIN_POWER,
                     pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
@@ -1420,7 +1420,6 @@ def build_behaviour_tree() -> BehaviourTree:
         gyro_first_curve_45degree_Parallel,
         gyro_mukoujoumen_Parallel,
         gyro_second_curve_135degree_Parallel,
-        # gyro_second_curve_180degree_Parallel,
         gyro_gotolap_Parallel
     ])
 
