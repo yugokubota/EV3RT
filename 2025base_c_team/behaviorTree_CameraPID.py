@@ -1017,7 +1017,7 @@ def build_behaviour_tree() -> BehaviourTree:
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=2300),
-        RunByGyro(name="gyro_mukoujoumen", target=90, power=100,
+        RunByGyro(name="gyro_mukoujoumen", target=88, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1087,7 +1087,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Bigcircle_Linetrace_InnerEdge_parallel = Parallel(name="Bigcircle_Linetrace_InnerEdge",policy=ParallelPolicy.SuccessOnOne())
     Bigcircle_Linetrace_InnerEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed", target_distance=1850),      #青検知しなかったとき用の距離制御
+        IsDistancePassed(name="distance_passed", target_distance=1650),      #青検知しなかったとき用の距離制御
         TraceLineCam(name="traceline_cam_inner_egde",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
@@ -1098,7 +1098,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     SmallCircleEntryTuning_Parallel = Parallel(name="SmallCircleEntryTuning", policy=ParallelPolicy.SuccessOnOne())
     SmallCircleEntryTuning_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=800),
+        IsDistancePassed(name="distance_passed", target_distance=1000),
         TraceLineCam(name="traceline_entry_smallcircle",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
