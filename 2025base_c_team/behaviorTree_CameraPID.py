@@ -1087,7 +1087,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Bigcircle_Linetrace_InnerEdge_parallel = Parallel(name="Bigcircle_Linetrace_InnerEdge",policy=ParallelPolicy.SuccessOnOne())
     Bigcircle_Linetrace_InnerEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed", target_distance=1650),      #青検知しなかったとき用の距離制御
+        IsDistancePassed(name="distance_passed", target_distance=1550),      #青検知しなかったとき用の距離制御
         TraceLineCam(name="traceline_cam_inner_egde",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
@@ -1110,7 +1110,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SmallCircle_Linetrace_InnerEdge_parallel = Parallel(name="Smallcircle_Linetrace_InnerEdge",policy=ParallelPolicy.SuccessOnOne())
     SmallCircle_Linetrace_InnerEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
-        IsDistancePassed(name="distance_passed", target_distance=1600),      #青検知しなかったとき用の距離制御
+        IsDistancePassed(name="distance_passed", target_distance=1700),      #青検知しなかったとき用の距離制御
         TraceLineCam(name="traceline_cam_inner_egde",power=43, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=50,trace_side=TraceSide.OPPOSITE),
     ])
