@@ -1339,7 +1339,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     smart_carry_puton_second_Parallel = Parallel(name="smart_carry_puton", policy=ParallelPolicy.SuccessOnOne())
     smart_carry_puton_second_Parallel.add_children([
-        IsDistancePassed(name="smart_carry_puton", target_distance=gate_value(950, 700)),
+        IsDistancePassed(name="smart_carry_puton", target_distance=gate_value(950, 620)),
         RunByGyro(name="Gyro_straight_smart_carry_puton_second", target=gate_value(-540, -538), power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
