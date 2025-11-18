@@ -1180,7 +1180,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SpinAndRun_Parallel = Parallel(name="SpinAndRun", policy=ParallelPolicy.SuccessOnOne())
     SpinAndRun_Parallel.add_children([
         # -----ゲートの位置で距離が変わるようになっている⇒gate_value(300=front, 500=back)
-        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2150, 2000)),
+        IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=gate_value(2100, 2000)),
         RunByGyro(name="run straight_SpinAndRun", target=gate_value(-93,-93), power=80,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1326,7 +1326,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Spintotarget_returngate_Parallel = Parallel(name="Spintotarget_returngate_Parallel", policy=ParallelPolicy.SuccessOnOne())
     Spintotarget_returngate_Parallel.add_children([
         IsDistancePassed(name="distance_passed_ThroughTheGate", target_distance=1600),
-        RunByGyro(name="run straight_SpinAndRun", target=90, power=60,
+        RunByGyro(name="run straight_SpinAndRun", target=88, power=60,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1509,8 +1509,8 @@ def build_behaviour_tree() -> BehaviourTree:
     root.add_children([
         calibration,
         start,
-        loop_01,#LAP
-        loop_02,#ダブルループ
+        # loop_01,#LAP
+        # loop_02,#ダブルループ
         loop_03,#スマートキャリーからゴールまで
         StopNow(name="stop"),
         TheEnd(name="end"),
