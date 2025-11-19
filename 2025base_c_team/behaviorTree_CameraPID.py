@@ -944,10 +944,11 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_Parallel.add_children([
         # avoid_seq, # 回避条件（距離到達→回避実行）
         IsDistancePassed(name="distance_passed", target_distance=2750),
-        RunByGyro(name="object_avoid_gyro", target=2, power=100,
+        RunByGyro(name="object_avoid_gyro", target=3, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
+    # 使ってない
     obstacle_avoid_start_Parallel = Parallel(name="obstacle_avoid_start", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_start_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=400),
@@ -955,13 +956,15 @@ def build_behaviour_tree() -> BehaviourTree:
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
+    # 黄色ボトルくらいからカーブまで
     obstacle_avoid_middle_Parallel = Parallel(name="obstacle_avoid_middle", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_middle_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=850),
-        RunByGyro(name="object_avoid_gyro", target=0, power=100,
+        RunByGyro(name="object_avoid_gyro", target=-2, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
+    # 使ってない
     obstacle_avoid_end_Parallel = Parallel(name="obstacle_avoid_end", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_end_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=600),
@@ -1016,7 +1019,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2400),
+        IsDistancePassed(name="distance_passed", target_distance=2500),
         RunByGyro(name="gyro_mukoujoumen", target=88, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
