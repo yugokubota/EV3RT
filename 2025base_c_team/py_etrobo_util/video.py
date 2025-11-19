@@ -246,7 +246,7 @@ class Video(object):
         if OUT_FRAME_WIDTH != FRAME_WIDTH or OUT_FRAME_HEIGHT != FRAME_HEIGHT:
             img_comm = cv2.resize(img_comm, (OUT_FRAME_WIDTH,2*OUT_FRAME_HEIGHT))
         # transmit and display the image
-        # cv2.imshow("video monitor", img_comm) =======================================
+        cv2.imshow("video monitor", img_comm)
 
         c = cv2.waitKey(1) # show the window
         
