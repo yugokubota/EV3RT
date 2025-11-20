@@ -686,11 +686,11 @@ class TraverseBehaviourTree(object):
         global g_plotter
         if not self.running:
             if g_hub is None:
-                # print(" -- TraverseBehaviorTree waiting for ETrobo devices to be exposed...")
+                print(" -- TraverseBehaviorTree waiting for ETrobo devices to be exposed...")
             else:
                 self.running = True
                 g_plotter = Plotter()
-                # print(" -- TraverseBehaviorTree initialization complete")
+                print(" -- TraverseBehaviorTree initialization complete")
         else:
             self.tree.tick_once()
             g_plotter.plot(**kwargs)
@@ -938,6 +938,7 @@ def build_behaviour_tree() -> BehaviourTree:
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
+    # 使ってない
     obstacle_avoid_start_Parallel = Parallel(name="obstacle_avoid_start", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_start_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=400),
@@ -952,6 +953,7 @@ def build_behaviour_tree() -> BehaviourTree:
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
+    # 使ってない
     obstacle_avoid_end_Parallel = Parallel(name="obstacle_avoid_end", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_end_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=600),
