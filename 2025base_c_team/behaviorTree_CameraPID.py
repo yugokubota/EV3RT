@@ -696,11 +696,11 @@ class TraverseBehaviourTree(object):
         global g_plotter
         if not self.running:
             if g_hub is None:
-                # print(" -- TraverseBehaviorTree waiting for ETrobo devices to be exposed...")
+                print(" -- TraverseBehaviorTree waiting for ETrobo devices to be exposed...")
             else:
                 self.running = True
                 g_plotter = Plotter()
-                # print(" -- TraverseBehaviorTree initialization complete")
+                print(" -- TraverseBehaviorTree initialization complete")
         else:
             self.tree.tick_once()
             g_plotter.plot(**kwargs)
