@@ -943,7 +943,7 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_Parallel = Parallel(name="obstacle_or_gyro", policy=ParallelPolicy.SuccessOnOne())
     obstacle_Parallel.add_children([
         # avoid_seq, # 回避条件（距離到達→回避実行）
-        IsDistancePassed(name="distance_passed", target_distance=2450),
+        IsDistancePassed(name="distance_passed", target_distance=2550),
         RunByGyro(name="object_avoid_gyro", target=3, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -959,7 +959,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # 黄色ボトルくらいからカーブまで
     obstacle_avoid_middle_Parallel = Parallel(name="obstacle_avoid_middle", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_middle_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=1150),
+        IsDistancePassed(name="distance_passed", target_distance=650),
         RunByGyro(name="object_avoid_gyro", target=-6, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -967,8 +967,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # 使ってない
     obstacle_avoid_end_Parallel = Parallel(name="obstacle_avoid_end", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_end_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=600),
-        RunByGyro(name="object_avoid_gyro", target=-45, power=100,
+        IsDistancePassed(name="distance_passed", target_distance=400),
+        RunByGyro(name="object_avoid_gyro", target=-3, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1414,7 +1414,7 @@ def build_behaviour_tree() -> BehaviourTree:
         obstacle_Parallel,
         # obstacle_avoid_start_Parallel,
         obstacle_avoid_middle_Parallel,
-        # obstacle_avoid_end_Parallel,
+        obstacle_avoid_end_Parallel,
         # SpinAround(name="spin_by_before_avoid",
         #             target=-4,max_power=50,min_power=MIN_POWER,
         #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
