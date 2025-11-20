@@ -396,10 +396,10 @@ class RunByGyro(Behaviour):
         g_right_motor.set_power(right)
         g_left_motor.set_power(left)
         # ---- デバッグ出力を10回だけ ----
-        if self.debug_count < 20:
-            print(f"[RunByGyro] hdg={current_heading:.1f} tgt={self.target_heading:.1f} "
-            f"err={err:.1f} steer={steer} L={left} R={right}")
-            self.debug_count += 1
+        # if self.debug_count < 20:
+        #     print(f"[RunByGyro] hdg={current_heading:.1f} tgt={self.target_heading:.1f} "
+        #     f"err={err:.1f} steer={steer} L={left} R={right}")
+        #     self.debug_count += 1
         # --------------------------------
         return Status.RUNNING
 
@@ -420,12 +420,12 @@ class TraceLine_sensor(Behaviour):
             turn = (-1) * g_course * int(self.pid(g_color_sensor.get_brightness()))
         else: # TraceSide.OPPOSITE
             turn = g_course * int(self.pid(g_color_sensor.get_brightness()))
-        print(f"brt={g_color_sensor.get_brightness():.1f} target={self.pid.setpoint} turn={turn}")
+        # print(f"brt={g_color_sensor.get_brightness():.1f} target={self.pid.setpoint} turn={turn}")
         right_power = self.power - turn
         left_power = self.power + turn
         g_right_motor.set_power(right_power)
         g_left_motor.set_power(left_power)
-        print(f"right_motor power: {right_power}, left_motor power: {left_power}")
+        # print(f"right_motor power: {right_power}, left_motor power: {left_power}")
         return Status.RUNNING
 
 
@@ -530,7 +530,7 @@ class DetectRed(Behaviour):# 赤色検知用クラス
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
         if ((0 <= h_deg <= 20) or (340 <= h_deg <= 360)) and s_per > 50 and v_per > 30:
             self.logger.info("%+06d %s.DetectRed!" % (g_plotter.get_distance(), self.__class__.__name__))
-            print(f"DetectRed: RED! h={h_deg} s={s_per} v={v_per}")
+            # print(f"DetectRed: RED! h={h_deg} s={s_per} v={v_per}")
             return Status.SUCCESS
         else:
             # print(f"DetectRed: Not RED h={h_deg} s={s_per} v={v_per}")
@@ -561,7 +561,7 @@ class DetectBlue(Behaviour):# 青色検知用クラス
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
         if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
             self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
-            print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+            # print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
             return Status.SUCCESS
         else:
             # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
@@ -591,7 +591,7 @@ class DetectBlue_failure(Behaviour):# 青色検知用クラス
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
         if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
             self.logger.info("%+06d %s.DetectBlue Once!" % (g_plotter.get_distance(), self.__class__.__name__))
-            print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
+            # print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
             return Status.SUCCESS
         else:
             # print(f"DetectBlue: Not Blue h={h_deg} s={s_per} v={v_per}")
@@ -614,9 +614,9 @@ class Detectcolor(Behaviour):# 色や明るさを取得する
         h_deg = int(h * 360)
         s_per = int(s * 100)
         v_per = int(v * 100)
-        print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
+        # print(f"RGB: {r}, {g}, {b} → HSV: {h_deg}°, {s_per}%, {v_per}%")
         brightness = g_color_sensor.get_brightness()
-        print(f"brightness={brightness}")
+        # print(f"brightness={brightness}")
         # 青色のHSV範囲例 (h: 200〜260くらい、s: 高め、v: 中～高)
         if 200 <= h_deg <= 260 and s_per > 40 and v_per > 30:
             # print(f"DetectBlue: BLUE! h={h_deg} s={s_per} v={v_per}")
@@ -634,7 +634,7 @@ class IsOnBlackLine(Behaviour):#黒色を明るさで検知
         brightness = g_color_sensor.get_brightness()
         if brightness < self.threshold:  # 明るさがthreshold未満=黒い
             self.logger.info("%+06d %s.DetectBlack!" % (g_plotter.get_distance(), self.__class__.__name__))
-            print(f"[IsOnBlackLine] Detected! brightness={brightness}")
+            # print(f"[IsOnBlackLine] Detected! brightness={brightness}")
             return Status.SUCCESS
         else:
             # self.logger.info("%+06d %s.NotDetected..." % (g_plotter.get_distance(), self.__class__.__name__))
@@ -651,7 +651,7 @@ class IsOnBlackLine_running(Behaviour):#黒色を明るさで検知
         brightness = g_color_sensor.get_brightness()
         if brightness < self.threshold:  # 明るさがthreshold未満=黒い
             self.logger.info("%+06d %s.DetectBlack!" % (g_plotter.get_distance(), self.__class__.__name__))
-            print(f"[IsOnBlackLine] Detected! brightness={brightness}")
+            # print(f"[IsOnBlackLine] Detected! brightness={brightness}")
             return Status.SUCCESS
         else:
             # self.logger.info("%+06d %s.NotDetected..." % (g_plotter.get_distance(), self.__class__.__name__))
@@ -670,14 +670,14 @@ class DetectBlackCount(Behaviour):
         brightness = g_color_sensor.get_brightness()
         if brightness < self.black_thresh:
             self.count += 1
-            print(f"黒検知回数: {self.count}")
+            # print(f"黒検知回数: {self.count}")
             if self.count >= self.target_count:
                 return Status.SUCCESS
             else:
                 return Status.RUNNING
         if brightness < self.gray_thresh:
             self.count += 1
-            print(f"黒/グレー検知回数: {self.count} (brightness={brightness})")
+            # print(f"黒/グレー検知回数: {self.count} (brightness={brightness})")
             if self.count >= self.target_count:
                 return Status.SUCCESS
             else:
@@ -696,11 +696,11 @@ class TraverseBehaviourTree(object):
         global g_plotter
         if not self.running:
             if g_hub is None:
-                print(" -- TraverseBehaviorTree waiting for ETrobo devices to be exposed...")
+                # print(" -- TraverseBehaviorTree waiting for ETrobo devices to be exposed...")
             else:
                 self.running = True
                 g_plotter = Plotter()
-                print(" -- TraverseBehaviorTree initialization complete")
+                # print(" -- TraverseBehaviorTree initialization complete")
         else:
             self.tree.tick_once()
             g_plotter.plot(**kwargs)
@@ -863,13 +863,13 @@ class ArcTurn(Behaviour):#20250627_add_kubota_ダブルループ用カーブク�
                 right_curve_power = int(self.power * 0.5)
                 g_left_motor.set_power(left_curve_power)
                 g_right_motor.set_power(right_curve_power)
-                print(f"right_motor power: {right_curve_power}, left_motor power: {left_curve_power}")
+                # print(f"right_motor power: {right_curve_power}, left_motor power: {left_curve_power}")
             else:
                 left_curve_power = int(self.power * 0.5)
                 right_curve_power = self.power
                 g_left_motor.set_power(left_curve_power)
                 g_right_motor.set_power(right_curve_power)
-                print(f"right_motor power: {right_curve_power}, left_motor power: {left_curve_power}")
+                # print(f"right_motor power: {right_curve_power}, left_motor power: {left_curve_power}")
             # time.sleepで簡易的にカーブの長さを調整する例
             time.sleep(base_angle / 90 * 0.7)  # 調整要
             g_left_motor.set_power(0)
@@ -888,7 +888,7 @@ class IsDistancePassed(Behaviour):
         if not self.running:
             self.running = True
             self.start_distance = g_plotter.get_distance()
-            print(f"[IsDistancePassed] Start: {self.start_distance}, Target: {self.target_distance}")
+            # print(f"[IsDistancePassed] Start: {self.start_distance}, Target: {self.target_distance}")
         now_distance = g_plotter.get_distance()
         if now_distance - self.start_distance >= self.target_distance:
             print(f"[IsDistancePassed] Passed: {now_distance - self.start_distance}")
