@@ -949,7 +949,7 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_avoid_middle_Parallel = Parallel(name="obstacle_avoid_middle", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_middle_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=850),
-        RunByGyro(name="object_avoid_gyro", target=2, power=100,
+        RunByGyro(name="object_avoid_gyro", target=5, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
@@ -1008,8 +1008,8 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2600),
-        RunByGyro(name="gyro_mukoujoumen", target=-88, power=100,
+        IsDistancePassed(name="distance_passed", target_distance=2700),
+        RunByGyro(name="gyro_mukoujoumen", target=-84, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
