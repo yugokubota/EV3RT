@@ -1019,7 +1019,7 @@ def build_behaviour_tree() -> BehaviourTree:
     # [Control] Parallel(SuccessOnOne)
     gyro_mukoujoumen_Parallel = Parallel(name="gyro_mukoujoumen", policy=ParallelPolicy.SuccessOnOne())
     gyro_mukoujoumen_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2600),
+        IsDistancePassed(name="distance_passed", target_distance=2700),
         RunByGyro(name="gyro_mukoujoumen", target=86, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -1415,9 +1415,9 @@ def build_behaviour_tree() -> BehaviourTree:
         # obstacle_avoid_start_Parallel,
         obstacle_avoid_middle_Parallel,
         # obstacle_avoid_end_Parallel,
-        SpinAround(name="spin_by_before_avoid",
-                    target=0,max_power=50,min_power=MIN_POWER,
-                    pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
+        # SpinAround(name="spin_by_before_avoid",
+        #             target=-4,max_power=50,min_power=MIN_POWER,
+        #             pid_p=1.1,pid_i=0.001,pid_d=0.03,target_type=HeadingType.ABSOLUTE),
         # --- 一定距離走行⇒カーブを曲がる処理⇒向正面走行⇒カーブを曲がる処理⇒LAPまで直進
         gyro_obstacle_end_to_first_curve_Parallel,
         gyro_first_curve_45degree_Parallel,
