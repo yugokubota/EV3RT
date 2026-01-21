@@ -1432,9 +1432,9 @@ def build_behaviour_tree() -> BehaviourTree:
     # ========= LAP走行 ========
         # --- スタートから一定距離直進⇒オブジェクト回避
         obstacle_Parallel,
-        # obstacle_avoid_start_Parallel,
+        obstacle_avoid_start_Parallel,
         obstacle_avoid_middle_Parallel,
-        # obstacle_avoid_end_Parallel,
+        obstacle_avoid_end_Parallel,
         # --- 一定距離走行⇒カーブを曲がる処理⇒向正面走行⇒カーブを曲がる処理⇒LAPまで直進
         gyro_obstacle_end_to_first_curve_Parallel,
         gyro_first_curve_45degree_Parallel,
