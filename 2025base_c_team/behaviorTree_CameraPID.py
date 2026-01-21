@@ -916,38 +916,25 @@ def build_behaviour_tree() -> BehaviourTree:
 # =========================================================== LAP走行 ===========================================================
     # コース前半：直線⇒オブジェクト回避⇒最初のカーブまで走行⇒向正面走行⇒次のカーブで曲がって、LAPまで走行
 
-    # ---オブジェクト回避シーケンス---
-    # [Purpose] オブジェクトを回避する
-    # [Exit]    距離2430⇒AvoidObstacleArcFullのSuccesse
-    # [Control] Sequence(memory=True) : 子を順番に実行（成功で次へ）
-    avoid_seq = Sequence(name="avoid_seq", memory=True)
-    avoid_seq.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=2430),
-        AvoidObstacleArcFull(name="arc_avoid")
-    ])
-
-    # --- 直進(ジャイロ) or 回避(距離到達) の競合 ---
-    # [Purpose] 回避条件が整えば回避に切替、それまではジャイロ直進で前進
-    # [Exit]    avoid_seqのSuccesse
-    # [Control] Parallel(SuccessOnOne)
+    # ==============LAP走行ちゃんとよけるver===================
     obstacle_Parallel = Parallel(name="obstacle_or_gyro", policy=ParallelPolicy.SuccessOnOne())
     obstacle_Parallel.add_children([
         # avoid_seq, # 回避条件（距離到達→回避実行）
-        IsDistancePassed(name="distance_passed", target_distance=2750),
-        RunByGyro(name="object_avoid_gyro", target=-6, power=100,
+        IsDistancePassed(name="distance_passed", target_distance=2430),
+        RunByGyro(name="object_avoid_gyro", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
     obstacle_avoid_start_Parallel = Parallel(name="obstacle_avoid_start", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_start_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=400),
-        RunByGyro(name="object_avoid_gyro", target=25, power=100,
+        IsDistancePassed(name="distance_passed", target_distance=500),
+        RunByGyro(name="object_avoid_gyro", target=30, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
 
     obstacle_avoid_middle_Parallel = Parallel(name="obstacle_avoid_middle", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_middle_Parallel.add_children([
-        IsDistancePassed(name="distance_passed", target_distance=850),
+        IsDistancePassed(name="distance_passed", target_distance=400),
         RunByGyro(name="object_avoid_gyro", target=0, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
@@ -955,9 +942,55 @@ def build_behaviour_tree() -> BehaviourTree:
     obstacle_avoid_end_Parallel = Parallel(name="obstacle_avoid_end", policy=ParallelPolicy.SuccessOnOne())
     obstacle_avoid_end_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=600),
-        RunByGyro(name="object_avoid_gyro", target=45, power=100,
+        RunByGyro(name="object_avoid_gyro", target=-45, power=100,
                 pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
     ])
+    # ==============LAP走行滑らかによけるver===================
+
+    # ---オブジェクト回避シーケンス---
+    # [Purpose] オブジェクトを回避する
+    # [Exit]    距離2430⇒AvoidObstacleArcFullのSuccesse
+    # [Control] Sequence(memory=True) : 子を順番に実行（成功で次へ）
+    # avoid_seq = Sequence(name="avoid_seq", memory=True)
+    # avoid_seq.add_children([
+    #     IsDistancePassed(name="distance_passed", target_distance=2430),
+    #     AvoidObstacleArcFull(name="arc_avoid")
+    # ])
+
+    # # --- 直進(ジャイロ) or 回避(距離到達) の競合 ---
+    # # [Purpose] 回避条件が整えば回避に切替、それまではジャイロ直進で前進
+    # # [Exit]    avoid_seqのSuccesse
+    # # [Control] Parallel(SuccessOnOne)
+    # obstacle_Parallel = Parallel(name="obstacle_or_gyro", policy=ParallelPolicy.SuccessOnOne())
+    # obstacle_Parallel.add_children([
+    #     # avoid_seq, # 回避条件（距離到達→回避実行）
+    #     IsDistancePassed(name="distance_passed", target_distance=2750),
+    #     RunByGyro(name="object_avoid_gyro", target=-6, power=100,
+    #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    # ])
+
+    # obstacle_avoid_start_Parallel = Parallel(name="obstacle_avoid_start", policy=ParallelPolicy.SuccessOnOne())
+    # obstacle_avoid_start_Parallel.add_children([
+    #     IsDistancePassed(name="distance_passed", target_distance=400),
+    #     RunByGyro(name="object_avoid_gyro", target=25, power=100,
+    #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    # ])
+
+    # obstacle_avoid_middle_Parallel = Parallel(name="obstacle_avoid_middle", policy=ParallelPolicy.SuccessOnOne())
+    # obstacle_avoid_middle_Parallel.add_children([
+    #     IsDistancePassed(name="distance_passed", target_distance=850),
+    #     RunByGyro(name="object_avoid_gyro", target=0, power=100,
+    #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    # ])
+
+    # obstacle_avoid_end_Parallel = Parallel(name="obstacle_avoid_end", policy=ParallelPolicy.SuccessOnOne())
+    # obstacle_avoid_end_Parallel.add_children([
+    #     IsDistancePassed(name="distance_passed", target_distance=600),
+    #     RunByGyro(name="object_avoid_gyro", target=45, power=100,
+    #             pid_p=1.1, pid_i=0.001, pid_d=0.03, target_type=HeadingType.ABSOLUTE),
+    # ])
+
+    # ============================なめらか終了=====================================
 
     # # オブジェクトを無視してジャイロで真っ直ぐパターン
     # gyro_obstacle_ignore_Parallel = Parallel(name="gyro_obstacle_ignore", policy=ParallelPolicy.SuccessOnOne())
