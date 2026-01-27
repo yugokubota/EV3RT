@@ -1099,7 +1099,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Doubleloop_start_Parallel = Parallel(name="Doubleloop_start", policy=ParallelPolicy.SuccessOnOne())
     Doubleloop_start_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=750),
-        TraceLineCam(name="traceline_start_doubleloop",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="traceline_start_doubleloop",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=30,trace_side=TraceSide.OPPOSITE),
     ])
 
@@ -1111,7 +1111,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Bigcircle_Linetrace_InnerEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
         IsDistancePassed(name="distance_passed", target_distance=1850),      #青検知しなかったとき用の距離制御
-        TraceLineCam(name="traceline_cam_inner_egde",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="traceline_cam_inner_egde",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
 
@@ -1122,7 +1122,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SmallCircleEntryTuning_Parallel = Parallel(name="SmallCircleEntryTuning", policy=ParallelPolicy.SuccessOnOne())
     SmallCircleEntryTuning_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=800),
-        TraceLineCam(name="traceline_entry_smallcircle",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="traceline_entry_smallcircle",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
 
@@ -1134,7 +1134,7 @@ def build_behaviour_tree() -> BehaviourTree:
     SmallCircle_Linetrace_InnerEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
         IsDistancePassed(name="distance_passed", target_distance=1400),      #青検知しなかったとき用の距離制御
-        TraceLineCam(name="traceline_cam_inner_egde",power=43, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
+        TraceLineCam(name="traceline_cam_inner_egde",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=50,trace_side=TraceSide.NORMAL),
     ])
 
@@ -1145,7 +1145,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BigCircleEntryTuning_Parallel = Parallel(name="BigCircleEntryTuning", policy=ParallelPolicy.SuccessOnOne())
     BigCircleEntryTuning_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=1100),
-        TraceLineCam(name="traceline_entry_bigcircle",power=42, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
+        TraceLineCam(name="traceline_entry_bigcircle",power=40, pid_p=2.0, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=80,trace_side=TraceSide.OPPOSITE),
     ])
     
@@ -1156,7 +1156,7 @@ def build_behaviour_tree() -> BehaviourTree:
     BigCircle_Linetrace_CenterEdge_parallel = Parallel(name="BigCircle_Linetrace_CenterEdge",policy=ParallelPolicy.SuccessOnOne())
     BigCircle_Linetrace_CenterEdge_parallel.add_children([
         DetectBlue(name="detect_blue"),
-        TraceLineCam(name="BigCircle_Linetrace_CenterEdge",power=42, pid_p=1.75, pid_i=0.0012, pid_d=0.1,
+        TraceLineCam(name="BigCircle_Linetrace_CenterEdge",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.1,
         gs_min=0, gs_max=40,trace_side=TraceSide.CENTER),
     ])
 
@@ -1167,7 +1167,7 @@ def build_behaviour_tree() -> BehaviourTree:
     Escape_double_loop_Parallel = Parallel(name="Escape_double_loop", policy=ParallelPolicy.SuccessOnOne())
     Escape_double_loop_Parallel.add_children([
         IsDistancePassed(name="distance_passed", target_distance=800),
-        TraceLineCam(name="traceline_cam_center_egde",power=48, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
+        TraceLineCam(name="traceline_cam_center_egde",power=40, pid_p=1.75, pid_i=0.0012, pid_d=0.18,
         gs_min=0, gs_max=80,trace_side=TraceSide.NORMAL),
     ])
 
